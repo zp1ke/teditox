@@ -1,0 +1,20 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+pubspec.lock
+
+# Generated
+build/
+coverage/
+*.iml
+
+# Platform
+android/local.properties
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+*.tmp
+*.log
