@@ -194,9 +194,12 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
     final baseTextStyle = DefaultTextStyle.of(context).style;
     final textStyle = TextStyle(
       fontFamily: baseTextStyle.fontFamily,
-      fontSize: settings.fontSize, // Use settings font size
+      fontSize: settings.fontSize,
       height: 1.4, // Match TextField's default line height
     );
+
+    // TextField's content padding
+    const textFieldPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
     Widget textField = TextField(
       controller: textController,
@@ -207,7 +210,7 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
       style: textStyle,
       decoration: const InputDecoration(
         border: InputBorder.none,
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        contentPadding: textFieldPadding,
         isDense: true,
       ),
       scrollPhysics: const BouncingScrollPhysics(),
@@ -232,7 +235,7 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 45,
+          width: 50,
           decoration: BoxDecoration(
             color: Theme.of(context)
                 .colorScheme
@@ -241,40 +244,42 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
             border: Border(
               right: BorderSide(
                 color: Theme.of(context).dividerColor,
-                width: 0.25,
+                width: 0.5,
               ),
             ),
           ),
           child: ValueListenableBuilder<TextEditingValue>(
             valueListenable: textController,
             builder: (context, value, _) {
-              final lines = value.text.isEmpty
-                  ? 1
-                  : '\n'.allMatches(value.text).length + 1;
+              final text = value.text.isEmpty ? '\n' : value.text;
+              final lines = text.split('\n').length;
 
-              // Calculate exact line height to match TextField
-              final lineHeight = textStyle.fontSize! * textStyle.height!;
+              // Create a text painter to measure exact line heights
+              final textPainter = TextPainter(
+                text: TextSpan(text: text, style: textStyle),
+                textDirection: TextDirection.ltr,
+                maxLines: null,
+              );
+              textPainter.layout(minWidth: 0, maxWidth: double.infinity);
+
+              // Calculate the exact height each line should have
+              final totalTextHeight = textPainter.height;
+              final averageLineHeight = totalTextHeight / lines;
 
               return SingleChildScrollView(
                 controller: _lineNumberScrollController,
                 physics: const NeverScrollableScrollPhysics(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.only(
+                    top: textFieldPadding.top,
+                    bottom: textFieldPadding.bottom,
+                  ),
                   child: Column(
                     children: List<Widget>.generate(
                       lines,
-                      (index) => Container(
-                        height: lineHeight,
-                        decoration: index > 0
-                            ? BoxDecoration(
-                                border: Border(
-                                  top: BorderSide(
-                                    color: Theme.of(context).dividerColor,
-                                    width: 0.25,
-                                  ),
-                                ),
-                              )
-                            : null,
+                      (index) => SizedBox(
+                        height: averageLineHeight,
+                        width: double.infinity,
                         child: Center(
                           child: Text(
                             '${index + 1}',
@@ -286,6 +291,7 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
                                   .onSurfaceVariant,
                               height: 1.0,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
