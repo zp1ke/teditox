@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
+import 'package:teditox/src/features/editor/presentation/widgets/actions_menu.dart';
+import 'package:teditox/src/features/editor/presentation/widgets/side_panel.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// The main text editor screen widget.
@@ -109,46 +110,15 @@ class _EditorScreenState extends State<EditorScreen> {
                     onPressed: ctl.canRedo ? ctl.redo : null,
                     icon: const Icon(Icons.redo),
                   ),
-                  PopupMenuButton<String>(
-                    onSelected: (v) {
-                      switch (v) {
-                        case 'settings':
-                          context.go('/settings');
-                        case 'recent':
-                          context.go('/recent');
-                        case 'about':
-                          context.go('/about');
-                        case 'new':
-                          ctl.newFile();
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'new',
-                        child: Text(loc.new_file),
-                      ),
-                      PopupMenuItem(
-                        value: 'recent',
-                        child: Text(loc.recent_files),
-                      ),
-                      PopupMenuItem(
-                        value: 'settings',
-                        child: Text(loc.settings),
-                      ),
-                      const PopupMenuItem(
-                        value: 'about',
-                        child: Text('About'),
-                      ),
-                    ],
-                  ),
+                  const ActionsMenu(),
                 ],
               ),
               body: Row(
                 children: [
                   if (MediaQuery.of(context).size.width >= 600)
-                    SizedBox(
+                    const SizedBox(
                       width: 250,
-                      child: _SidePanel(),
+                      child: SidePanel(),
                     ),
                   Expanded(
                     child: Column(
@@ -290,49 +260,6 @@ class _StatusBar extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SidePanel extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Placeholder: could show recent list or quick actions.
-    final loc = AppLocalizations.of(context);
-    final ctl = context.watch<EditorController>();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          title: Text(loc.recent_files),
-          onTap: () => context.go('/recent'),
-        ),
-        ListTile(
-          title: Text(loc.settings),
-          onTap: () => context.go('/settings'),
-        ),
-        ListTile(
-          title: Text(loc.about),
-          onTap: () => context.go('/about'),
-        ),
-        const Divider(),
-        ListTile(
-          title: Text(loc.new_file),
-          onTap: ctl.newFile,
-        ),
-        ListTile(
-          title: Text(loc.open),
-          onTap: ctl.openFile,
-        ),
-        ListTile(
-          title: Text(loc.save),
-          onTap: ctl.save,
-        ),
-        ListTile(
-          title: Text(loc.save_as),
-          onTap: ctl.saveAs,
-        ),
-      ],
     );
   }
 }
