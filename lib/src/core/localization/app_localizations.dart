@@ -289,6 +289,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Editor'**
   String get editor;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
 }
 
 class _AppLocalizationsDelegate

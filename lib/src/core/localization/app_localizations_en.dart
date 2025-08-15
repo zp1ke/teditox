@@ -104,4 +104,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editor => 'Editor';
+
+  @override
+  String get about => 'About';
 }

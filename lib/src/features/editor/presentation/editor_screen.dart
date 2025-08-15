@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
-
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
@@ -114,9 +113,11 @@ class _EditorScreenState extends State<EditorScreen> {
                     onSelected: (v) {
                       switch (v) {
                         case 'settings':
-                          Navigator.pushNamed(context, '/settings');
+                          context.go('/settings');
                         case 'recent':
-                          Navigator.pushNamed(context, '/recent');
+                          context.go('/recent');
+                        case 'about':
+                          context.go('/about');
                         case 'new':
                           ctl.newFile();
                       }
@@ -133,6 +134,10 @@ class _EditorScreenState extends State<EditorScreen> {
                       PopupMenuItem(
                         value: 'settings',
                         child: Text(loc.settings),
+                      ),
+                      const PopupMenuItem(
+                        value: 'about',
+                        child: Text('About'),
                       ),
                     ],
                   ),
@@ -300,11 +305,15 @@ class _SidePanel extends StatelessWidget {
       children: [
         ListTile(
           title: Text(loc.recent_files),
-          onTap: () => Navigator.pushNamed(context, '/recent'),
+          onTap: () => context.go('/recent'),
         ),
         ListTile(
           title: Text(loc.settings),
-          onTap: () => Navigator.pushNamed(context, '/settings'),
+          onTap: () => context.go('/settings'),
+        ),
+        ListTile(
+          title: Text(loc.about),
+          onTap: () => context.go('/about'),
         ),
         const Divider(),
         ListTile(

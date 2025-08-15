@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
@@ -13,7 +14,14 @@ class SettingsScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     final settings = context.watch<SettingsController>();
     return Scaffold(
-      appBar: AppBar(title: Text(loc.settings)),
+      appBar: AppBar(
+        title: Text(loc.settings),
+        leading: IconButton(
+          icon: const Icon(Icons.home),
+          tooltip: loc.app_name,
+          onPressed: () => context.go('/'),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

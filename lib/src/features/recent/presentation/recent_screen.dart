@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
@@ -39,7 +39,14 @@ class _RecentScreenState extends State<RecentScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(loc.recent_files)),
+      appBar: AppBar(
+        title: Text(loc.recent_files),
+        leading: IconButton(
+          icon: const Icon(Icons.home),
+          tooltip: loc.app_name,
+          onPressed: () => context.go('/'),
+        ),
+      ),
       body: ListView.builder(
         itemCount: entries.length,
         itemBuilder: (context, i) {
