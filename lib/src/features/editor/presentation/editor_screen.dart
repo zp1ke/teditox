@@ -143,7 +143,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 }
 
-class _EditorTextArea extends StatelessWidget {
+class _EditorTextArea extends StatefulWidget {
   const _EditorTextArea({
     required this.showLineNumbers,
     required this.wrap,
@@ -153,27 +153,69 @@ class _EditorTextArea extends StatelessWidget {
   final bool wrap;
 
   @override
+  State<_EditorTextArea> createState() => _EditorTextAreaState();
+}
+
+class _EditorTextAreaState extends State<_EditorTextArea> {
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _lineNumberScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Synchronize line numbers scroll with text field scroll
+    _verticalScrollController.addListener(_syncLineNumbers);
+  }
+
+  void _syncLineNumbers() {
+    if (_lineNumberScrollController.hasClients &&
+        _verticalScrollController.hasClients) {
+      _lineNumberScrollController.jumpTo(_verticalScrollController.offset);
+    }
+  }
+
+  @override
+  void dispose() {
+    _verticalScrollController.removeListener(_syncLineNumbers);
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    _lineNumberScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = context.watch<EditorController>();
     final textController = controller.controller;
+    final settings = context.watch<SettingsController>();
+
+    // Get the actual text style that matches the TextField's rendering
+    final baseTextStyle = DefaultTextStyle.of(context).style;
+    final textStyle = TextStyle(
+      fontFamily: baseTextStyle.fontFamily,
+      fontSize: settings.fontSize, // Use settings font size
+      height: 1.4, // Match TextField's default line height
+    );
 
     Widget textField = TextField(
       controller: textController,
+      scrollController: _verticalScrollController,
       expands: true,
       maxLines: null,
       keyboardType: TextInputType.multiline,
-      style: TextStyle(
-        fontFamily: DefaultTextStyle.of(context).style.fontFamily,
-      ),
+      style: textStyle,
       decoration: const InputDecoration(
         border: InputBorder.none,
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        isDense: true,
       ),
       scrollPhysics: const BouncingScrollPhysics(),
     );
 
-    if (!wrap) {
+    if (!widget.wrap) {
       textField = SingleChildScrollView(
+        controller: _horizontalScrollController,
         scrollDirection: Axis.horizontal,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 1000),
@@ -182,7 +224,7 @@ class _EditorTextArea extends StatelessWidget {
       );
     }
 
-    if (!showLineNumbers) {
+    if (!widget.showLineNumbers) {
       return textField;
     }
 
@@ -190,30 +232,65 @@ class _EditorTextArea extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 48,
-          color: Theme.of(context)
-              .colorScheme
-              .surfaceContainerHighest
-              .withValues(alpha: 0.4),
+          width: 45,
+          decoration: BoxDecoration(
+            color: Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.4),
+            border: Border(
+              right: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 0.25,
+              ),
+            ),
+          ),
           child: ValueListenableBuilder<TextEditingValue>(
             valueListenable: textController,
             builder: (context, value, _) {
               final lines = value.text.isEmpty
                   ? 1
                   : '\n'.allMatches(value.text).length + 1;
-              final children = List<Widget>.generate(
-                lines,
-                (index) => Text(
-                  '${index + 1}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              );
+
+              // Calculate exact line height to match TextField
+              final lineHeight = textStyle.fontSize! * textStyle.height!;
+
               return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: children,
+                controller: _lineNumberScrollController,
+                physics: const NeverScrollableScrollPhysics(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: List<Widget>.generate(
+                      lines,
+                      (index) => Container(
+                        height: lineHeight,
+                        decoration: index > 0
+                            ? BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: Theme.of(context).dividerColor,
+                                    width: 0.25,
+                                  ),
+                                ),
+                              )
+                            : null,
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontFamily: textStyle.fontFamily,
+                              fontSize: textStyle.fontSize! * 0.85,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              height: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               );
             },
