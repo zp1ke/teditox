@@ -177,8 +177,9 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
 
   @override
   void dispose() {
-    _verticalScrollController.removeListener(_syncLineNumbers);
-    _verticalScrollController.dispose();
+    _verticalScrollController
+      ..removeListener(_syncLineNumbers)
+      ..dispose();
     _horizontalScrollController.dispose();
     _lineNumberScrollController.dispose();
     super.dispose();
@@ -258,9 +259,7 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
               final textPainter = TextPainter(
                 text: TextSpan(text: text, style: textStyle),
                 textDirection: TextDirection.ltr,
-                maxLines: null,
-              );
-              textPainter.layout(minWidth: 0, maxWidth: double.infinity);
+              )..layout();
 
               // Calculate the exact height each line should have
               final totalTextHeight = textPainter.height;
@@ -289,7 +288,7 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurfaceVariant,
-                              height: 1.0,
+                              height: 1,
                             ),
                             textAlign: TextAlign.center,
                           ),
