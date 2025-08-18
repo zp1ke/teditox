@@ -17,9 +17,15 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(loc.settings),
         leading: IconButton(
-          icon: const Icon(Icons.home),
-          tooltip: loc.app_name,
-          onPressed: () => context.go('/'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/');
+            }
+          },
         ),
       ),
       body: ListView(

@@ -12,11 +12,17 @@ class AboutScreen extends StatelessWidget {
     final loc = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About'),
+        title: Text(loc.about),
         leading: IconButton(
-          icon: const Icon(Icons.home),
-          tooltip: loc.app_name,
-          onPressed: () => context.go('/'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/');
+            }
+          },
         ),
       ),
       body: Padding(
