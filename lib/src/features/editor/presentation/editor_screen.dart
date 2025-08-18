@@ -123,6 +123,40 @@ class _EditorScreenState extends State<EditorScreen> {
                   Expanded(
                     child: Column(
                       children: [
+                        // File name display between toolbar and editor
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 16,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerLow,
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outline.withValues(alpha: 0.2),
+                                width: 0.95,
+                              ),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              ctl.currentPath?.split('/').last ?? loc.new_file,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
                         Expanded(
                           child: _EditorTextArea(
                             showLineNumbers: settings.showLineNumbers,
@@ -238,10 +272,9 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
         Container(
           width: 50,
           decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.4),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             border: Border(
               right: BorderSide(
                 color: Theme.of(context).dividerColor,
@@ -285,9 +318,9 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
                             style: TextStyle(
                               fontFamily: textStyle.fontFamily,
                               fontSize: textStyle.fontSize! * 0.85,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               height: 1,
                             ),
                             textAlign: TextAlign.center,
@@ -320,15 +353,14 @@ class _StatusBar extends StatelessWidget {
       ctl.currentEncoding.toUpperCase(),
       if (settings.showWordCount)
         'W:${ctl.wordCount} C:${ctl.charCount} L:${ctl.lineCount}',
-      if (ctl.currentPath != null) ctl.currentPath!.split('/').last,
+      // Removed file name from status bar since it's now prominently displayed above the editor
     ];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      color: Theme.of(context)
-          .colorScheme
-          .surfaceContainerHighest
-          .withValues(alpha: 0.3),
+      color: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       child: DefaultTextStyle(
         style: Theme.of(context).textTheme.labelSmall!,
         child: Row(
