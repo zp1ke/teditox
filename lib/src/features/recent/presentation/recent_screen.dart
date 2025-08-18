@@ -35,6 +35,34 @@ class _RecentScreenState extends State<RecentScreen> {
     });
   }
 
+  Future<void> _clearAll() async {
+    final loc = AppLocalizations.of(context);
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.clear_recent_files),
+        content: Text(loc.clear_recent_files_confirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(loc.clear),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldClear ?? false) {
+      await recentService.clearAll();
+      setState(() {
+        entries = recentService.getAll();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -46,32 +74,49 @@ class _RecentScreenState extends State<RecentScreen> {
           tooltip: loc.app_name,
           onPressed: () => context.go('/'),
         ),
-      ),
-      body: ListView.builder(
-        itemCount: entries.length,
-        itemBuilder: (context, i) {
-          final e = entries[i];
-          return Dismissible(
-            key: ValueKey(e.path),
-            direction: DismissDirection.endToStart,
-            onDismissed: (_) => _remove(e.path),
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Icon(Icons.delete, color: Colors.white),
+        actions: [
+          if (entries.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear_all),
+              tooltip: loc.clear_recent_files,
+              onPressed: _clearAll,
             ),
-            child: ListTile(
-              title: Text(e.path.split('/').last),
-              subtitle: Text(e.path),
-              trailing: Text(formatBytes(e.fileSize)),
-              onTap: () {
-                // TODO(dev): Implement direct file opening with controller.
+        ],
+      ),
+      body: entries.isEmpty
+          ? Center(
+              child: Text(
+                'No recent files',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            )
+          : ListView.builder(
+              itemCount: entries.length,
+              itemBuilder: (context, i) {
+                final e = entries[i];
+                return Dismissible(
+                  key: ValueKey(e.path),
+                  direction: DismissDirection.endToStart,
+                  onDismissed: (_) => _remove(e.path),
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: ListTile(
+                    title: Text(e.path.split('/').last),
+                    subtitle: Text(e.path),
+                    trailing: Text(formatBytes(e.fileSize)),
+                    onTap: () {
+                      // TODO(dev): Implement file opening with controller.
+                    },
+                  ),
+                );
               },
             ),
-          );
-        },
-      ),
     );
   }
 }

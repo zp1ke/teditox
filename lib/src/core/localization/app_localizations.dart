@@ -200,6 +200,24 @@ abstract class AppLocalizations {
   /// **'Word/Char/Line count'**
   String get word_count;
 
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @clear_recent_files.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Recent Files'**
+  String get clear_recent_files;
+
+  /// No description provided for @clear_recent_files_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all recent files? This action cannot be undone.'**
+  String get clear_recent_files_confirmation;
+
   /// No description provided for @restore.
   ///
   /// In en, this message translates to:

@@ -40,12 +40,12 @@ class RecentFileEntry {
 
   /// Converts the recent file entry to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
-        'p': path,
-        'o': lastOpened.toIso8601String(),
-        's': fileSize,
-        'e': encoding,
-        'l': lineEnding,
-      };
+    'p': path,
+    'o': lastOpened.toIso8601String(),
+    's': fileSize,
+    'e': encoding,
+    'l': lineEnding,
+  };
 }
 
 /// Service for managing recent files.
@@ -77,8 +77,9 @@ class RecentFilesService {
     final filtered = all.where((e) => e.path != entry.path).toList()
       ..insert(0, entry);
     if (filtered.length > max) filtered.removeRange(max, filtered.length);
-    final store =
-        filtered.map((e) => jsonEncode(e.toJson())).toList(growable: false);
+    final store = filtered
+        .map((e) => jsonEncode(e.toJson()))
+        .toList(growable: false);
     await prefs.setRecentFiles(store);
   }
 
@@ -90,6 +91,11 @@ class RecentFilesService {
     await prefs.setRecentFiles(
       updated.map(jsonEncode).toList(growable: false),
     );
+  }
+
+  /// Clears all recent file entries.
+  Future<void> clearAll() async {
+    await prefs.setRecentFiles([]);
   }
 
   /// Prunes invalid recent file entries.

@@ -60,6 +60,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get word_count => 'Conteo palabras/caracteres/líneas';
 
   @override
+  String get clear => 'Limpiar';
+
+  @override
+  String get clear_recent_files => 'Limpiar Archivos Recientes';
+
+  @override
+  String get clear_recent_files_confirmation =>
+      '¿Estás seguro de que quieres limpiar todos los archivos recientes? Esta acción no se puede deshacer.';
+
+  @override
   String get restore => 'Restaurar';
 
   @override

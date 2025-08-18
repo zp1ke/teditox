@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-
 import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
@@ -185,8 +185,9 @@ class EditorController extends ChangeNotifier {
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
-      _controller.selection =
-          TextSelection.collapsed(offset: _controller.text.length);
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
       dirty = false;
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
       await recentFiles.addOrUpdate(
@@ -224,15 +225,21 @@ class EditorController extends ChangeNotifier {
         encoding: currentEncoding,
         lineEndingStyle: lineEnding,
       );
+
+      // Get actual file size after saving
+      final file = File(currentPath!);
+      final actualFileSize = await file.length();
+
       dirty = false;
       _pushInitial(
         UndoEntry(_controller.text, _controller.selection),
       ); // reset baseline
+
       await recentFiles.addOrUpdate(
         RecentFileEntry(
           path: currentPath!,
           lastOpened: DateTime.now(),
-          fileSize: _controller.text.length,
+          fileSize: actualFileSize, // Use actual file size from disk
           encoding: currentEncoding,
           lineEnding: lineEnding.name,
         ),
@@ -258,24 +265,38 @@ class EditorController extends ChangeNotifier {
         lineEndingStyle: lineEnding,
       );
       if (path == null) return false;
+
+      // Verify the file was actually created and get its actual size
+      final file = File(path);
+      if (!file.existsSync()) {
+        logger.w('File was not created successfully: $path');
+        return false;
+      }
+
+      final actualFileSize = await file.length();
+
       currentPath = path;
       dirty = false;
       _pushInitial(
         UndoEntry(_controller.text, _controller.selection),
       );
+
+      // Only add to recent files if the file was actually saved successfully
       await recentFiles.addOrUpdate(
         RecentFileEntry(
           path: path,
           lastOpened: DateTime.now(),
-          fileSize: _controller.text.length,
+          fileSize: actualFileSize, // Use actual file size from disk
           encoding: currentEncoding,
           lineEnding: lineEnding.name,
         ),
       );
+
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
-    } on Exception catch (_) {
+    } on Exception catch (e) {
+      logger.e('SaveAs failed: $e');
       return false;
     }
   }
@@ -305,8 +326,9 @@ class EditorController extends ChangeNotifier {
     if (snap == null) return;
     // Simple heuristic: if snapshot is newer than nothing.
     _controller.text = snap.content;
-    _controller.selection =
-        TextSelection.collapsed(offset: _controller.text.length);
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
+    );
     currentPath = snap.path;
     currentEncoding = snap.encoding;
     lineEnding = snap.lineEnding;

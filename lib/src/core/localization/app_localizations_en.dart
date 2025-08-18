@@ -60,6 +60,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get word_count => 'Word/Char/Line count';
 
   @override
+  String get clear => 'Clear';
+
+  @override
+  String get clear_recent_files => 'Clear Recent Files';
+
+  @override
+  String get clear_recent_files_confirmation =>
+      'Are you sure you want to clear all recent files? This action cannot be undone.';
+
+  @override
   String get restore => 'Restore';
 
   @override
