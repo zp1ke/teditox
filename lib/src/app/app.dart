@@ -35,7 +35,8 @@ class TeditoxApp extends StatelessWidget {
               );
               return MaterialApp.router(
                 debugShowCheckedModeBanner: false,
-                title: 'teditox',
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context).app_name,
                 themeMode: themeMode,
                 theme: themeBuilder.buildLightTheme(),
                 darkTheme: themeBuilder.buildDarkTheme(),

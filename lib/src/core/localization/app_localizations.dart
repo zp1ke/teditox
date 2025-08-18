@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @app_name.
   ///
   /// In en, this message translates to:
-  /// **'teditox'**
+  /// **'TeditoX'**
   String get app_name;
 
   /// No description provided for @new_file.

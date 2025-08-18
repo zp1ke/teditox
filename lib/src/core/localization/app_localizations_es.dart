@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get app_name => 'teditox';
+  String get app_name => 'TeditoX';
 
   @override
   String get new_file => 'Archivo nuevo';

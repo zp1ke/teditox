@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get app_name => 'teditox';
+  String get app_name => 'TeditoX';
 
   @override
   String get new_file => 'New File';
