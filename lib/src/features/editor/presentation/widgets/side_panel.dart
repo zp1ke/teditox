@@ -30,8 +30,8 @@ class SidePanel extends StatelessWidget {
             child: Text(
               'Navigation',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           ListTile(
@@ -57,19 +57,19 @@ class SidePanel extends StatelessWidget {
             child: Text(
               'File Operations',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           ListTile(
             leading: const Icon(Icons.add),
             title: Text(loc.new_file),
-            onTap: ctl.newFile,
+            onTap: () => ctl.newFile(context),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open),
             title: Text(loc.open),
-            onTap: ctl.openFile,
+            onTap: () => ctl.openFile(context),
           ),
           ListTile(
             leading: const Icon(Icons.save),

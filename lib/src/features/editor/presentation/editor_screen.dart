@@ -88,7 +88,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   IconButton(
                     tooltip: loc.open,
                     icon: const Icon(Icons.folder_open),
-                    onPressed: () => ctl.openFile(),
+                    onPressed: () => ctl.openFile(context),
                   ),
                   IconButton(
                     tooltip: loc.save,
@@ -353,7 +353,6 @@ class _StatusBar extends StatelessWidget {
       ctl.currentEncoding.toUpperCase(),
       if (settings.showWordCount)
         'W:${ctl.wordCount} C:${ctl.charCount} L:${ctl.lineCount}',
-      // Removed file name from status bar since it's now prominently displayed above the editor
     ];
 
     return Container(

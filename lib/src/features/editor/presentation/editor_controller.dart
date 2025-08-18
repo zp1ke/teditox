@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
@@ -154,8 +155,8 @@ class EditorController extends ChangeNotifier {
 
   /// Creates a new file, clearing the current content and resetting state.
   /// Shows a confirmation dialog if there are unsaved changes.
-  Future<void> newFile() async {
-    if (!await _confirmDiscardIfNeeded()) return;
+  Future<void> newFile(BuildContext context) async {
+    if (!await _confirmDiscardIfNeeded(context)) return;
     currentPath = null;
     currentEncoding = settings.defaultEncoding;
     lineEnding = LineEndingStyle.lf;
@@ -166,16 +167,50 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> _confirmDiscardIfNeeded() async {
-    // UI-level confirmation handled externally; assume yes for core logic.
-    return true;
+  Future<bool> _confirmDiscardIfNeeded(BuildContext context) async {
+    if (!dirty) return true; // No unsaved changes, proceed
+
+    // Show confirmation dialog for unsaved changes
+    final loc = AppLocalizations.of(context);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(loc.unsaved_changes),
+        content: Text(loc.unsaved_changes_message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              final saved = await save();
+              if (saved && dialogContext.mounted) {
+                Navigator.pop(dialogContext, true);
+              }
+            },
+            child: Text(loc.save),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(loc.discard),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
   }
 
   /// Opens a file using the file picker dialog.
+  /// Shows a confirmation dialog if there are unsaved changes.
   /// Returns true if a file was successfully opened, false if cancelled or
   /// on error. Automatically detects encoding and line endings from the
   /// opened file.
-  Future<bool> openFile() async {
+  Future<bool> openFile(BuildContext context) async {
+    // Check for unsaved changes before opening a new file
+    if (!await _confirmDiscardIfNeeded(context)) return false;
+
     try {
       final res = await fileService.pickAndOpen(
         maxBytes: settings.maxFileSize,

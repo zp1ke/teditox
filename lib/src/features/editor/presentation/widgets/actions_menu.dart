@@ -20,7 +20,7 @@ class ActionsMenu extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 'new':
-            ctl.newFile();
+            ctl.newFile(context);
           case 'recent':
             context.go('/recent');
           case 'settings':
