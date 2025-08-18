@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
@@ -58,13 +60,16 @@ class FileService {
     );
     if (res == null || res.files.isEmpty) return null;
     final file = res.files.first;
-    final bytes = file.bytes ??
+    final bytes =
+        file.bytes ??
         await File(file.path!).readAsBytes(); // fallback for large
     if (maxBytes != null && bytes.length > maxBytes) {
       throw const FileSystemException('File exceeds size threshold');
     }
-    final content =
-        await encodingService.decode(bytes, forcedEncoding: forcedEncoding);
+    final content = await encodingService.decode(
+      bytes,
+      forcedEncoding: forcedEncoding,
+    );
     final le = detectLineEndings(content);
     return FileOpenResult(
       content: content,
@@ -81,18 +86,18 @@ class FileService {
     required String encoding,
     required LineEndingStyle lineEndingStyle,
   }) async {
+    // Prepare the content with proper line endings and encoding
+    final normalized = normalizeLineEndings(content, lineEndingStyle);
+    final bytes = await encodingService.encode(normalized, encoding);
+
     final path = await FilePicker.platform.saveFile(
       fileName: 'untitled.txt',
       type: FileType.custom,
       allowedExtensions: ['txt'],
+      bytes: Uint8List.fromList(bytes), // Convert to Uint8List for Android/iOS
     );
-    if (path == null) return null;
-    return saveToPath(
-      path: path,
-      content: content,
-      encoding: encoding,
-      lineEndingStyle: lineEndingStyle,
-    );
+
+    return path;
   }
 
   /// Saves the content to the path with the given encoding and line ending.
