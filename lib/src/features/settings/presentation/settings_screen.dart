@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -31,11 +32,11 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _ThemeSection(settings: settings),
-          const Divider(),
+          _ThemeSection(settings: settings, loc: loc),
+          const Divider(height: 32),
           _EditorSection(settings: settings, loc: loc),
-          const Divider(),
-          _AdvancedSection(settings: settings),
+          const Divider(height: 32),
+          _AdvancedSection(settings: settings, loc: loc),
         ],
       ),
     );
@@ -43,21 +44,22 @@ class SettingsScreen extends StatelessWidget {
 }
 
 class _ThemeSection extends StatelessWidget {
-  const _ThemeSection({required this.settings});
+  const _ThemeSection({required this.settings, required this.loc});
   final SettingsController settings;
+  final AppLocalizations loc;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Theme', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.theme, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         SegmentedButton<ThemeMode>(
-          segments: const [
-            ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-            ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-            ButtonSegment(value: ThemeMode.system, label: Text('System')),
+          segments: [
+            ButtonSegment(value: ThemeMode.light, label: Text(loc.light)),
+            ButtonSegment(value: ThemeMode.dark, label: Text(loc.dark)),
+            ButtonSegment(value: ThemeMode.system, label: Text(loc.system)),
           ],
           selected: {settings.themeMode},
           onSelectionChanged: (s) => settings.setThemeMode(s.first),
@@ -65,11 +67,11 @@ class _ThemeSection extends StatelessWidget {
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           initialValue: settings.locale?.languageCode ?? 'system',
-          decoration: const InputDecoration(labelText: 'Language'),
-          items: const [
-            DropdownMenuItem(value: 'system', child: Text('System')),
-            DropdownMenuItem(value: 'en', child: Text('English')),
-            DropdownMenuItem(value: 'es', child: Text('Español')),
+          decoration: InputDecoration(labelText: loc.language),
+          items: [
+            DropdownMenuItem(value: 'system', child: Text(loc.system)),
+            DropdownMenuItem(value: 'en', child: Text(loc.english)),
+            DropdownMenuItem(value: 'es', child: Text(loc.spanish)),
           ],
           onChanged: (v) {
             if (v != null) settings.setLocale(v);
@@ -112,11 +114,21 @@ class _EditorSection extends StatelessWidget {
           initialValue: settings.currentFontFamily,
           decoration: InputDecoration(labelText: loc.font),
           items: fonts
-              .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+              .map(
+                (font) => DropdownMenuItem(
+                  value: font,
+                  child: Text(font.capitalize),
+                ),
+              )
               .toList(),
           onChanged: (v) {
             if (v != null) settings.setFontFamily(v);
           },
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${loc.font_size}: ${settings.fontSize.toStringAsFixed(0)}',
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         Slider(
           value: settings.fontSize,
@@ -126,30 +138,27 @@ class _EditorSection extends StatelessWidget {
           divisions: 18,
           label: settings.fontSize.toStringAsFixed(0),
         ),
-        Row(
-          children: [
-            Expanded(child: Text(loc.encoding)),
-            DropdownButton<String>(
-              value: settings.defaultEncoding,
-              items: const [
-                DropdownMenuItem(value: 'utf-8', child: Text('UTF-8')),
-                DropdownMenuItem(value: 'utf-16le', child: Text('UTF-16 LE')),
-                DropdownMenuItem(value: 'utf-16be', child: Text('UTF-16 BE')),
-                DropdownMenuItem(
-                  value: 'iso-8859-1',
-                  child: Text('ISO-8859-1'),
-                ),
-                DropdownMenuItem(
-                  value: 'windows-1252',
-                  child: Text('Windows-1252'),
-                ),
-                DropdownMenuItem(value: 'us-ascii', child: Text('US-ASCII')),
-              ],
-              onChanged: (value) {
-                if (value != null) settings.setDefaultEncoding(encoding: value);
-              },
+        const SizedBox(height: 16),
+        DropdownButtonFormField<String>(
+          initialValue: settings.defaultEncoding,
+          decoration: InputDecoration(labelText: loc.encoding),
+          items: const [
+            DropdownMenuItem(value: 'utf-8', child: Text('UTF-8')),
+            DropdownMenuItem(value: 'utf-16le', child: Text('UTF-16 LE')),
+            DropdownMenuItem(value: 'utf-16be', child: Text('UTF-16 BE')),
+            DropdownMenuItem(
+              value: 'iso-8859-1',
+              child: Text('ISO-8859-1'),
             ),
+            DropdownMenuItem(
+              value: 'windows-1252',
+              child: Text('Windows-1252'),
+            ),
+            DropdownMenuItem(value: 'us-ascii', child: Text('US-ASCII')),
           ],
+          onChanged: (value) {
+            if (value != null) settings.setDefaultEncoding(encoding: value);
+          },
         ),
       ],
     );
@@ -157,8 +166,9 @@ class _EditorSection extends StatelessWidget {
 }
 
 class _AdvancedSection extends StatelessWidget {
-  const _AdvancedSection({required this.settings});
+  const _AdvancedSection({required this.settings, required this.loc});
   final SettingsController settings;
+  final AppLocalizations loc;
 
   @override
   Widget build(BuildContext context) {
@@ -171,40 +181,38 @@ class _AdvancedSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Advanced', style: Theme.of(context).textTheme.titleMedium),
+        Text(loc.advanced, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            const Expanded(child: Text('Undo depth')),
-            DropdownButton<int>(
-              value: settings.undoDepth,
-              items: [5, 10, 20]
-                  .map((d) => DropdownMenuItem(value: d, child: Text('$d')))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) settings.setUndoDepth(value: value);
-              },
-            ),
-          ],
+        DropdownButtonFormField<int>(
+          initialValue: settings.undoDepth,
+          decoration: InputDecoration(labelText: loc.undo_depth),
+          items: [5, 10, 20]
+              .map(
+                (d) => DropdownMenuItem(
+                  value: d,
+                  child: Text(d.toStringAsFixed(0)),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) settings.setUndoDepth(value: value);
+          },
         ),
-        Row(
-          children: [
-            const Expanded(child: Text('Max file size')),
-            DropdownButton<int>(
-              value: settings.maxFileSize,
-              items: maxSizes
-                  .map(
-                    (s) => DropdownMenuItem(
-                      value: s,
-                      child: Text('${s ~/ 1024} KB'),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) settings.setMaxFileSize(value: value);
-              },
-            ),
-          ],
+        const SizedBox(height: 16),
+        DropdownButtonFormField<int>(
+          initialValue: settings.maxFileSize,
+          decoration: InputDecoration(labelText: loc.max_file_size),
+          items: maxSizes
+              .map(
+                (s) => DropdownMenuItem(
+                  value: s,
+                  child: Text('${s ~/ 1024} KB'),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) settings.setMaxFileSize(value: value);
+          },
         ),
       ],
     );

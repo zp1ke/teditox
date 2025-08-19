@@ -9,6 +9,9 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get advanced => 'Avanzado';
+
+  @override
   String get app_name => 'TeditoX';
 
   @override
@@ -117,4 +120,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get about => 'Acerca de';
+
+  @override
+  String get undo_depth => 'Profundidad de deshacer';
+
+  @override
+  String get max_file_size => 'Máximo tamaño de archivo';
+
+  @override
+  String get light => 'Claro';
+
+  @override
+  String get dark => 'Oscuro';
+
+  @override
+  String get system => 'Sistema';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get english => 'Inglés';
+
+  @override
+  String get spanish => 'Español';
 }

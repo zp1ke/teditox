@@ -1,5 +1,6 @@
 {
   "@@locale": "en",
+  "advanced": "Advanced",
   "app_name": "TeditoX",
   "new_file": "New File",
   "open": "Open",
@@ -35,5 +36,13 @@
   "yes": "Yes",
   "no": "No",
   "editor": "Editor",
-  "about": "About"
+  "about": "About",
+  "undo_depth": "Undo depth",
+  "max_file_size": "Max file size",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "language": "Language",
+  "english": "English",
+  "spanish": "Spanish"
 }
