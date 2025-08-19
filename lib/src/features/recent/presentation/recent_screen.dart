@@ -4,6 +4,7 @@ import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/utils/byte_size_formatter.dart';
+import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
 /// Screen that displays recently opened files.
 ///
@@ -116,8 +117,15 @@ class _RecentScreenState extends State<RecentScreen> {
                     title: Text(e.path.split('/').last),
                     subtitle: Text(e.path),
                     trailing: Text(formatBytes(e.fileSize)),
-                    onTap: () {
-                      // TODO(dev): Implement file opening with controller.
+                    onTap: () async {
+                      final controller = sl<EditorController>();
+                      final success = await controller.openFileByPath(
+                        context,
+                        e.path,
+                      );
+                      if (success && context.mounted) {
+                        context.go('/');
+                      }
                     },
                   ),
                 );

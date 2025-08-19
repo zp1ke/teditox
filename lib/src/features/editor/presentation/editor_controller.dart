@@ -246,6 +246,52 @@ class EditorController extends ChangeNotifier {
     }
   }
 
+  /// Opens a file by its path directly.
+  /// Shows a confirmation dialog if there are unsaved changes.
+  /// Returns true if a file was successfully opened, false if cancelled or
+  /// on error. Automatically detects encoding and line endings from the
+  /// opened file.
+  Future<bool> openFileByPath(BuildContext context, String path) async {
+    // Check for unsaved changes before opening a new file
+    if (!await _confirmDiscardIfNeeded(context)) return false;
+
+    try {
+      final res = await fileService.openByPath(
+        path: path,
+        maxBytes: settings.maxFileSize,
+      );
+      if (res == null) return false;
+
+      currentPath = res.path;
+      currentEncoding = res.encoding;
+      lineEnding = res.lineEndingStyle;
+      _controller.text = res.content;
+      _controller.selection = TextSelection.collapsed(
+        offset: _controller.text.length,
+      );
+      dirty = false;
+      _pushInitial(UndoEntry(_controller.text, _controller.selection));
+      await recentFiles.addOrUpdate(
+        RecentFileEntry(
+          path: res.path,
+          lastOpened: DateTime.now(),
+          fileSize: res.bytes.length,
+          encoding: currentEncoding,
+          lineEnding: lineEnding.name,
+        ),
+      );
+      await recoveryService.clear(fileService);
+      notifyListeners();
+      return true;
+    } on FileSystemException {
+      // propagate UI message
+      return false;
+    } on Exception catch (e) {
+      logger.e('Open by path failed: $e');
+      return false;
+    }
+  }
+
   /// Saves the current content to the existing file path.
   /// Returns true if the save was successful, false otherwise.
   /// Updates the recent files list and clears the dirty flag on success.

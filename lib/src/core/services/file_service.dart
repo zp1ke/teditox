@@ -80,6 +80,42 @@ class FileService {
     );
   }
 
+  /// Opens a file directly by its path.
+  Future<FileOpenResult?> openByPath({
+    required String path,
+    String? forcedEncoding,
+    int? maxBytes,
+  }) async {
+    try {
+      final file = File(path);
+      if (!file.existsSync()) {
+        throw FileSystemException('File does not exist', path);
+      }
+
+      final bytes = await file.readAsBytes();
+      if (maxBytes != null && bytes.length > maxBytes) {
+        throw const FileSystemException('File exceeds size threshold');
+      }
+
+      final content = await encodingService.decode(
+        bytes,
+        forcedEncoding: forcedEncoding,
+      );
+      final le = detectLineEndings(content);
+
+      return FileOpenResult(
+        content: content,
+        path: path,
+        encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
+        lineEndingStyle: le,
+        bytes: bytes,
+      );
+    } catch (e) {
+      logger.e('Failed to open file at path $path: $e');
+      rethrow;
+    }
+  }
+
   /// Saves a new file with the specified content and encoding.
   Future<String?> saveNew({
     required String content,
