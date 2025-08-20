@@ -44,5 +44,8 @@
   "system": "Sistema",
   "language": "Idioma",
   "english": "Inglés",
-  "spanish": "Español"
+  "spanish": "Español",
+  "more_actions": "Más acciones",
+  "file_operations": "Operaciones de archivo",
+  "navigation": "Navegación"
 }

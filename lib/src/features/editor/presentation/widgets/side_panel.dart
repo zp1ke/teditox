@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
@@ -28,7 +29,7 @@ class SidePanel extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'Navigation',
+              loc.navigation,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -37,17 +38,17 @@ class SidePanel extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.history),
             title: Text(loc.recent_files),
-            onTap: () => context.go('/recent'),
+            onTap: () => context.go(recentsRoute),
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: Text(loc.settings),
-            onTap: () => context.go('/settings'),
+            onTap: () => context.go(settingsRoute),
           ),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(loc.about),
-            onTap: () => context.go('/about'),
+            onTap: () => context.go(aboutRoute),
           ),
           const Divider(),
 
@@ -55,7 +56,7 @@ class SidePanel extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'File Operations',
+              loc.file_operations,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

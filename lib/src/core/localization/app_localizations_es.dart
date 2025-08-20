@@ -144,4 +144,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get spanish => 'Español';
+
+  @override
+  String get more_actions => 'Más acciones';
+
+  @override
+  String get file_operations => 'Operaciones de archivo';
+
+  @override
+  String get navigation => 'Navegación';
 }

@@ -4,6 +4,17 @@ import 'package:teditox/src/features/recent/presentation/recent_screen.dart';
 import 'package:teditox/src/features/settings/presentation/about_screen.dart';
 import 'package:teditox/src/features/settings/presentation/settings_screen.dart';
 
+/// Defines the routes for the application.
+
+/// The route for the settings screen.
+const settingsRoute = '/settings';
+
+/// The route for the recent files screen.
+const recentsRoute = '/recent';
+
+/// The route for the about screen.
+const aboutRoute = '/about';
+
 /// Builds the application router with defined routes.
 GoRouter buildRouter() {
   return GoRouter(
@@ -14,17 +25,17 @@ GoRouter buildRouter() {
         builder: (context, state) => const EditorScreen(),
       ),
       GoRoute(
-        path: '/settings',
+        path: settingsRoute,
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
-        path: '/recent',
+        path: recentsRoute,
         name: 'recent',
         builder: (context, state) => const RecentScreen(),
       ),
       GoRoute(
-        path: '/about',
+        path: aboutRoute,
         name: 'about',
         builder: (context, state) => const AboutScreen(),
       ),

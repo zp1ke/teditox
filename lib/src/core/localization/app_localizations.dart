@@ -367,6 +367,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Spanish'**
   String get spanish;
+
+  /// No description provided for @more_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get more_actions;
+
+  /// No description provided for @file_operations.
+  ///
+  /// In en, this message translates to:
+  /// **'File Operations'**
+  String get file_operations;
+
+  /// No description provided for @navigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get navigation;
 }
 
 class _AppLocalizationsDelegate

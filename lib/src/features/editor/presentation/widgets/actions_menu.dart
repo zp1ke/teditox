@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
@@ -15,18 +16,18 @@ class ActionsMenu extends StatelessWidget {
     final ctl = context.watch<EditorController>();
 
     return PopupMenuButton<String>(
-      tooltip: 'More actions',
+      tooltip: loc.more_actions,
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         switch (value) {
           case 'new':
             ctl.newFile(context);
           case 'recent':
-            context.go('/recent');
+            context.go(recentsRoute);
           case 'settings':
-            context.go('/settings');
+            context.go(settingsRoute);
           case 'about':
-            context.go('/about');
+            context.go(aboutRoute);
         }
       },
       itemBuilder: (context) => [
