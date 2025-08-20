@@ -153,4 +153,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get navigation => 'Navegación';
+
+  @override
+  String get version => 'Versión';
+
+  @override
+  String get license => 'Licencia';
+
+  @override
+  String get privacy_policy => 'Política de Privacidad';
+
+  @override
+  String get view_license => 'Ver Licencia';
+
+  @override
+  String get view_privacy_policy => 'Ver Política de Privacidad';
+
+  @override
+  String get app_description => 'Editor de texto plano simple';
+
+  @override
+  String could_not_launch_url(String url) {
+    return 'No se pudo abrir $url';
+  }
 }

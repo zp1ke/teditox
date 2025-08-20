@@ -385,6 +385,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Navigation'**
   String get navigation;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @license.
+  ///
+  /// In en, this message translates to:
+  /// **'License'**
+  String get license;
+
+  /// No description provided for @privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacy_policy;
+
+  /// No description provided for @view_license.
+  ///
+  /// In en, this message translates to:
+  /// **'View License'**
+  String get view_license;
+
+  /// No description provided for @view_privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'View Privacy Policy'**
+  String get view_privacy_policy;
+
+  /// No description provided for @app_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple plain text editor'**
+  String get app_description;
+
+  /// No description provided for @could_not_launch_url.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not launch {url}'**
+  String could_not_launch_url(String url);
 }
 
 class _AppLocalizationsDelegate

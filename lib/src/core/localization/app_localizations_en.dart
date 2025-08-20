@@ -153,4 +153,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navigation => 'Navigation';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get license => 'License';
+
+  @override
+  String get privacy_policy => 'Privacy Policy';
+
+  @override
+  String get view_license => 'View License';
+
+  @override
+  String get view_privacy_policy => 'View Privacy Policy';
+
+  @override
+  String get app_description => 'Simple plain text editor';
+
+  @override
+  String could_not_launch_url(String url) {
+    return 'Could not launch $url';
+  }
 }

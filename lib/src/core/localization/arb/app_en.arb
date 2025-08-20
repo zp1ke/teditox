@@ -47,5 +47,19 @@
   "spanish": "Spanish",
   "more_actions": "More actions",
   "file_operations": "File Operations",
-  "navigation": "Navigation"
+  "navigation": "Navigation",
+  "version": "Version",
+  "license": "License",
+  "privacy_policy": "Privacy Policy",
+  "view_license": "View License",
+  "view_privacy_policy": "View Privacy Policy",
+  "app_description": "Simple plain text editor",
+  "could_not_launch_url": "Could not launch {url}",
+  "@could_not_launch_url": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  }
 }
