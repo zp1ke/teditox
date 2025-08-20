@@ -22,38 +22,87 @@ class TeditoxApp extends StatelessWidget {
       ],
       child: DynamicColorBuilder(
         builder: (lightDynamic, darkDynamic) {
-          return AnimatedBuilder(
-            animation: settings,
-            builder: (context, _) {
-              final themeMode = settings.themeMode;
-              const schemeSeed = Colors.indigo;
-              final themeBuilder = AppTheme(
-                lightDynamic: lightDynamic,
-                darkDynamic: darkDynamic,
-                fallbackSeed: schemeSeed,
-                settings: settings,
-              );
-              return MaterialApp.router(
-                debugShowCheckedModeBanner: false,
-                onGenerateTitle: (context) =>
-                    AppLocalizations.of(context).app_name,
-                themeMode: themeMode,
-                theme: themeBuilder.buildLightTheme(),
-                darkTheme: themeBuilder.buildDarkTheme(),
-                routerConfig: buildRouter(),
-                locale: settings.locale,
-                supportedLocales: AppLocalizations.supportedLocales,
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                ],
-              );
-            },
+          return _AppContent(
+            lightDynamic: lightDynamic,
+            darkDynamic: darkDynamic,
           );
         },
       ),
+    );
+  }
+}
+
+class _AppContent extends StatefulWidget {
+  const _AppContent({
+    required this.lightDynamic,
+    required this.darkDynamic,
+  });
+
+  final ColorScheme? lightDynamic;
+  final ColorScheme? darkDynamic;
+
+  @override
+  State<_AppContent> createState() => _AppContentState();
+}
+
+class _AppContentState extends State<_AppContent> {
+  late ThemeMode _themeMode;
+  late Locale? _locale;
+  late SettingsController _settings;
+
+  @override
+  void initState() {
+    super.initState();
+    _settings = context.read<SettingsController>();
+    _themeMode = _settings.themeMode;
+    _locale = _settings.locale;
+    _settings.addListener(_onSettingsChanged);
+  }
+
+  @override
+  void dispose() {
+    _settings.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    // Only rebuild if app-level settings changed
+    final newThemeMode = _settings.themeMode;
+    final newLocale = _settings.locale;
+
+    if (newThemeMode != _themeMode || newLocale != _locale) {
+      setState(() {
+        _themeMode = newThemeMode;
+        _locale = newLocale;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const schemeSeed = Colors.indigo;
+    final themeBuilder = AppTheme(
+      lightDynamic: widget.lightDynamic,
+      darkDynamic: widget.darkDynamic,
+      fallbackSeed: schemeSeed,
+      settings: _settings,
+    );
+
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      onGenerateTitle: (context) => AppLocalizations.of(context).app_name,
+      themeMode: _themeMode,
+      theme: themeBuilder.buildLightTheme(),
+      darkTheme: themeBuilder.buildDarkTheme(),
+      routerConfig: buildRouter(),
+      locale: _locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
     );
   }
 }
