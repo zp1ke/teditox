@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/utils/byte_size_formatter.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// Screen that displays application settings.
@@ -177,8 +178,9 @@ class _EditorSection extends StatelessWidget {
                   DropdownMenuItem(value: 'us-ascii', child: Text('US-ASCII')),
                 ],
                 onChanged: (value) {
-                  if (value != null)
+                  if (value != null) {
                     settings.setDefaultEncoding(encoding: value);
+                  }
                 },
               ),
         ),
@@ -230,7 +232,7 @@ class _AdvancedSection extends StatelessWidget {
                 .map(
                   (size) => DropdownMenuItem(
                     value: size,
-                    child: Text(_formatFileSize(size)),
+                    child: Text(formatBytes(size)),
                   ),
                 )
                 .toList(),
@@ -241,12 +243,5 @@ class _AdvancedSection extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatFileSize(int bytes) {
-    if (bytes >= 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(0)} MB';
-    }
-    return '${(bytes / 1024).toStringAsFixed(0)} KB';
   }
 }

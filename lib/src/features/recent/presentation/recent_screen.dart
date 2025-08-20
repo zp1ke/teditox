@@ -67,6 +67,7 @@ class _RecentScreenState extends State<RecentScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.recent_files),
@@ -95,7 +96,7 @@ class _RecentScreenState extends State<RecentScreen> {
               child: Text(
                 'No recent files',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             )
@@ -108,10 +109,10 @@ class _RecentScreenState extends State<RecentScreen> {
                   direction: DismissDirection.endToStart,
                   onDismissed: (_) => _remove(e.path),
                   background: Container(
-                    color: Colors.red,
+                    color: colorScheme.error,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Icon(Icons.delete, color: Colors.white),
+                    child: Icon(Icons.delete, color: colorScheme.onError),
                   ),
                   child: ListTile(
                     title: Text(e.path.split('/').last),

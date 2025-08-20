@@ -80,11 +80,10 @@ class _AppContentState extends State<_AppContent> {
 
   @override
   Widget build(BuildContext context) {
-    const schemeSeed = Colors.indigo;
     final themeBuilder = AppTheme(
       lightDynamic: widget.lightDynamic,
       darkDynamic: widget.darkDynamic,
-      fallbackSeed: schemeSeed,
+      fallbackSeed: Colors.indigo,
       settings: _settings,
     );
 
