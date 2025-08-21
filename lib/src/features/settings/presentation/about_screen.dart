@@ -71,13 +71,13 @@ class _AboutScreenState extends State<AboutScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
           children: [
             // App name and version
             Text(
               loc.app_name,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 8),
             Text(
               '${loc.version}: ${_packageInfo?.version ?? '0.1.0'}',
               style: Theme.of(context).textTheme.bodyLarge,
@@ -103,7 +103,6 @@ class _AboutScreenState extends State<AboutScreen> {
                 trailing: const Icon(Icons.open_in_new),
               ),
             ),
-            const SizedBox(height: 8),
 
             // Third-party licenses
             Card(
@@ -115,7 +114,6 @@ class _AboutScreenState extends State<AboutScreen> {
                 trailing: const Icon(Icons.arrow_forward_ios),
               ),
             ),
-            const SizedBox(height: 8),
 
             // Privacy Policy link (placeholder)
             Card(

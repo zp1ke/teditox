@@ -57,7 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get font => 'Fuente';
 
   @override
-  String get font_size => 'Tamaño de fuente';
+  String get editor_font_size => 'Tamaño de fuente del editor';
 
   @override
   String get word_count => 'Conteo palabras/caracteres/líneas';

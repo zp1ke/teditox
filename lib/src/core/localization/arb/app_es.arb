@@ -16,7 +16,7 @@
   "line_numbers": "Números de línea",
   "theme": "Tema",
   "font": "Fuente",
-  "font_size": "Tamaño de fuente",
+  "editor_font_size": "Tamaño de fuente del editor",
   "word_count": "Conteo palabras/caracteres/líneas",
   "clear": "Limpiar",
   "clear_recent_files": "Limpiar Archivos Recientes",

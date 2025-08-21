@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/theme/app_theme.dart';
 import 'package:teditox/src/core/utils/byte_size_formatter.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
@@ -51,9 +52,9 @@ class _ThemeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
         Text(loc.theme, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
         Consumer<SettingsController>(
           builder: (context, settings, child) => SegmentedButton<ThemeMode>(
             segments: [
@@ -65,7 +66,6 @@ class _ThemeSection extends StatelessWidget {
             onSelectionChanged: (s) => settings.setThemeMode(s.first),
           ),
         ),
-        const SizedBox(height: 16),
         Consumer<SettingsController>(
           builder: (context, settings, child) =>
               DropdownButtonFormField<String>(
@@ -81,6 +81,24 @@ class _ThemeSection extends StatelessWidget {
                 },
               ),
         ),
+        Consumer<SettingsController>(
+          builder: (context, settings, child) =>
+              DropdownButtonFormField<String>(
+                initialValue: settings.currentFontFamily,
+                decoration: InputDecoration(labelText: loc.font),
+                items: appFonts
+                    .map(
+                      (font) => DropdownMenuItem(
+                        value: font,
+                        child: Text(font.capitalize),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) settings.setFontFamily(v);
+                },
+              ),
+        ),
       ],
     );
   }
@@ -92,12 +110,11 @@ class _EditorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fonts = ['system', 'JetBrains Mono', 'Fira Code', 'Source Code Pro'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
         Text(loc.editor, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
         Consumer<SettingsController>(
           builder: (context, settings, child) => SwitchListTile(
             title: Text(loc.line_numbers),
@@ -122,9 +139,9 @@ class _EditorSection extends StatelessWidget {
         Consumer<SettingsController>(
           builder: (context, settings, child) =>
               DropdownButtonFormField<String>(
-                initialValue: settings.currentFontFamily,
+                initialValue: settings.editorFontFamily,
                 decoration: InputDecoration(labelText: loc.font),
-                items: fonts
+                items: editorFonts
                     .map(
                       (font) => DropdownMenuItem(
                         value: font,
@@ -133,31 +150,29 @@ class _EditorSection extends StatelessWidget {
                     )
                     .toList(),
                 onChanged: (v) {
-                  if (v != null) settings.setFontFamily(v);
+                  if (v != null) settings.setEditorFontFamily(v);
                 },
               ),
         ),
-        const SizedBox(height: 8),
         Consumer<SettingsController>(
           builder: (context, settings, child) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${loc.font_size}: ${settings.fontSize.toStringAsFixed(0)}',
+                '${loc.editor_font_size}: ${settings.editorFontSize}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Slider(
-                value: settings.fontSize,
-                onChanged: settings.setFontSize,
+                value: settings.editorFontSize,
+                onChanged: settings.setEditorFontSize,
                 min: 10,
                 max: 28,
                 divisions: 18,
-                label: settings.fontSize.toStringAsFixed(0),
+                label: settings.editorFontSize.toStringAsFixed(0),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
         Consumer<SettingsController>(
           builder: (context, settings, child) =>
               DropdownButtonFormField<String>(
@@ -203,9 +218,9 @@ class _AdvancedSection extends StatelessWidget {
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
         Text(loc.advanced, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
         Consumer<SettingsController>(
           builder: (context, settings, child) => DropdownButtonFormField<int>(
             initialValue: settings.undoDepth,
@@ -223,7 +238,6 @@ class _AdvancedSection extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: 16),
         Consumer<SettingsController>(
           builder: (context, settings, child) => DropdownButtonFormField<int>(
             initialValue: settings.maxFileSize,

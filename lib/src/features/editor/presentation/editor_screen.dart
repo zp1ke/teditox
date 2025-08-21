@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/theme/app_theme.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/actions_menu.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/side_panel.dart';
@@ -225,11 +226,9 @@ class _EditorTextAreaState extends State<_EditorTextArea> {
     final textController = controller.controller;
     final settings = context.watch<SettingsController>();
 
-    // Get the actual text style that matches the TextField's rendering
-    final baseTextStyle = DefaultTextStyle.of(context).style;
-    final textStyle = TextStyle(
-      fontFamily: baseTextStyle.fontFamily,
-      fontSize: settings.fontSize,
+    final textStyle = getTextStyle(
+      settings.editorFontFamily,
+      fontSize: settings.editorFontSize,
       height: 1.4, // Match TextField's default line height
     );
 

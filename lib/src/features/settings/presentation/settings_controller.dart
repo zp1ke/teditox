@@ -38,14 +38,13 @@ class SettingsController extends ChangeNotifier {
   }
 
   /// Gets the current font family setting.
-  ///
-  /// Returns the font family name or 'system' for the default system font.
-  String get currentFontFamily {
-    return prefs.fontFamily;
-  }
+  String get currentFontFamily => prefs.fontFamily;
 
-  /// Gets the current font size setting in points.
-  double get fontSize => prefs.fontSize;
+  /// Returns the editor font family.
+  String get editorFontFamily => prefs.editorFontFamily;
+
+  /// Gets the editor font size setting in points.
+  double get editorFontSize => prefs.editorFontSize;
 
   /// Gets whether line numbers should be displayed in the editor.
   bool get showLineNumbers => prefs.showLineNumbers;
@@ -101,11 +100,19 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sets the editor font family preference.
+  ///
+  /// Updates the editor font family and notifies listeners of the change.
+  Future<void> setEditorFontFamily(String family) async {
+    await prefs.setEditorFontFamily(family);
+    notifyListeners();
+  }
+
   /// Sets the font size preference.
   ///
-  /// Updates the font size setting and notifies listeners of the change.
-  Future<void> setFontSize(double size) async {
-    await prefs.setFontSize(size);
+  /// Updates the editor font size setting and notifies listeners of the change.
+  Future<void> setEditorFontSize(double size) async {
+    await prefs.setEditorFontSize(size);
     notifyListeners();
   }
 

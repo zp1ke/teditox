@@ -1,6 +1,25 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
+import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
+
+/// List of available fonts for the application.
+const List<String> appFonts = [
+  'Roboto',
+  'Open Sans',
+  'Nata Sans',
+  'Inter',
+];
+
+/// List of available fonts for the editor.
+const List<String> editorFonts = [
+  ...appFonts,
+  'JetBrains Mono',
+  'Fira Code',
+  'Source Code Pro',
+];
 
 /// Manages application theming with support for dynamic colors and settings.
 ///
@@ -94,6 +113,7 @@ class AppTheme {
     if (lightDynamic != null) {
       baseTheme = FlexThemeData.light(
         colorScheme: lightDynamic,
+        textTheme: _getTextTheme(settings.currentFontFamily),
         fontFamily: settings.currentFontFamily,
         subThemesData: _commonSubThemesData,
       );
@@ -101,6 +121,7 @@ class AppTheme {
       // Use FlexColorScheme with the specified scheme
       baseTheme = FlexThemeData.light(
         scheme: flexScheme,
+        textTheme: _getTextTheme(settings.currentFontFamily),
         fontFamily: settings.currentFontFamily,
         subThemesData: _commonSubThemesData,
       );
@@ -135,6 +156,7 @@ class AppTheme {
     if (darkDynamic != null) {
       baseTheme = FlexThemeData.dark(
         colorScheme: darkDynamic,
+        textTheme: _getTextTheme(settings.currentFontFamily),
         fontFamily: settings.currentFontFamily,
         subThemesData: _commonSubThemesData,
       );
@@ -142,6 +164,7 @@ class AppTheme {
       // Use FlexColorScheme with the specified scheme in dark mode
       baseTheme = FlexThemeData.dark(
         scheme: flexScheme,
+        textTheme: _getTextTheme(settings.currentFontFamily),
         fontFamily: settings.currentFontFamily,
         subThemesData: _commonSubThemesData,
       );
@@ -162,5 +185,42 @@ class AppTheme {
         ),
       ),
     );
+  }
+}
+
+/// Retrieves the text style for a given font family.
+TextStyle getTextStyle(
+  String fontFamily, {
+  double fontSize = 14,
+  double height = 1.5,
+}) {
+  try {
+    return GoogleFonts.getFont(fontFamily, fontSize: fontSize, height: height);
+  } on Exception catch (e) {
+    sl<Logger>().e('Error getting text style: $e');
+  }
+
+  // Retrieve the text theme for the specified font family
+  final textTheme = _getTextTheme(fontFamily);
+  // If the font is not available, return a default style
+  if (textTheme == null) {
+    return TextStyle(
+      fontFamily: fontFamily,
+      fontSize: fontSize,
+    );
+  }
+  // Return the body text style from the text theme or a default style
+  return textTheme.bodyMedium?.copyWith(fontSize: fontSize) ??
+      TextStyle(fontFamily: fontFamily, fontSize: fontSize);
+}
+
+/// Retrieves the text theme for a given font family.
+TextTheme? _getTextTheme(String fontFamily) {
+  try {
+    return GoogleFonts.getTextTheme(fontFamily);
+  } on Exception catch (e) {
+    sl<Logger>().e('Error getting text theme: $e');
+    // If the font is not available, return null
+    return null;
   }
 }

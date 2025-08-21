@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:teditox/src/core/theme/app_theme.dart';
 
 /// Service for managing application preferences and settings.
 ///
@@ -8,7 +9,8 @@ class PreferencesService {
   static const _keyThemeMode = 'theme_mode';
   static const _keyLocale = 'locale';
   static const _keyFontFamily = 'font_family';
-  static const _keyFontSize = 'font_size';
+  static const _keyEditorFontFamily = 'editor_font_family';
+  static const _keyEditorFontSize = 'editor_font_size';
   static const _keyShowLineNumbers = 'show_line_numbers';
   static const _keyWrapLines = 'wrap_lines';
   static const _keyWordCount = 'word_count';
@@ -69,20 +71,29 @@ class PreferencesService {
   /// Gets the current font family setting.
   ///
   /// Returns the font family preference or 'system' to use the system
-  /// default font. Defaults to 'system' if not set.
-  String get fontFamily => _prefs.getString(_keyFontFamily) ?? 'system';
+  /// default font. Defaults to first option if not set.
+  String get fontFamily => _prefs.getString(_keyFontFamily) ?? appFonts.first;
 
   /// Sets the font family preference.
   Future<void> setFontFamily(String family) =>
       _prefs.setString(_keyFontFamily, family);
 
+  /// Gets the current editor font family setting.
+  String get editorFontFamily =>
+      _prefs.getString(_keyEditorFontFamily) ?? editorFonts.first;
+
+  /// Sets the editor font family preference.
+  Future<void> setEditorFontFamily(String family) =>
+      _prefs.setString(_keyEditorFontFamily, family);
+
   /// Gets the current font size setting.
   ///
   /// Returns the font size in points. Defaults to 14.0 if not set.
-  double get fontSize => _prefs.getDouble(_keyFontSize) ?? 14;
+  double get editorFontSize => _prefs.getDouble(_keyEditorFontSize) ?? 14;
 
   /// Sets the font size preference.
-  Future<void> setFontSize(double size) => _prefs.setDouble(_keyFontSize, size);
+  Future<void> setEditorFontSize(double size) =>
+      _prefs.setDouble(_keyEditorFontSize, size);
 
   /// Gets whether line numbers should be displayed in the editor.
   ///

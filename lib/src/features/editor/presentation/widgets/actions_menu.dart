@@ -22,11 +22,11 @@ class ActionsMenu extends StatelessWidget {
         switch (value) {
           case 'new':
             ctl.newFile(context);
-          case 'recent':
+          case recentsName:
             context.go(recentsRoute);
-          case 'settings':
+          case settingsName:
             context.go(settingsRoute);
-          case 'about':
+          case aboutName:
             context.go(aboutRoute);
         }
       },
@@ -34,40 +34,40 @@ class ActionsMenu extends StatelessWidget {
         PopupMenuItem(
           value: 'new',
           child: Row(
+            spacing: 12,
             children: [
               const Icon(Icons.add),
-              const SizedBox(width: 12),
               Text(loc.new_file),
             ],
           ),
         ),
         PopupMenuItem(
-          value: 'recent',
+          value: recentsName,
           child: Row(
+            spacing: 12,
             children: [
               const Icon(Icons.history),
-              const SizedBox(width: 12),
               Text(loc.recent_files),
             ],
           ),
         ),
         const PopupMenuDivider(),
         PopupMenuItem(
-          value: 'settings',
+          value: settingsName,
           child: Row(
+            spacing: 12,
             children: [
               const Icon(Icons.settings),
-              const SizedBox(width: 12),
               Text(loc.settings),
             ],
           ),
         ),
         PopupMenuItem(
-          value: 'about',
+          value: aboutName,
           child: Row(
+            spacing: 12,
             children: [
               const Icon(Icons.info_outline),
-              const SizedBox(width: 12),
               Text(loc.about),
             ],
           ),

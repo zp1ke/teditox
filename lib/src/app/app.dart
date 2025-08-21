@@ -48,6 +48,7 @@ class _AppContent extends StatefulWidget {
 class _AppContentState extends State<_AppContent> {
   late ThemeMode _themeMode;
   late Locale? _locale;
+  late String? _fontFamily;
   late SettingsController _settings;
 
   @override
@@ -56,6 +57,7 @@ class _AppContentState extends State<_AppContent> {
     _settings = context.read<SettingsController>();
     _themeMode = _settings.themeMode;
     _locale = _settings.locale;
+    _fontFamily = _settings.currentFontFamily;
     _settings.addListener(_onSettingsChanged);
   }
 
@@ -69,11 +71,15 @@ class _AppContentState extends State<_AppContent> {
     // Only rebuild if app-level settings changed
     final newThemeMode = _settings.themeMode;
     final newLocale = _settings.locale;
+    final newFont = _settings.currentFontFamily;
 
-    if (newThemeMode != _themeMode || newLocale != _locale) {
+    if (newThemeMode != _themeMode ||
+        newLocale != _locale ||
+        newFont != _fontFamily) {
       setState(() {
         _themeMode = newThemeMode;
         _locale = newLocale;
+        _fontFamily = newFont;
       });
     }
   }

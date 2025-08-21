@@ -194,11 +194,11 @@ abstract class AppLocalizations {
   /// **'Font'**
   String get font;
 
-  /// No description provided for @font_size.
+  /// No description provided for @editor_font_size.
   ///
   /// In en, this message translates to:
-  /// **'Font size'**
-  String get font_size;
+  /// **'Editor font size'**
+  String get editor_font_size;
 
   /// No description provided for @word_count.
   ///
