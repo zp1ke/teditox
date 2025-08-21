@@ -31,6 +31,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.7.0
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   freezed: ^3.2.0
@@ -41,6 +42,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - assets/icons/
     - assets/fonts/Fira_Code/
     - assets/fonts/Inter/
     - assets/fonts/JetBrains_Mono/
