@@ -182,4 +182,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String could_not_launch_url(String url) {
     return 'No se pudo abrir $url';
   }
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get redo => 'Rehacer';
 }

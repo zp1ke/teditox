@@ -182,4 +182,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String could_not_launch_url(String url) {
     return 'Could not launch $url';
   }
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get redo => 'Redo';
 }
