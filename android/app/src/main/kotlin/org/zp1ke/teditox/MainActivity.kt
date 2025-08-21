@@ -1,4 +1,4 @@
-package com.example.teditox
+package org.zp1ke.teditox
 
 import io.flutter.embedding.android.FlutterActivity
 
