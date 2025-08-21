@@ -56,6 +56,7 @@ class ActionsMenu extends StatelessWidget {
             ],
           ),
         ),
+        const PopupMenuDivider(),
         PopupMenuItem(
           value: recentsName,
           child: Row(
@@ -66,7 +67,6 @@ class ActionsMenu extends StatelessWidget {
             ],
           ),
         ),
-        const PopupMenuDivider(),
         PopupMenuItem(
           value: settingsName,
           child: Row(

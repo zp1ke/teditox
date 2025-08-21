@@ -113,7 +113,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 children: [
                   if (MediaQuery.of(context).size.width >= 600)
                     const SizedBox(
-                      width: 250,
+                      width: 220,
                       child: SidePanel(),
                     ),
                   Expanded(
