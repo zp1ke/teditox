@@ -63,5 +63,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "undo": "Deshacer",
+  "redo": "Rehacer"
 }

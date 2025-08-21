@@ -5,6 +5,9 @@ import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
+const String _newAction = 'new';
+const String _saveAsAction = 'save_as';
+
 /// Actions menu widget that provides a popup menu with various editor actions.
 class ActionsMenu extends StatelessWidget {
   /// Creates an actions menu widget.
@@ -20,8 +23,10 @@ class ActionsMenu extends StatelessWidget {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         switch (value) {
-          case 'new':
+          case _newAction:
             ctl.newFile(context);
+          case _saveAsAction:
+            ctl.saveAs();
           case recentsName:
             context.go(recentsRoute);
           case settingsName:
@@ -32,12 +37,22 @@ class ActionsMenu extends StatelessWidget {
       },
       itemBuilder: (context) => [
         PopupMenuItem(
-          value: 'new',
+          value: _newAction,
           child: Row(
             spacing: 12,
             children: [
               const Icon(Icons.add),
               Text(loc.new_file),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: _saveAsAction,
+          child: Row(
+            spacing: 12,
+            children: [
+              const Icon(Icons.save_as_sharp),
+              Text(loc.save_as),
             ],
           ),
         ),

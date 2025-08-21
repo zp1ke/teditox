@@ -97,17 +97,12 @@ class _EditorScreenState extends State<EditorScreen> {
                     onPressed: () => ctl.save(),
                   ),
                   IconButton(
-                    tooltip: loc.save_as,
-                    icon: const Icon(Icons.save_as),
-                    onPressed: () => ctl.saveAs(),
-                  ),
-                  IconButton(
-                    tooltip: 'Undo',
+                    tooltip: loc.undo,
                     onPressed: ctl.canUndo ? ctl.undo : null,
                     icon: const Icon(Icons.undo),
                   ),
                   IconButton(
-                    tooltip: 'Redo',
+                    tooltip: loc.redo,
                     onPressed: ctl.canRedo ? ctl.redo : null,
                     icon: const Icon(Icons.redo),
                   ),
