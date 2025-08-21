@@ -54,6 +54,8 @@
   "view_license": "View License",
   "view_privacy_policy": "View Privacy Policy",
   "app_description": "Simple plain text editor",
+  "third_party_licenses": "Third-party licenses",
+  "view_third_party_licenses": "View Third-party Licenses",
   "could_not_launch_url": "Could not launch {url}",
   "@could_not_launch_url": {
     "placeholders": {

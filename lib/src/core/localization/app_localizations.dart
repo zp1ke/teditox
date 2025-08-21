@@ -422,6 +422,18 @@ abstract class AppLocalizations {
   /// **'Simple plain text editor'**
   String get app_description;
 
+  /// No description provided for @third_party_licenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party licenses'**
+  String get third_party_licenses;
+
+  /// No description provided for @view_third_party_licenses.
+  ///
+  /// In en, this message translates to:
+  /// **'View Third-party Licenses'**
+  String get view_third_party_licenses;
+
   /// No description provided for @could_not_launch_url.
   ///
   /// In en, this message translates to:

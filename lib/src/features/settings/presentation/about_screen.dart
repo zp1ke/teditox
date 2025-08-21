@@ -40,6 +40,15 @@ class _AboutScreenState extends State<AboutScreen> {
     }
   }
 
+  void _showLicensePage() {
+    showLicensePage(
+      context: context,
+      applicationName: AppLocalizations.of(context).app_name,
+      applicationVersion: _packageInfo?.version ?? '0.1.0',
+      applicationLegalese: '© 2025 TeditoX Contributors',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
@@ -92,6 +101,18 @@ class _AboutScreenState extends State<AboutScreen> {
                   'https://raw.githubusercontent.com/zp1ke/teditox/main/LICENSE',
                 ),
                 trailing: const Icon(Icons.open_in_new),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Third-party licenses
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.list_alt),
+                title: Text(loc.view_third_party_licenses),
+                subtitle: Text(loc.third_party_licenses),
+                onTap: _showLicensePage,
+                trailing: const Icon(Icons.arrow_forward_ios),
               ),
             ),
             const SizedBox(height: 8),

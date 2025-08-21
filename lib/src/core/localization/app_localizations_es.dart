@@ -173,6 +173,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get app_description => 'Editor de texto plano simple';
 
   @override
+  String get third_party_licenses => 'Licencias de terceros';
+
+  @override
+  String get view_third_party_licenses => 'Ver Licencias de Terceros';
+
+  @override
   String could_not_launch_url(String url) {
     return 'No se pudo abrir $url';
   }

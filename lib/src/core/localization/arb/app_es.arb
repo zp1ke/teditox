@@ -54,6 +54,8 @@
   "view_license": "Ver Licencia",
   "view_privacy_policy": "Ver Política de Privacidad",
   "app_description": "Editor de texto plano simple",
+  "third_party_licenses": "Licencias de terceros",
+  "view_third_party_licenses": "Ver Licencias de Terceros",
   "could_not_launch_url": "No se pudo abrir {url}",
   "@could_not_launch_url": {
     "placeholders": {

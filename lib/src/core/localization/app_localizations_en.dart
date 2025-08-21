@@ -173,6 +173,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get app_description => 'Simple plain text editor';
 
   @override
+  String get third_party_licenses => 'Third-party licenses';
+
+  @override
+  String get view_third_party_licenses => 'View Third-party Licenses';
+
+  @override
   String could_not_launch_url(String url) {
     return 'Could not launch $url';
   }
