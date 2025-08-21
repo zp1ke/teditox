@@ -1,6 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
@@ -59,6 +60,8 @@ class _AppContentState extends State<_AppContent> {
     _locale = _settings.locale;
     _fontFamily = _settings.currentFontFamily;
     _settings.addListener(_onSettingsChanged);
+
+    FlutterNativeSplash.remove();
   }
 
   @override
