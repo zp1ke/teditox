@@ -41,6 +41,12 @@ dev_dependencies:
 
 flutter:
   assets:
-    - assets/fonts/
+    - assets/fonts/Fira_Code/
+    - assets/fonts/Inter/
+    - assets/fonts/JetBrains_Mono/
+    - assets/fonts/Nata_Sans/
+    - assets/fonts/Open_Sans/
+    - assets/fonts/Roboto/
+    - assets/fonts/Source_Code_Pro/
   generate: true
   uses-material-design: true
