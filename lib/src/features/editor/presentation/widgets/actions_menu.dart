@@ -66,7 +66,7 @@ class ActionsMenu extends StatelessWidget {
                   spacing: 12,
                   children: [
                     Icon(route.icon),
-                    Text(loc.recent_files),
+                    Text(route.title(loc)),
                   ],
                 ),
               ),

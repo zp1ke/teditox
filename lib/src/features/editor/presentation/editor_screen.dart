@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
@@ -73,7 +74,7 @@ class _EditorScreenState extends State<EditorScreen> {
         if (!didPop) {
           final shouldPop = await _handleBack();
           if (shouldPop && context.mounted) {
-            context.pop();
+            await SystemNavigator.pop(animated: true);
           }
         }
       },
