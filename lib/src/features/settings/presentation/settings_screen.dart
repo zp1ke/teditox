@@ -1,10 +1,10 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/theme/app_theme.dart';
 import 'package:teditox/src/core/utils/byte_size_formatter.dart';
+import 'package:teditox/src/core/utils/context.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// Screen that displays application settings.
@@ -21,13 +21,7 @@ class SettingsScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/');
-            }
-          },
+          onPressed: context.navigateBack,
         ),
       ),
       body: ListView(

@@ -4,6 +4,7 @@ import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/utils/byte_size_formatter.dart';
+import 'package:teditox/src/core/utils/context.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
 /// Screen that displays recently opened files.
@@ -74,13 +75,7 @@ class _RecentScreenState extends State<RecentScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              context.go('/');
-            }
-          },
+          onPressed: context.navigateBack,
         ),
         actions: [
           if (entries.isNotEmpty)
@@ -94,7 +89,7 @@ class _RecentScreenState extends State<RecentScreen> {
       body: entries.isEmpty
           ? Center(
               child: Text(
-                'No recent files',
+                loc.no_recent_files,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

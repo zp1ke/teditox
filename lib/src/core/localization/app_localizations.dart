@@ -451,6 +451,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Redo'**
   String get redo;
+
+  /// No description provided for @no_recent_files.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent files'**
+  String get no_recent_files;
 }
 
 class _AppLocalizationsDelegate

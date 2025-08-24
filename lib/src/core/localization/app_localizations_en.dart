@@ -188,4 +188,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get redo => 'Redo';
+
+  @override
+  String get no_recent_files => 'No recent files';
 }

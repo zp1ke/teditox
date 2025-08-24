@@ -188,4 +188,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get redo => 'Rehacer';
+
+  @override
+  String get no_recent_files => 'No hay archivos recientes';
 }

@@ -65,5 +65,6 @@
     }
   },
   "undo": "Deshacer",
-  "redo": "Rehacer"
+  "redo": "Rehacer",
+  "no_recent_files": "No hay archivos recientes"
 }
