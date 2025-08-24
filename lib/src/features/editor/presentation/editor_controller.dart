@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/file_service.dart';
@@ -179,20 +180,20 @@ class EditorController extends ChangeNotifier {
         content: Text(loc.unsaved_changes_message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => dialogContext.pop(false),
             child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () async {
               final saved = await save();
               if (saved && dialogContext.mounted) {
-                Navigator.pop(dialogContext, true);
+                dialogContext.pop(true);
               }
             },
             child: Text(loc.save),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => dialogContext.pop(true),
             child: Text(loc.discard),
           ),
         ],

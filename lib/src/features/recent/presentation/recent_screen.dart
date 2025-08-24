@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
@@ -46,11 +47,11 @@ class _RecentScreenState extends State<RecentScreen> {
         content: Text(loc.clear_recent_files_confirmation),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => context.pop(false),
             child: Text(loc.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => context.pop(true),
             child: Text(loc.clear),
           ),
         ],
@@ -119,8 +120,12 @@ class _RecentScreenState extends State<RecentScreen> {
                         context,
                         e.path,
                       );
-                      if (success && context.mounted) {
-                        context.go('/');
+                      if (context.mounted) {
+                        if (success) {
+                          context.navigate(AppRoute.editor, cleanStack: true);
+                        } else {
+                          // TODO(dev): Show error message
+                        }
                       }
                     },
                   ),

@@ -12,7 +12,7 @@ enum LineEndingStyle {
   crlf,
 
   /// Classic Mac line endings (\r)
-  cr
+  cr,
 }
 
 /// Detects the most common line ending style in the given text.
@@ -55,12 +55,9 @@ LineEndingStyle detectLineEndings(String text) {
 /// Returns the text with consistent line endings of the specified style.
 String normalizeLineEndings(String text, LineEndingStyle style) {
   final unified = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-  switch (style) {
-    case LineEndingStyle.lf:
-      return unified;
-    case LineEndingStyle.crlf:
-      return unified.replaceAll('\n', '\r\n');
-    case LineEndingStyle.cr:
-      return unified.replaceAll('\n', '\r');
-  }
+  return switch (style) {
+    LineEndingStyle.lf => unified,
+    LineEndingStyle.crlf => unified.replaceAll('\n', '\r\n'),
+    LineEndingStyle.cr => unified.replaceAll('\n', '\r'),
+  };
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
@@ -40,20 +41,20 @@ class _EditorScreenState extends State<EditorScreen> {
         content: Text(loc.unsaved_changes_message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => context.pop(false),
             child: Text(loc.cancel),
           ),
           TextButton(
             onPressed: () async {
               final ok = await controller.save();
               if (ok && context.mounted) {
-                Navigator.pop(context, true);
+                context.pop(true);
               }
             },
             child: Text(loc.save),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => context.pop(true),
             child: Text(loc.discard),
           ),
         ],
@@ -72,7 +73,7 @@ class _EditorScreenState extends State<EditorScreen> {
         if (!didPop) {
           final shouldPop = await _handleBack();
           if (shouldPop && context.mounted) {
-            Navigator.of(context).pop();
+            context.pop();
           }
         }
       },

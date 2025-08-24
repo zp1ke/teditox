@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:charset_converter/charset_converter.dart';
 
 /// Service for encoding and decoding text with various character sets.
@@ -19,15 +20,13 @@ class EncodingService {
   Future<String> decode(List<int> bytes, {String? forcedEncoding}) async {
     final encoding = forcedEncoding ?? detectEncoding(bytes);
     try {
-      switch (encoding) {
-        case 'utf-8':
-          return utf8.decode(bytes, allowMalformed: true);
-        default:
-          return await CharsetConverter.decode(
-            encoding,
-            Uint8List.fromList(bytes),
-          );
-      }
+      return switch (encoding) {
+        'utf-8' => utf8.decode(bytes, allowMalformed: true),
+        String() => await CharsetConverter.decode(
+          encoding,
+          Uint8List.fromList(bytes),
+        ),
+      };
     } on Exception catch (_) {
       return utf8.decode(bytes, allowMalformed: true);
     }
@@ -36,15 +35,16 @@ class EncodingService {
   /// Encode a string into a list of bytes using the specified encoding.
   /// If the encoding is not supported, fall back to UTF-8.
   Future<List<int>> encode(String text, String encoding) async {
-    switch (encoding) {
-      case 'utf-8':
-        return utf8.encode(text);
-      default:
-        try {
-          return await CharsetConverter.encode(encoding, text);
-        } on Exception catch (_) {
-          return utf8.encode(text);
-        }
+    try {
+      return switch (encoding) {
+        'utf-8' => utf8.encode(text),
+        String() => await CharsetConverter.encode(
+          encoding,
+          text,
+        ),
+      };
+    } on Exception catch (_) {
+      return utf8.encode(text);
     }
   }
 

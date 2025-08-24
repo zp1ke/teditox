@@ -17,15 +17,12 @@ class SettingsController extends ChangeNotifier {
   /// Converts the string preference to a ThemeMode enum value.
   /// Returns ThemeMode.system if the preference is invalid.
   ThemeMode get themeMode {
-    final v = prefs.themeMode;
-    switch (v) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      default:
-        return ThemeMode.system;
-    }
+    final mode = prefs.themeMode;
+    return switch (mode) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      String() => ThemeMode.system,
+    };
   }
 
   /// Gets the current locale setting.

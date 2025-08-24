@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/utils/context.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
-const String _newAction = 'new';
-const String _saveAsAction = 'save_as';
+const _newAction = 'new';
+const _saveAsAction = 'save_as';
 
 /// Actions menu widget that provides a popup menu with various editor actions.
 class ActionsMenu extends StatelessWidget {
@@ -22,17 +22,17 @@ class ActionsMenu extends StatelessWidget {
       tooltip: loc.more_actions,
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
-        switch (value) {
-          case _newAction:
-            ctl.newFile(context);
-          case _saveAsAction:
-            ctl.saveAs();
-          case recentsName:
-            context.go(recentsRoute);
-          case settingsName:
-            context.go(settingsRoute);
-          case aboutName:
-            context.go(aboutRoute);
+        if (value case _newAction) {
+          ctl.newFile(context);
+        } else if (value case _saveAsAction) {
+          ctl.saveAs();
+        } else {
+          for (final route in AppRoute.values) {
+            if (value == route.name) {
+              context.navigate(route);
+              break;
+            }
+          }
         }
       },
       itemBuilder: (context) => [
@@ -57,36 +57,20 @@ class ActionsMenu extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem(
-          value: recentsName,
-          child: Row(
-            spacing: 12,
-            children: [
-              const Icon(Icons.history),
-              Text(loc.recent_files),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: settingsName,
-          child: Row(
-            spacing: 12,
-            children: [
-              const Icon(Icons.settings),
-              Text(loc.settings),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: aboutName,
-          child: Row(
-            spacing: 12,
-            children: [
-              const Icon(Icons.info_outline),
-              Text(loc.about),
-            ],
-          ),
-        ),
+        ...AppRoute.values
+            .where((route) => route.icon != null)
+            .map(
+              (route) => PopupMenuItem(
+                value: route.name,
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    Icon(route.icon),
+                    Text(loc.recent_files),
+                  ],
+                ),
+              ),
+            ),
       ],
     );
   }

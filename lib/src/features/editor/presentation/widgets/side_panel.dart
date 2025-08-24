@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/utils/context.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
 /// Side panel widget that displays navigation options and file operations.
@@ -36,21 +36,15 @@ class SidePanel extends StatelessWidget {
                 ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: Text(loc.recent_files),
-              onTap: () => context.go(recentsRoute),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: Text(loc.settings),
-              onTap: () => context.go(settingsRoute),
-            ),
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: Text(loc.about),
-              onTap: () => context.go(aboutRoute),
-            ),
+            ...AppRoute.values
+                .where((route) => route.icon != null)
+                .map(
+                  (route) => ListTile(
+                    leading: Icon(route.icon),
+                    title: Text(route.title(loc)),
+                    onTap: () => context.navigate(route),
+                  ),
+                ),
             const Divider(),
 
             // File operations section
