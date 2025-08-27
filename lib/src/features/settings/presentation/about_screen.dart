@@ -115,9 +115,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 leading: const Icon(Icons.privacy_tip),
                 title: Text(loc.view_privacy_policy),
                 subtitle: Text(loc.privacy_policy),
-                onTap: () => _launchUrl(
-                  'https://example.com/privacy',
-                ), // TODO(dev): Replace with actual privacy policy URL
+                onTap: () => _launchUrl('https://sp1ke.dev/teditox'),
                 trailing: const Icon(Icons.open_in_new),
               ),
             ),
