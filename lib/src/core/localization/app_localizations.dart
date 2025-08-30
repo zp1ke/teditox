@@ -457,6 +457,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No recent files'**
   String get no_recent_files;
+
+  /// No description provided for @open_file_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file'**
+  String get open_file_error;
+
+  /// No description provided for @open_file_error_message.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while trying to open the file at {path}.'**
+  String open_file_error_message(String path);
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
 }
 
 class _AppLocalizationsDelegate

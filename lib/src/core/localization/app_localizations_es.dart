@@ -191,4 +191,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get no_recent_files => 'No hay archivos recientes';
+
+  @override
+  String get open_file_error => 'Error abriendo archivo';
+
+  @override
+  String open_file_error_message(String path) {
+    return 'Se produjo un error al intentar abrir el archivo en $path.';
+  }
+
+  @override
+  String get ok => 'OK';
 }

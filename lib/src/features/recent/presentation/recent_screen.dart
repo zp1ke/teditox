@@ -124,7 +124,21 @@ class _RecentScreenState extends State<RecentScreen> {
                         if (success) {
                           context.navigate(AppRoute.editor, cleanStack: true);
                         } else {
-                          // TODO(dev): Show error message
+                          await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(loc.open_file_error),
+                              content: Text(
+                                loc.open_file_error_message(e.path),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => context.pop(false),
+                                  child: Text(loc.ok),
+                                ),
+                              ],
+                            ),
+                          );
                         }
                       }
                     },

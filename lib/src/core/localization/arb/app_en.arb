@@ -66,5 +66,15 @@
   },
   "undo": "Undo",
   "redo": "Redo",
-  "no_recent_files": "No recent files"
+  "no_recent_files": "No recent files",
+  "open_file_error": "Error opening file",
+  "open_file_error_message": "An error occurred while trying to open the file at {path}.",
+  "@open_file_error_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "ok": "OK"
 }

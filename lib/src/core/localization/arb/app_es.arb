@@ -66,5 +66,15 @@
   },
   "undo": "Deshacer",
   "redo": "Rehacer",
-  "no_recent_files": "No hay archivos recientes"
+  "no_recent_files": "No hay archivos recientes",
+  "open_file_error": "Error abriendo archivo",
+  "open_file_error_message": "Se produjo un error al intentar abrir el archivo en {path}.",
+  "@open_file_error_message": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "ok": "OK"
 }
