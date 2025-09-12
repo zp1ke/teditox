@@ -81,6 +81,8 @@ class _EditorTextAreaState extends State<EditorTextArea> {
     const textFieldPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
     Widget textField = TextField(
+      autofocus: true,
+      showCursor: true,
       controller: textController,
       scrollController: _verticalScrollController,
       expands: true,
