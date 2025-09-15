@@ -40,6 +40,7 @@ class _EditorTextAreaState extends State<EditorTextArea> {
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _lineNumberScrollController = ScrollController();
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -49,10 +50,16 @@ class _EditorTextAreaState extends State<EditorTextArea> {
   }
 
   void _syncLineNumbers() {
-    if (_lineNumberScrollController.hasClients &&
-        _verticalScrollController.hasClients) {
-      _lineNumberScrollController.jumpTo(_verticalScrollController.offset);
-    }
+    if (_isSyncing) return;
+    _isSyncing = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_lineNumberScrollController.hasClients &&
+          _verticalScrollController.hasClients) {
+        _lineNumberScrollController.jumpTo(_verticalScrollController.offset);
+      }
+      _isSyncing = false;
+    });
   }
 
   @override
@@ -132,17 +139,17 @@ class _EditorTextAreaState extends State<EditorTextArea> {
             valueListenable: textController,
             builder: (context, value, _) {
               final text = value.text.isEmpty ? '\n' : value.text;
-              final lines = text.split('\n').length;
+              final lines = text.split('\n');
 
-              // Create a text painter to measure exact line heights
+              // Create a TextPainter with the exact same style as the TextField
               final textPainter = TextPainter(
-                text: TextSpan(text: text, style: textStyle),
+                text: TextSpan(text: 'A', style: textStyle),
                 textDirection: TextDirection.ltr,
+                textScaler: MediaQuery.textScalerOf(context),
               )..layout();
 
-              // Calculate the exact height each line should have
-              final totalTextHeight = textPainter.height;
-              final averageLineHeight = totalTextHeight / lines;
+              // Get the exact line height that Flutter uses
+              final lineHeight = textPainter.height;
 
               return SingleChildScrollView(
                 controller: _lineNumberScrollController,
@@ -154,22 +161,27 @@ class _EditorTextAreaState extends State<EditorTextArea> {
                   ),
                   child: Column(
                     children: List<Widget>.generate(
-                      lines,
+                      lines.length,
                       (index) => SizedBox(
-                        height: averageLineHeight,
+                        height: lineHeight,
                         width: double.infinity,
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              fontFamily: textStyle.fontFamily,
-                              fontSize: textStyle.fontSize! * 0.85,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                              height: 1,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontFamily: textStyle.fontFamily,
+                                fontSize: textStyle.fontSize! * 0.85,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                height: textStyle.height,
+                              ),
+                              textAlign: TextAlign.right,
+                              textScaler: MediaQuery.textScalerOf(context),
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
