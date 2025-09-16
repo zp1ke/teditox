@@ -2,11 +2,14 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/services/intent_service.dart';
 import 'package:teditox/src/core/theme/app_theme.dart';
+import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// The main application widget for Teditox.
@@ -51,6 +54,7 @@ class _AppContentState extends State<_AppContent> {
   late Locale? _locale;
   late String? _fontFamily;
   late SettingsController _settings;
+  late IntentService _intentService;
 
   @override
   void initState() {
@@ -61,13 +65,35 @@ class _AppContentState extends State<_AppContent> {
     _fontFamily = _settings.currentFontFamily;
     _settings.addListener(_onSettingsChanged);
 
+    // Initialize intent service to handle incoming file intents
+    _intentService = sl<IntentService>();
+    _intentService.initialize(
+      onFileReceived: _handleIncomingFile,
+    );
+
     FlutterNativeSplash.remove();
   }
 
   @override
   void dispose() {
     _settings.removeListener(_onSettingsChanged);
+    _intentService.dispose();
     super.dispose();
+  }
+
+  void _handleIncomingFile(String filePath) {
+    // Get the editor controller and open the file
+    final editorController = sl<EditorController>();
+
+    // Schedule the file opening after the widget tree is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = GoRouter.of(
+        this.context,
+      ).routerDelegate.navigatorKey.currentContext;
+      if (context != null) {
+        editorController.openFileByPath(context, filePath);
+      }
+    });
   }
 
   void _onSettingsChanged() {

@@ -1,8 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
-
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/services/file_service.dart';
+import 'package:teditox/src/core/services/intent_service.dart';
 import 'package:teditox/src/core/services/preferences_service.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
@@ -43,6 +43,9 @@ Future<void> configureDependencies() async {
     )
     ..registerLazySingleton<RecoveryService>(
       () => RecoveryService(logger: sl()),
+    )
+    ..registerLazySingleton<IntentService>(
+      () => IntentService(logger: sl()),
     )
     ..registerSingleton<SettingsController>(settings)
     ..registerLazySingleton<EditorController>(
