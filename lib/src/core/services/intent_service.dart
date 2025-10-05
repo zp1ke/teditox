@@ -31,15 +31,17 @@ class IntentService {
         );
 
     // Get files shared when the app was launched from a closed state
-    ReceiveSharingIntent.instance
-        .getInitialMedia()
-        .then((List<SharedMediaFile> value) {
-          logger.i('Received files on app launch: ${value.length}');
-          _handleSharedFiles(value, onFileReceived);
-        })
-        .catchError((dynamic err) {
-          logger.e('Error getting initial shared files: $err');
-        });
+    unawaited(
+      ReceiveSharingIntent.instance
+          .getInitialMedia()
+          .then((List<SharedMediaFile> value) {
+            logger.i('Received files on app launch: ${value.length}');
+            _handleSharedFiles(value, onFileReceived);
+          })
+          .catchError((dynamic err) {
+            logger.e('Error getting initial shared files: $err');
+          }),
+    );
   }
 
   /// Handles the received shared files and filters for text files.
@@ -99,6 +101,6 @@ class IntentService {
 
   /// Disposes the intent service and cancels subscriptions.
   void dispose() {
-    _intentDataStreamSubscription?.cancel();
+    unawaited(_intentDataStreamSubscription?.cancel());
   }
 }

@@ -429,7 +429,7 @@ class EditorController extends ChangeNotifier {
       encoding: currentEncoding,
       lineEnding: lineEnding,
     );
-    recoveryService.saveSnapshot(fileService, snap);
+    unawaited(recoveryService.saveSnapshot(fileService, snap));
   }
 
   /// Disposes of resources used by the controller.

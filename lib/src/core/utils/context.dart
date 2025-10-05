@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:teditox/src/app/router.dart';
@@ -19,6 +21,6 @@ extension ContextX on BuildContext {
     if (cleanStack) {
       return go(route.route);
     }
-    push(route.route);
+    unawaited(push(route.route));
   }
 }

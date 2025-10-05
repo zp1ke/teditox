@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
@@ -19,7 +21,7 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPackageInfo();
+    unawaited(_loadPackageInfo());
   }
 
   Future<void> _loadPackageInfo() async {

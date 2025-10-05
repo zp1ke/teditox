@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
@@ -23,9 +25,9 @@ class ActionsMenu extends StatelessWidget {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) {
         if (value case _newAction) {
-          ctl.newFile(context);
+          unawaited(ctl.newFile(context));
         } else if (value case _saveAsAction) {
-          ctl.saveAs();
+          unawaited(ctl.saveAs());
         } else {
           for (final route in AppRoute.values) {
             if (value == route.name) {

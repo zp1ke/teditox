@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -91,7 +93,7 @@ class _AppContentState extends State<_AppContent> {
         this.context,
       ).routerDelegate.navigatorKey.currentContext;
       if (context != null) {
-        editorController.openFileByPath(context, filePath);
+        unawaited(editorController.openFileByPath(context, filePath));
       }
     });
   }

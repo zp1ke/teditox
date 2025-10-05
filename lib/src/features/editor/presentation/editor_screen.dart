@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -29,7 +31,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void initState() {
     super.initState();
     controller = sl<EditorController>();
-    controller.attemptRecovery();
+    unawaited(controller.attemptRecovery());
   }
 
   Future<bool> _handleBack() async {

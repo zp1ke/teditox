@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +73,7 @@ class _ThemeSection extends StatelessWidget {
                   DropdownMenuItem(value: 'es', child: Text(loc.spanish)),
                 ],
                 onChanged: (v) {
-                  if (v != null) settings.setLocale(v);
+                  if (v != null) unawaited(settings.setLocale(v));
                 },
               ),
         ),
@@ -89,7 +91,7 @@ class _ThemeSection extends StatelessWidget {
                     )
                     .toList(),
                 onChanged: (v) {
-                  if (v != null) settings.setFontFamily(v);
+                  if (v != null) unawaited(settings.setFontFamily(v));
                 },
               ),
         ),
@@ -144,7 +146,7 @@ class _EditorSection extends StatelessWidget {
                     )
                     .toList(),
                 onChanged: (v) {
-                  if (v != null) settings.setEditorFontFamily(v);
+                  if (v != null) unawaited(settings.setEditorFontFamily(v));
                 },
               ),
         ),
@@ -188,7 +190,7 @@ class _EditorSection extends StatelessWidget {
                 ],
                 onChanged: (value) {
                   if (value != null) {
-                    settings.setDefaultEncoding(encoding: value);
+                    unawaited(settings.setDefaultEncoding(encoding: value));
                   }
                 },
               ),
@@ -228,7 +230,7 @@ class _AdvancedSection extends StatelessWidget {
                 )
                 .toList(),
             onChanged: (value) {
-              if (value != null) settings.setUndoDepth(value: value);
+              if (value != null) unawaited(settings.setUndoDepth(value: value));
             },
           ),
         ),
@@ -245,7 +247,9 @@ class _AdvancedSection extends StatelessWidget {
                 )
                 .toList(),
             onChanged: (value) {
-              if (value != null) settings.setMaxFileSize(value: value);
+              if (value != null) {
+                unawaited(settings.setMaxFileSize(value: value));
+              }
             },
           ),
         ),
