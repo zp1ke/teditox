@@ -52,6 +52,7 @@ class _AppContent extends StatefulWidget {
 }
 
 class _AppContentState extends State<_AppContent> {
+  late final GoRouter _router;
   late ThemeMode _themeMode;
   late Locale? _locale;
   late String? _fontFamily;
@@ -61,6 +62,7 @@ class _AppContentState extends State<_AppContent> {
   @override
   void initState() {
     super.initState();
+    _router = buildRouter();
     _settings = context.read<SettingsController>();
     _themeMode = _settings.themeMode;
     _locale = _settings.locale;
@@ -80,6 +82,7 @@ class _AppContentState extends State<_AppContent> {
   void dispose() {
     _settings.removeListener(_onSettingsChanged);
     _intentService.dispose();
+    _router.dispose();
     super.dispose();
   }
 
@@ -89,9 +92,7 @@ class _AppContentState extends State<_AppContent> {
 
     // Schedule the file opening after the widget tree is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final context = GoRouter.of(
-        this.context,
-      ).routerDelegate.navigatorKey.currentContext;
+      final context = _router.routerDelegate.navigatorKey.currentContext;
       if (context != null) {
         unawaited(editorController.openFileByPath(context, filePath));
       }
@@ -130,7 +131,7 @@ class _AppContentState extends State<_AppContent> {
       themeMode: _themeMode,
       theme: themeBuilder.buildLightTheme(),
       darkTheme: themeBuilder.buildDarkTheme(),
-      routerConfig: buildRouter(),
+      routerConfig: _router,
       locale: _locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

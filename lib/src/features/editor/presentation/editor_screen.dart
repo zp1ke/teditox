@@ -49,7 +49,7 @@ class _EditorScreenState extends State<EditorScreen> {
           ),
           TextButton(
             onPressed: () async {
-              final ok = await controller.save();
+              final ok = await controller.save(context);
               if (ok && context.mounted) {
                 context.pop(true);
               }
@@ -98,7 +98,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   IconButton(
                     tooltip: loc.save,
                     icon: const Icon(Icons.save),
-                    onPressed: () => ctl.save(),
+                    onPressed: () => ctl.save(context),
                   ),
                   IconButton(
                     tooltip: loc.undo,

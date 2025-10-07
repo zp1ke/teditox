@@ -27,7 +27,7 @@ class ActionsMenu extends StatelessWidget {
         if (value case _newAction) {
           unawaited(ctl.newFile(context));
         } else if (value case _saveAsAction) {
-          unawaited(ctl.saveAs());
+          unawaited(ctl.saveAs(context));
         } else {
           for (final route in AppRoute.values) {
             if (value == route.name) {

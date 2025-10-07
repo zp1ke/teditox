@@ -70,13 +70,13 @@ class SidePanel extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.save),
               title: Text(loc.save),
-              onTap: ctl.save,
+              onTap: () => ctl.save(context),
               enabled: ctl.dirty,
             ),
             ListTile(
               leading: const Icon(Icons.save_as),
               title: Text(loc.save_as),
-              onTap: ctl.saveAs,
+              onTap: () => ctl.saveAs(context),
             ),
           ],
         ),

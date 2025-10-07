@@ -117,7 +117,8 @@ class FileService {
   }
 
   /// Saves a new file with the specified content and encoding.
-  Future<String?> saveNew({
+  Future<File?> saveNew({
+    required String initialName,
     required String content,
     required String encoding,
     required LineEndingStyle lineEndingStyle,
@@ -126,14 +127,14 @@ class FileService {
     final normalized = normalizeLineEndings(content, lineEndingStyle);
     final bytes = await encodingService.encode(normalized, encoding);
 
-    final path = await FilePicker.platform.saveFile(
-      fileName: 'untitled.txt',
+    final filePath = await FilePicker.platform.saveFile(
+      fileName: initialName,
       type: FileType.custom,
       allowedExtensions: ['txt'],
       bytes: Uint8List.fromList(bytes), // Convert to Uint8List for Android/iOS
     );
 
-    return path;
+    return filePath != null ? File(filePath) : null;
   }
 
   /// Saves the content to the path with the given encoding and line ending.

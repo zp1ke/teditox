@@ -149,6 +149,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get more_actions => 'Más acciones';
 
   @override
+  String get new_file_name => 'sinnombre.txt';
+
+  @override
   String get file_operations => 'Operaciones de archivo';
 
   @override

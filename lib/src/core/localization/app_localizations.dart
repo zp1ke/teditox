@@ -374,6 +374,12 @@ abstract class AppLocalizations {
   /// **'More actions'**
   String get more_actions;
 
+  /// No description provided for @new_file_name.
+  ///
+  /// In en, this message translates to:
+  /// **'untitled.txt'**
+  String get new_file_name;
+
   /// No description provided for @file_operations.
   ///
   /// In en, this message translates to:

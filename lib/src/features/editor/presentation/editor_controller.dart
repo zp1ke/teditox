@@ -185,7 +185,7 @@ class EditorController extends ChangeNotifier {
           ),
           TextButton(
             onPressed: () async {
-              final saved = await save();
+              final saved = await save(context);
               if (saved && dialogContext.mounted) {
                 dialogContext.pop(true);
               }
@@ -296,9 +296,9 @@ class EditorController extends ChangeNotifier {
   /// Saves the current content to the existing file path.
   /// Returns true if the save was successful, false otherwise.
   /// Updates the recent files list and clears the dirty flag on success.
-  Future<bool> save() async {
+  Future<bool> save(BuildContext context) async {
     if (currentPath == null) {
-      return saveAs();
+      return saveAs(context);
     }
     try {
       await fileService.saveToPath(
@@ -339,17 +339,18 @@ class EditorController extends ChangeNotifier {
   /// Returns true if the save was successful, false otherwise.
   /// Updates the current file path, recent files list, and clears the dirty
   /// flag on success.
-  Future<bool> saveAs() async {
+  Future<bool> saveAs(BuildContext context) async {
     try {
-      final path = await fileService.saveNew(
+      final file = await fileService.saveNew(
+        initialName: AppLocalizations.of(context).new_file_name,
         content: _controller.text,
         encoding: currentEncoding,
         lineEndingStyle: lineEnding,
       );
-      if (path == null) return false;
+      if (file == null) return false;
 
+      final path = file.absolute.path;
       // Verify the file was actually created and get its actual size
-      final file = File(path);
       if (!file.existsSync()) {
         logger.w('File was not created successfully: $path');
         return false;

@@ -149,6 +149,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get more_actions => 'More actions';
 
   @override
+  String get new_file_name => 'untitled.txt';
+
+  @override
   String get file_operations => 'File Operations';
 
   @override
