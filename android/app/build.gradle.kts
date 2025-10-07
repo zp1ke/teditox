@@ -13,7 +13,7 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-val javaVersion = JavaVersion.VERSION_1_8
+val javaVersion = JavaVersion.VERSION_11
 
 android {
     namespace = "org.zp1ke.teditox"
@@ -40,10 +40,10 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
+            keyAlias = keystoreProperties["keyAlias"] as? String
+            keyPassword = keystoreProperties["keyPassword"] as? String
             storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String
+            storePassword = keystoreProperties["storePassword"] as? String
         }
     }
 
