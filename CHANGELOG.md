@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improved line number synchronization and display accuracy
 - Enhanced text area focus management for better user experience
-- Standardized Java version to 1.8 across Android build configuration
+- Standardized Java version to 11 across Android build configuration
 
 ### Fixed
 - Line number alignment issues during scrolling
