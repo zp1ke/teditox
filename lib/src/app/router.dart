@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
+import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_screen.dart';
 import 'package:teditox/src/features/recent/presentation/recent_screen.dart';
@@ -46,11 +48,16 @@ enum AppRoute {
 /// Builds the application router with defined routes.
 GoRouter buildRouter() {
   return GoRouter(
+    initialLocation: AppRoute.editor.route,
+    // Disable deep linking to prevent content:// URIs from being processed as routes
     routes: [
       GoRoute(
         path: AppRoute.editor.route,
         name: AppRoute.editor.name,
-        builder: (context, state) => const EditorScreen(),
+        builder: (context, state) {
+          sl<Logger>().d('Building editor screen for route: ${state.uri}');
+          return const EditorScreen();
+        },
       ),
       GoRoute(
         path: AppRoute.settings.route,
@@ -68,5 +75,12 @@ GoRouter buildRouter() {
         builder: (context, state) => const AboutScreen(),
       ),
     ],
+    // Handle invalid routes by showing editor screen
+    errorBuilder: (context, state) {
+      sl<Logger>().w(
+        'Error route detected: ${state.uri}, showing editor screen',
+      );
+      return const EditorScreen();
+    },
   );
 }

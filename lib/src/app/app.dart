@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
@@ -87,15 +88,35 @@ class _AppContentState extends State<_AppContent> {
   }
 
   void _handleIncomingFile(String filePath) {
+    sl<Logger>().i('Received file intent: $filePath');
     // Get the editor controller and open the file
     final editorController = sl<EditorController>();
 
-    // Schedule the file opening after the widget tree is built
+    // Schedule the file opening after the widget tree is fully built
+    // Use multiple callbacks to ensure everything is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final context = _router.routerDelegate.navigatorKey.currentContext;
-      if (context != null) {
-        unawaited(editorController.openFileByPath(context, filePath));
-      }
+      sl<Logger>().d('First postFrameCallback - ensuring router is ready');
+
+      // Give the router time to initialize and render the initial screen
+      Future.delayed(const Duration(milliseconds: 500), () {
+        sl<Logger>().d('Attempting to open file after delay');
+        final context = mounted
+            ? this.context
+            : _router.routerDelegate.navigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          sl<Logger>().d('Context available, opening file: $filePath');
+          // Skip confirmation when opening from external intent at startup
+          unawaited(
+            editorController.openFileByPath(
+              context,
+              filePath,
+              skipConfirmation: true,
+            ),
+          );
+        } else {
+          sl<Logger>().e('Context not available, cannot open file');
+        }
+      });
     });
   }
 

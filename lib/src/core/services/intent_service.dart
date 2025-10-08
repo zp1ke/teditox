@@ -50,12 +50,28 @@ class IntentService {
     void Function(String filePath) onFileReceived,
   ) {
     for (final file in files) {
-      if (_isTextFile(file.path)) {
-        logger.i('Opening text file: ${file.path}');
-        onFileReceived(file.path);
+      final path = file.path;
+      logger.d('Shared file path: $path');
+
+      // Check if it's a text file based on the path or MIME type
+      if (_isTextFile(path) || _isTextMimeType(file.mimeType)) {
+        logger.i('Opening text file: $path (type: ${file.mimeType})');
+        onFileReceived(path);
         break; // Only open the first text file
+      } else {
+        logger.w('Skipping non-text file: $path (type: ${file.mimeType})');
       }
     }
+  }
+
+  /// Checks if the MIME type indicates a text file.
+  bool _isTextMimeType(String? mimeType) {
+    if (mimeType == null) return false;
+    return mimeType.startsWith('text/') ||
+        mimeType == 'application/json' ||
+        mimeType == 'application/xml' ||
+        mimeType == 'application/javascript' ||
+        mimeType == 'application/x-sh';
   }
 
   /// Checks if the file is a text file based on its extension.

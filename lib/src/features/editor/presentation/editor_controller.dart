@@ -252,9 +252,18 @@ class EditorController extends ChangeNotifier {
   /// Returns true if a file was successfully opened, false if cancelled or
   /// on error. Automatically detects encoding and line endings from the
   /// opened file.
-  Future<bool> openFileByPath(BuildContext context, String path) async {
+  ///
+  /// Set [skipConfirmation] to true to bypass the unsaved changes check.
+  /// This is useful when opening files from external intents at app startup.
+  Future<bool> openFileByPath(
+    BuildContext context,
+    String path, {
+    bool skipConfirmation = false,
+  }) async {
     // Check for unsaved changes before opening a new file
-    if (!await _confirmDiscardIfNeeded(context)) return false;
+    if (!skipConfirmation && !await _confirmDiscardIfNeeded(context)) {
+      return false;
+    }
 
     try {
       final res = await fileService.openByPath(

@@ -81,18 +81,57 @@ class FileService {
   }
 
   /// Opens a file directly by its path.
+  /// Supports both regular file paths and Android content:// URIs.
   Future<FileOpenResult?> openByPath({
     required String path,
     String? forcedEncoding,
     int? maxBytes,
   }) async {
     try {
-      final file = File(path);
-      if (!file.existsSync()) {
-        throw FileSystemException('File does not exist', path);
+      final bytes = <int>[];
+      var finalPath = path;
+
+      // Handle Android content:// URIs
+      if (path.startsWith('content://')) {
+        logger.d('Handling content URI: $path');
+
+        // For content URIs, we need to read the file and copy it
+        // to a temp location because we can't directly work with
+        // content:// URIs as File paths
+        final file = File(path);
+
+        try {
+          // Try to read the bytes directly - this works on Android
+          final contentBytes = await file.readAsBytes();
+          bytes.addAll(contentBytes);
+          logger.d('Read ${bytes.length} bytes from content URI');
+        } on FileSystemException catch (e) {
+          logger.e('Failed to read from content URI: $e');
+          rethrow;
+        }
+
+        // Extract filename from the content URI if possible
+        final pathSegments = Uri.parse(path).pathSegments;
+        final filename = pathSegments.isNotEmpty
+            ? pathSegments.last
+            : 'shared_file.txt';
+
+        // Copy to a temporary file so we have a real path
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/$filename');
+        await tempFile.writeAsBytes(bytes);
+        finalPath = tempFile.path;
+        logger.d('Copied content to temporary file: $finalPath');
+      } else {
+        // Regular file path
+        final file = File(path);
+        if (!file.existsSync()) {
+          throw FileSystemException('File does not exist', path);
+        }
+        bytes.addAll(await file.readAsBytes());
+        finalPath = path;
       }
 
-      final bytes = await file.readAsBytes();
       if (maxBytes != null && bytes.length > maxBytes) {
         throw const FileSystemException('File exceeds size threshold');
       }
@@ -105,7 +144,7 @@ class FileService {
 
       return FileOpenResult(
         content: content,
-        path: path,
+        path: finalPath,
         encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
         lineEndingStyle: le,
         bytes: bytes,
