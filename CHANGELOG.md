@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.3+4] - 2025-10-09
+## [0.1.4+5] - 2025-10-09
 
 ### Added
 - External file open intent handling for Android
