@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **v0.1.3+4** (Current) - External file handling, UI improvements
+- **v0.1.3+4** - External file handling, UI improvements
 - **v0.1.2+3** - Play Store assets, dependency updates
 - **v0.1.1+2** - Navigation fixes, privacy policy, CI/CD
 - **v0.1.0+1** - Initial release with core features
 
 ---
 
-## [0.1.3+4] - 2025-10-05
+## [0.1.3+4] - 2025-10-09
 
 ### Added
 - External file open intent handling for Android
