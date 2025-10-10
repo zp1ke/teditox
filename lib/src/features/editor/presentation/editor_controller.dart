@@ -72,6 +72,10 @@ class EditorController extends ChangeNotifier {
   /// The current file path, null for new/unsaved files.
   String? currentPath;
 
+  /// Whether the current file was opened from a content:// URI.
+  /// Files from content URIs are temporary and cannot be saved directly.
+  bool _isFromContentUri = false;
+
   /// The text encoding of the current file.
   String currentEncoding = 'utf-8';
 
@@ -227,6 +231,7 @@ class EditorController extends ChangeNotifier {
       );
       if (res == null) return false;
       currentPath = res.path;
+      _isFromContentUri = res.isContentUri; // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
@@ -236,15 +241,20 @@ class EditorController extends ChangeNotifier {
       );
       dirty = false;
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
-      await recentFiles.addOrUpdate(
-        RecentFileEntry(
-          path: res.path,
-          lastOpened: DateTime.now(),
-          fileSize: res.bytes.length,
-          encoding: currentEncoding,
-          lineEnding: lineEnding.name,
-        ),
-      );
+
+      // Don't add content URI files to recent files since they're temporary
+      if (!res.isContentUri) {
+        await recentFiles.addOrUpdate(
+          RecentFileEntry(
+            path: res.path,
+            lastOpened: DateTime.now(),
+            fileSize: res.bytes.length,
+            encoding: currentEncoding,
+            lineEnding: lineEnding.name,
+          ),
+        );
+      }
+
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
@@ -283,6 +293,7 @@ class EditorController extends ChangeNotifier {
       if (res == null) return false;
 
       currentPath = res.path;
+      _isFromContentUri = res.isContentUri; // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
@@ -292,15 +303,20 @@ class EditorController extends ChangeNotifier {
       );
       dirty = false;
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
-      await recentFiles.addOrUpdate(
-        RecentFileEntry(
-          path: res.path,
-          lastOpened: DateTime.now(),
-          fileSize: res.bytes.length,
-          encoding: currentEncoding,
-          lineEnding: lineEnding.name,
-        ),
-      );
+
+      // Don't add content URI files to recent files since they're temporary
+      if (!res.isContentUri) {
+        await recentFiles.addOrUpdate(
+          RecentFileEntry(
+            path: res.path,
+            lastOpened: DateTime.now(),
+            fileSize: res.bytes.length,
+            encoding: currentEncoding,
+            lineEnding: lineEnding.name,
+          ),
+        );
+      }
+
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
@@ -316,10 +332,15 @@ class EditorController extends ChangeNotifier {
   /// Saves the current content to the existing file path.
   /// Returns true if the save was successful, false otherwise.
   /// Updates the recent files list and clears the dirty flag on success.
+  ///
+  /// For files opened from content:// URIs, this will redirect to "Save As"
+  /// since content URIs are temporary and cannot be written to directly.
   Future<bool> save(BuildContext context) async {
-    if (currentPath == null) {
+    // Files from content URIs must use "Save As" since they're temporary
+    if (currentPath == null || _isFromContentUri) {
       return saveAs(context);
     }
+
     try {
       await fileService.saveToPath(
         path: currentPath!,
@@ -370,13 +391,32 @@ class EditorController extends ChangeNotifier {
       if (file == null) return false;
 
       final path = file.absolute.path;
-      // Verify the file was actually created and get its actual size
-      if (!file.existsSync()) {
-        logger.w('File was not created successfully: $path');
-        return false;
-      }
 
-      final actualFileSize = await file.length();
+      // Check if this is a document/content URI path
+      final isDocumentUri =
+          path.startsWith('/document/') ||
+          path.startsWith('content://') ||
+          path.contains('/cache/') ||
+          path.contains('/tmp/');
+
+      // For document URIs, we can't verify existence or get file size
+      // but if saveFile returned a path, the save was successful
+      int fileSize;
+      if (isDocumentUri) {
+        // Estimate file size from content length
+        fileSize = _controller.text.length;
+        logger.d('Saved to document URI: $path (estimated size: $fileSize)');
+        // Mark as content URI so future saves also prompt for location
+        _isFromContentUri = true;
+      } else {
+        // Real file path - verify it exists and get actual size
+        if (!file.existsSync()) {
+          logger.w('File was not created successfully: $path');
+          return false;
+        }
+        fileSize = await file.length();
+        _isFromContentUri = false;
+      }
 
       currentPath = path;
       dirty = false;
@@ -384,16 +424,18 @@ class EditorController extends ChangeNotifier {
         UndoEntry(_controller.text, _controller.selection),
       );
 
-      // Only add to recent files if the file was actually saved successfully
-      await recentFiles.addOrUpdate(
-        RecentFileEntry(
-          path: path,
-          lastOpened: DateTime.now(),
-          fileSize: actualFileSize, // Use actual file size from disk
-          encoding: currentEncoding,
-          lineEnding: lineEnding.name,
-        ),
-      );
+      // Only add to recent files if it's not a document URI (temporary)
+      if (!isDocumentUri) {
+        await recentFiles.addOrUpdate(
+          RecentFileEntry(
+            path: path,
+            lastOpened: DateTime.now(),
+            fileSize: fileSize,
+            encoding: currentEncoding,
+            lineEnding: lineEnding.name,
+          ),
+        );
+      }
 
       await recoveryService.clear(fileService);
       notifyListeners();

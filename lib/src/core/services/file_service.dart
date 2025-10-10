@@ -16,6 +16,7 @@ class FileOpenResult {
     required this.encoding,
     required this.lineEndingStyle,
     required this.bytes,
+    this.isContentUri = false,
   });
 
   /// The content of the file.
@@ -32,6 +33,10 @@ class FileOpenResult {
 
   /// The raw bytes of the file.
   final List<int> bytes;
+
+  /// Whether this file was opened from a content:// URI (temporary access).
+  /// These files should use "Save As" instead of direct save.
+  final bool isContentUri;
 }
 
 /// Service for handling file operations.
@@ -71,12 +76,25 @@ class FileService {
       forcedEncoding: forcedEncoding,
     );
     final le = detectLineEndings(content);
+
+    // Check if the path is a content URI or temporary path
+    // File picker on Android often returns content:// URIs or cache paths
+    // that don't point to the actual file location
+    final path = file.path ?? '';
+    final isContentUri =
+        path.startsWith('content://') ||
+        path.contains('/cache/') ||
+        path.contains('/tmp/');
+
+    logger.d('Picked file path: $path (isContentUri: $isContentUri)');
+
     return FileOpenResult(
       content: content,
-      path: file.path!,
+      path: path,
       encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
       lineEndingStyle: le,
       bytes: bytes,
+      isContentUri: isContentUri, // Mark as content URI if temporary
     );
   }
 
@@ -148,6 +166,7 @@ class FileService {
         encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
         lineEndingStyle: le,
         bytes: bytes,
+        isContentUri: path.startsWith('content://'), // Track content URI status
       );
     } catch (e) {
       logger.e('Failed to open file at path $path: $e');

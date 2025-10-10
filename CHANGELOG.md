@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.4+5] - 2025-10-10
+## [0.1.4+5] - Current
 
 ### Changed
 - Updated flutter version to 3.35.6
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Editor controller triggering unnecessary rebuilds on focus changes instead of text changes
 - Performance issues from excessive ChangeNotifier notifications
+- Saving issue where content was not persisted to disk due to incorrect file picker path handling
 
 ## [0.1.3+4] - 2025-10-09
 
