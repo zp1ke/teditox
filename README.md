@@ -2,6 +2,8 @@
 
 A simple, modular Flutter text editor.
 
+[![CI](https://github.com/zp1ke/teditox/actions/workflows/ci.yml/badge.svg)](https://github.com/zp1ke/teditox/actions/workflows/ci.yml)
+
 ## Features
 
 ### Core Functionality
@@ -55,7 +57,7 @@ A simple, modular Flutter text editor.
 ## Development
 
 ### Prerequisites
-- Flutter 3.35.5+
+- Flutter 3.35.6
 - Dart SDK 3.9.0+
 
 ### Setup
