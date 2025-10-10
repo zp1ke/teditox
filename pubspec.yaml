@@ -5,7 +5,7 @@ version: 0.1.4+5
 
 environment:
   sdk: ^3.9.0
-  flutter: 3.35.5
+  flutter: 3.35.6
 
 dependencies:
   charset_converter: ^2.3.0

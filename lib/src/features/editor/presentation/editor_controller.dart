@@ -40,6 +40,7 @@ class EditorController extends ChangeNotifier {
     required this.logger,
   }) {
     _controller.addListener(_onTextChanged);
+    _previousText = _controller.text;
     _recoveryTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       _maybeSnapshot();
     });
@@ -61,6 +62,7 @@ class EditorController extends ChangeNotifier {
   final Logger logger;
 
   final TextEditingController _controller = TextEditingController();
+  String _previousText = '';
 
   /// The underlying text editing controller.
   ///
@@ -90,9 +92,14 @@ class EditorController extends ChangeNotifier {
   Timer? _recoveryTimer;
 
   void _onTextChanged() {
-    dirty = true;
-    _scheduleCoalescedPush();
-    notifyListeners();
+    // Only notify and mark dirty if the actual text content changed
+    // (not just selection or focus changes)
+    if (_controller.text != _previousText) {
+      _previousText = _controller.text;
+      dirty = true;
+      _scheduleCoalescedPush();
+      notifyListeners();
+    }
   }
 
   void _scheduleCoalescedPush() {
@@ -148,6 +155,7 @@ class EditorController extends ChangeNotifier {
     _controller
       ..text = entry.text
       ..selection = entry.selection;
+    _previousText = entry.text;
     if (markDirty) {
       dirty = true;
     }
@@ -162,6 +170,7 @@ class EditorController extends ChangeNotifier {
     currentEncoding = settings.defaultEncoding;
     lineEnding = LineEndingStyle.lf;
     _controller.clear();
+    _previousText = '';
     dirty = false;
     _pushInitial(UndoEntry('', const TextSelection.collapsed(offset: 0)));
     await recoveryService.clear(fileService);
@@ -221,6 +230,7 @@ class EditorController extends ChangeNotifier {
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
+      _previousText = res.content;
       _controller.selection = TextSelection.collapsed(
         offset: _controller.text.length,
       );
@@ -276,6 +286,7 @@ class EditorController extends ChangeNotifier {
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
+      _previousText = res.content;
       _controller.selection = TextSelection.collapsed(
         offset: _controller.text.length,
       );
@@ -418,6 +429,7 @@ class EditorController extends ChangeNotifier {
     if (snap == null) return;
     // Simple heuristic: if snapshot is newer than nothing.
     _controller.text = snap.content;
+    _previousText = snap.content;
     _controller.selection = TextSelection.collapsed(
       offset: _controller.text.length,
     );
