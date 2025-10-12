@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Recent files list now displays actual filenames instead of document identifiers for files opened through Storage Access Framework
 - Files saved via Storage Access Framework (SAF) now correctly show their actual names in all contexts instead of document identifiers
 - License registry asset paths for bundled fonts to ensure proper attribution in app settings
+- Files not being added to recent files list when opened or saved - all file operations now properly track recently accessed files
 
 ## [0.1.4+5] - 2025-10-10
 

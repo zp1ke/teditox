@@ -229,19 +229,17 @@ class EditorController extends ChangeNotifier {
       dirty = false;
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
 
-      // Don't add content URI files to recent files since they're temporary
-      if (!res.isContentUri) {
-        await recentFiles.addOrUpdate(
-          RecentFileEntry(
-            path: res.path,
-            lastOpened: DateTime.now(),
-            fileSize: res.bytes.length,
-            encoding: currentEncoding,
-            lineEnding: lineEnding.name,
-            displayName: _displayName,
-          ),
-        );
-      }
+      // Add to recent files with display name
+      await recentFiles.addOrUpdate(
+        RecentFileEntry(
+          path: res.path,
+          lastOpened: DateTime.now(),
+          fileSize: res.bytes.length,
+          encoding: currentEncoding,
+          lineEnding: lineEnding.name,
+          displayName: _displayName,
+        ),
+      );
 
       await recoveryService.clear(fileService);
       notifyListeners();
@@ -293,19 +291,17 @@ class EditorController extends ChangeNotifier {
       dirty = false;
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
 
-      // Don't add content URI files to recent files since they're temporary
-      if (!res.isContentUri) {
-        await recentFiles.addOrUpdate(
-          RecentFileEntry(
-            path: res.path,
-            lastOpened: DateTime.now(),
-            fileSize: res.bytes.length,
-            encoding: currentEncoding,
-            lineEnding: lineEnding.name,
-            displayName: _displayName,
-          ),
-        );
-      }
+      // Add to recent files with display name
+      await recentFiles.addOrUpdate(
+        RecentFileEntry(
+          path: res.path,
+          lastOpened: DateTime.now(),
+          fileSize: res.bytes.length,
+          encoding: currentEncoding,
+          lineEnding: lineEnding.name,
+          displayName: _displayName,
+        ),
+      );
 
       await recoveryService.clear(fileService);
       notifyListeners();
@@ -393,30 +389,20 @@ class EditorController extends ChangeNotifier {
         UndoEntry(_controller.text, _controller.selection),
       );
 
-      // Only add to recent files if it's not a content URI
-      // Content URIs are temporary identifiers and shouldn't be tracked
-      if (!result.isContentUri) {
-        // For real file paths, get the actual file size
-        final file = File(result.path);
-        final fileSize = file.existsSync()
-            ? await file.length()
-            : _controller.text.length;
+      // Add to recent files with display name
+      // Estimate file size from content length
+      final fileSize = _controller.text.length;
 
-        await recentFiles.addOrUpdate(
-          RecentFileEntry(
-            path: result.path,
-            lastOpened: DateTime.now(),
-            fileSize: fileSize,
-            encoding: currentEncoding,
-            lineEnding: lineEnding.name,
-            displayName: _displayName,
-          ),
-        );
-      } else {
-        logger.d(
-          'Saved to content URI: ${result.path} - not adding to recent files',
-        );
-      }
+      await recentFiles.addOrUpdate(
+        RecentFileEntry(
+          path: result.path,
+          lastOpened: DateTime.now(),
+          fileSize: fileSize,
+          encoding: currentEncoding,
+          lineEnding: lineEnding.name,
+          displayName: _displayName,
+        ),
+      );
 
       await recoveryService.clear(fileService);
       notifyListeners();
