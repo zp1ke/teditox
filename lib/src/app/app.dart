@@ -59,10 +59,12 @@ class _AppContentState extends State<_AppContent> {
   late String? _fontFamily;
   late SettingsController _settings;
   late IntentService _intentService;
+  late Logger _logger;
 
   @override
   void initState() {
     super.initState();
+    _logger = sl<Logger>();
     _router = buildRouter();
     _settings = context.read<SettingsController>();
     _themeMode = _settings.themeMode;
@@ -88,36 +90,45 @@ class _AppContentState extends State<_AppContent> {
   }
 
   void _handleIncomingFile(String filePath) {
-    sl<Logger>().i('Received file intent: $filePath');
-    // Get the editor controller and open the file
-    final editorController = sl<EditorController>();
+    _logger.i('Received file intent: $filePath');
 
-    // Schedule the file opening after the widget tree is fully built
-    // Use multiple callbacks to ensure everything is ready
+    // Schedule the file opening after the first frame is rendered
+    // This ensures the widget tree is fully built and router is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      sl<Logger>().d('First postFrameCallback - ensuring router is ready');
-
-      // Give the router time to initialize and render the initial screen
-      Future.delayed(const Duration(milliseconds: 500), () {
-        sl<Logger>().d('Attempting to open file after delay');
-        final context = mounted
-            ? this.context
-            : _router.routerDelegate.navigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          sl<Logger>().d('Context available, opening file: $filePath');
-          // Skip confirmation when opening from external intent at startup
-          unawaited(
-            editorController.openFileByPath(
-              context,
-              filePath,
-              skipConfirmation: true,
-            ),
-          );
-        } else {
-          sl<Logger>().e('Context not available, cannot open file');
-        }
-      });
+      _logger.d('PostFrameCallback triggered, opening file');
+      _openFileWhenReady(filePath);
     });
+  }
+
+  /// Gets a valid context for navigation operations.
+  BuildContext? get _navigatorContext {
+    if (mounted) return context;
+    return _router.routerDelegate.navigatorKey.currentContext;
+  }
+
+  /// Opens the file once the router and context are ready.
+  void _openFileWhenReady(String filePath) {
+    final navContext = _navigatorContext;
+
+    if (navContext != null && navContext.mounted) {
+      _logger.d('Opening file: $filePath');
+      final editorController = sl<EditorController>();
+
+      // Skip confirmation when opening from external intent at startup
+      unawaited(
+        editorController.openFileByPath(
+          navContext,
+          filePath,
+          skipConfirmation: true,
+        ),
+      );
+    } else {
+      _logger.w('Context not ready yet, retrying...');
+      // If context is not ready, wait for next frame and try again
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openFileWhenReady(filePath);
+      });
+    }
   }
 
   void _onSettingsChanged() {

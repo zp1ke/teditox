@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
 import 'package:teditox/src/core/utils/line_endings.dart';
+import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// Represents a single undo/redo state entry.
@@ -188,35 +188,18 @@ class EditorController extends ChangeNotifier {
     if (!dirty) return true; // No unsaved changes, proceed
 
     // Show confirmation dialog for unsaved changes
-    final loc = AppLocalizations.of(context);
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(loc.unsaved_changes),
-        content: Text(loc.unsaved_changes_message),
-        actions: [
-          TextButton(
-            onPressed: () => dialogContext.pop(false),
-            child: Text(loc.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              final saved = await save(context);
-              if (saved && dialogContext.mounted) {
-                dialogContext.pop(true);
-              }
-            },
-            child: Text(loc.save),
-          ),
-          TextButton(
-            onPressed: () => dialogContext.pop(true),
-            child: Text(loc.discard),
-          ),
-        ],
-      ),
-    );
+    final action = await UnsavedChangesDialog.show(context);
+    if (!context.mounted) return false;
 
-    return result ?? false;
+    switch (action) {
+      case UnsavedChangesAction.save:
+        return save(context);
+      case UnsavedChangesAction.discard:
+        return true;
+      case UnsavedChangesAction.cancel:
+      case null:
+        return false;
+    }
   }
 
   /// Opens a file using the file picker dialog.

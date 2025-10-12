@@ -16,7 +16,7 @@ Future<void> main() async {
   for (final font in editorFonts) {
     LicenseRegistry.addLicense(() async* {
       final license = await rootBundle.loadString(
-        'fonts/${font.replaceAll(' ', '_')}/OFL.txt',
+        'assets/fonts/${font.replaceAll(' ', '_')}/OFL.txt',
       );
       yield LicenseEntryWithLineBreaks([font], license);
     });

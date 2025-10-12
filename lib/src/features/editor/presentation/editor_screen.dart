@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/actions_menu.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/editor_text_area.dart';
@@ -36,34 +36,19 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Future<bool> _handleBack() async {
     if (!controller.dirty) return true;
-    final loc = AppLocalizations.of(context);
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(loc.unsaved_changes),
-        content: Text(loc.unsaved_changes_message),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(false),
-            child: Text(loc.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              final ok = await controller.save(context);
-              if (ok && context.mounted) {
-                context.pop(true);
-              }
-            },
-            child: Text(loc.save),
-          ),
-          TextButton(
-            onPressed: () => context.pop(true),
-            child: Text(loc.discard),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
+
+    final action = await UnsavedChangesDialog.show(context);
+    if (!mounted) return false;
+
+    switch (action) {
+      case UnsavedChangesAction.save:
+        return controller.save(context);
+      case UnsavedChangesAction.discard:
+        return true;
+      case UnsavedChangesAction.cancel:
+      case null:
+        return false;
+    }
   }
 
   @override
