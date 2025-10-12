@@ -7,6 +7,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/utils/line_endings.dart';
 
+/// Allowed file extensions for opening and saving files.
+const fileAllowedExtensions = ['txt', 'text', 'log', 'md', 'json', 'csv', ''];
+
 /// Result of a file open operation.
 class FileOpenResult {
   /// Creates a new instance of [FileOpenResult].
@@ -60,11 +63,13 @@ class FileService {
   }) async {
     final res = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['txt', 'text', 'log', 'md', 'csv', ''],
+      allowedExtensions: fileAllowedExtensions,
       withData: true,
     );
-    if (res == null || res.files.isEmpty) return null;
-    final file = res.files.first;
+    if (res == null || res.files.isEmpty) {
+      return null;
+    }
+    final file = res.files.single;
     final bytes =
         file.bytes ??
         await File(file.path!).readAsBytes(); // fallback for large
@@ -181,17 +186,18 @@ class FileService {
     required String encoding,
     required LineEndingStyle lineEndingStyle,
   }) async {
-    // Prepare the content with proper line endings and encoding
-    final normalized = normalizeLineEndings(content, lineEndingStyle);
-    final bytes = await encodingService.encode(normalized, encoding);
-
+    final bytes = await _bytes(
+      content: content,
+      lineEndingStyle: lineEndingStyle,
+      encoding: encoding,
+    );
     final filePath = await FilePicker.platform.saveFile(
       fileName: initialName,
       type: FileType.custom,
-      allowedExtensions: ['txt'],
-      bytes: Uint8List.fromList(bytes), // Convert to Uint8List for Android/iOS
+      allowedExtensions: fileAllowedExtensions,
+      bytes: Uint8List.fromList(bytes),
     );
-
+    // TODO: fix returned path different from actual saved file path on Android
     return filePath != null ? File(filePath) : null;
   }
 
@@ -202,11 +208,24 @@ class FileService {
     required String encoding,
     required LineEndingStyle lineEndingStyle,
   }) async {
-    final normalized = normalizeLineEndings(content, lineEndingStyle);
-    final bytes = await encodingService.encode(normalized, encoding);
+    final bytes = await _bytes(
+      content: content,
+      lineEndingStyle: lineEndingStyle,
+      encoding: encoding,
+    );
     final file = File(path);
     await file.writeAsBytes(bytes, flush: true);
     return path;
+  }
+
+  Future<List<int>> _bytes({
+    required String content,
+    required LineEndingStyle lineEndingStyle,
+    required String encoding,
+  }) async {
+    // Prepare the content with proper line endings and encoding
+    final normalized = normalizeLineEndings(content, lineEndingStyle);
+    return await encodingService.encode(normalized, encoding);
   }
 
   /// Gets the directory for caching files.

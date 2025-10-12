@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **v0.1.5+6** Current
 - **v0.1.4+5** - File handling fixes
 - **v0.1.3+4** - External file handling, UI improvements
 - **v0.1.2+3** - Play Store assets, dependency updates
@@ -14,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **v0.1.0+1** - Initial release with core features
 
 ---
+
+## [0.1.5+6] - Current
 
 ## [0.1.4+5] - 2025-10-10
 

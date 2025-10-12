@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:logger/logger.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:teditox/src/core/services/file_service.dart'
+    show fileAllowedExtensions;
 
 /// Service for handling incoming file intents from Android.
 class IntentService {
@@ -77,42 +79,7 @@ class IntentService {
   /// Checks if the file is a text file based on its extension.
   bool _isTextFile(String filePath) {
     final extension = filePath.toLowerCase().split('.').last;
-    const textExtensions = [
-      'txt',
-      'text',
-      'log',
-      'md',
-      'markdown',
-      'json',
-      'xml',
-      'csv',
-      'js',
-      'ts',
-      'dart',
-      'java',
-      'kt',
-      'py',
-      'cpp',
-      'c',
-      'h',
-      'html',
-      'css',
-      'php',
-      'rb',
-      'go',
-      'rs',
-      'swift',
-      'sh',
-      'bat',
-      'ps1',
-      'yaml',
-      'yml',
-      'toml',
-      'ini',
-      'cfg',
-      'conf',
-    ];
-    return textExtensions.contains(extension);
+    return fileAllowedExtensions.contains(extension);
   }
 
   /// Disposes the intent service and cancels subscriptions.
