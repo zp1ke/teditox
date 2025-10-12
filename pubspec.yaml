@@ -1,7 +1,7 @@
 name: teditox
 description: Simple plain text editor.
 publish_to: "none"
-version: 0.1.5+6
+version: 0.1.6+7
 
 environment:
   sdk: ^3.9.0

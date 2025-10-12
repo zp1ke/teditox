@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **v0.1.6+7** Current
 - **v0.1.5+6** - Storage Access Framework (SAF) integration, recent files redesign
 - **v0.1.4+5** - File handling fixes
 - **v0.1.3+4** - External file handling, UI improvements
@@ -15,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **v0.1.0+1** - Initial release with core features
 
 ---
+
+## [0.1.6+7] - Current
 
 ## [0.1.5+6] - 2025-10-12
 
