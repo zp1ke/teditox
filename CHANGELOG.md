@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.5+6] - Current
+## [0.1.5+6] - 2025-10-12
 
 ### Changed
 - Replaced file_picker with native Android Storage Access Framework (SAF) implementation for direct file operations
