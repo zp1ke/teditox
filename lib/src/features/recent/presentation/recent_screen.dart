@@ -111,7 +111,7 @@ class _RecentScreenState extends State<RecentScreen> {
                     child: Icon(Icons.delete, color: colorScheme.onError),
                   ),
                   child: ListTile(
-                    title: Text(e.path.split('/').last),
+                    title: Text(e.displayName ?? e.path.split('/').last),
                     subtitle: Text(e.path),
                     trailing: Text(formatBytes(e.fileSize)),
                     onTap: () async {

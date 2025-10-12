@@ -25,8 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Incorrect filename display showing content URI identifier (e.g., "14") instead of actual filename when opening or saving files on Android
 - File path handling where content URIs were not properly resolved to display names
-- Files saved to Downloads folder now correctly show their actual names instead of document identifiers
-- License registry for bundled fonts to ensure proper attribution in app settings
+- Recent files list now displays actual filenames instead of document identifiers for files opened through Storage Access Framework
+- Files saved via Storage Access Framework (SAF) now correctly show their actual names in all contexts instead of document identifiers
+- License registry asset paths for bundled fonts to ensure proper attribution in app settings
 
 ## [0.1.4+5] - 2025-10-10
 

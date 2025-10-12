@@ -11,6 +11,7 @@ class RecentFileEntry {
     required this.fileSize,
     required this.encoding,
     required this.lineEnding,
+    this.displayName,
   });
 
   /// Creates a new recent file entry from a JSON map.
@@ -21,6 +22,7 @@ class RecentFileEntry {
         fileSize: json['s'] as int,
         encoding: json['e'] as String,
         lineEnding: json['l'] as String,
+        displayName: json['d'] as String?,
       );
 
   /// The file path of the recent file.
@@ -38,6 +40,9 @@ class RecentFileEntry {
   /// The line ending style of the recent file.
   final String lineEnding;
 
+  /// The display name of the file (actual filename).
+  final String? displayName;
+
   /// Converts the recent file entry to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
     'p': path,
@@ -45,6 +50,7 @@ class RecentFileEntry {
     's': fileSize,
     'e': encoding,
     'l': lineEnding,
+    if (displayName != null) 'd': displayName,
   };
 }
 

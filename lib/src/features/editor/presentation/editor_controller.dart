@@ -238,6 +238,7 @@ class EditorController extends ChangeNotifier {
             fileSize: res.bytes.length,
             encoding: currentEncoding,
             lineEnding: lineEnding.name,
+            displayName: _displayName,
           ),
         );
       }
@@ -301,6 +302,7 @@ class EditorController extends ChangeNotifier {
             fileSize: res.bytes.length,
             encoding: currentEncoding,
             lineEnding: lineEnding.name,
+            displayName: _displayName,
           ),
         );
       }
@@ -354,6 +356,7 @@ class EditorController extends ChangeNotifier {
             fileSize: fileSize,
             encoding: currentEncoding,
             lineEnding: lineEnding.name,
+            displayName: _displayName,
           ),
         );
       }
@@ -406,6 +409,7 @@ class EditorController extends ChangeNotifier {
             fileSize: fileSize,
             encoding: currentEncoding,
             lineEnding: lineEnding.name,
+            displayName: _displayName,
           ),
         );
       } else {
