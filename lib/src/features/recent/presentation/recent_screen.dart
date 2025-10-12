@@ -6,6 +6,7 @@ import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/utils/byte_size_formatter.dart';
 import 'package:teditox/src/core/utils/context.dart';
+import 'package:teditox/src/core/utils/icons.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
 /// Screen that displays recently opened files.
@@ -97,6 +98,7 @@ class _RecentScreenState extends State<RecentScreen> {
               ),
             )
           : ListView.builder(
+              padding: const EdgeInsets.all(8),
               itemCount: entries.length,
               itemBuilder: (context, i) {
                 final e = entries[i];
@@ -105,43 +107,109 @@ class _RecentScreenState extends State<RecentScreen> {
                   direction: DismissDirection.endToStart,
                   onDismissed: (_) => _remove(e.path),
                   background: Container(
-                    color: colorScheme.error,
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.error,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Icon(Icons.delete, color: colorScheme.onError),
                   ),
-                  child: ListTile(
-                    title: Text(e.displayName ?? e.path.split('/').last),
-                    subtitle: Text(e.path),
-                    trailing: Text(formatBytes(e.fileSize)),
-                    onTap: () async {
-                      final controller = sl<EditorController>();
-                      final success = await controller.openFileByPath(
-                        context,
-                        e.path,
-                      );
-                      if (context.mounted) {
-                        if (success) {
-                          context.navigate(AppRoute.editor, cleanStack: true);
-                        } else {
-                          await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text(loc.open_file_error),
-                              content: Text(
-                                loc.open_file_error_message(e.path),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => context.pop(false),
-                                  child: Text(loc.ok),
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    elevation: 2,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () async {
+                        final controller = sl<EditorController>();
+                        final success = await controller.openFileByPath(
+                          context,
+                          e.path,
+                        );
+                        if (context.mounted) {
+                          if (success) {
+                            context.navigate(AppRoute.editor, cleanStack: true);
+                          } else {
+                            await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text(loc.open_file_error),
+                                content: Text(
+                                  loc.open_file_error_message(e.path),
                                 ),
-                              ],
-                            ),
-                          );
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => context.pop(false),
+                                    child: Text(loc.ok),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
                         }
-                      }
-                    },
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(
+                              e.path.toIcon,
+                              size: 40,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.displayName ?? e.path.split('/').last,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    e.path,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                          fontSize: 11,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    formatBytes(e.fileSize),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },
