@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+import 'package:teditox/src/core/services/content_uri_service.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/intent_service.dart';
@@ -32,9 +33,13 @@ Future<void> configureDependencies() async {
   sl
     ..registerLazySingleton<Logger>(Logger.new)
     ..registerLazySingleton<EncodingService>(EncodingService.new)
+    ..registerLazySingleton<ContentUriService>(
+      () => ContentUriService(logger: sl()),
+    )
     ..registerLazySingleton<FileService>(
       () => FileService(
         encodingService: sl(),
+        contentUriService: sl(),
         logger: sl(),
       ),
     )

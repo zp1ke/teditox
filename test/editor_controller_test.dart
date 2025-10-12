@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
+import 'package:teditox/src/core/services/content_uri_service.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/preferences_service.dart';
@@ -11,10 +12,11 @@ import 'package:teditox/src/features/settings/presentation/settings_controller.d
 
 class _FakeFileService extends FileService {
   _FakeFileService()
-      : super(
-          encodingService: EncodingService(),
-          logger: Logger(),
-        );
+    : super(
+        encodingService: EncodingService(),
+        contentUriService: ContentUriService(logger: Logger()),
+        logger: Logger(),
+      );
 }
 
 class _FakeRecent extends RecentFilesService {
@@ -29,9 +31,9 @@ class _FakeRecovery extends RecoveryService {
 
 class _FakeSettings extends SettingsController {
   _FakeSettings()
-      : super(
-          prefs: PreferencesService(),
-        );
+    : super(
+        prefs: PreferencesService(),
+      );
 
   @override
   int get undoDepth => 5;

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:teditox/src/core/services/content_uri_service.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/utils/line_endings.dart';
 
@@ -20,12 +20,14 @@ class FileOpenResult {
     required this.lineEndingStyle,
     required this.bytes,
     this.isContentUri = false,
+    this.contentUri,
+    this.displayName,
   });
 
   /// The content of the file.
   final String content;
 
-  /// The path to the file.
+  /// The path to the file (may be a cache path on Android).
   final String path;
 
   /// The encoding used to read the file.
@@ -37,9 +39,37 @@ class FileOpenResult {
   /// The raw bytes of the file.
   final List<int> bytes;
 
-  /// Whether this file was opened from a content:// URI (temporary access).
-  /// These files should use "Save As" instead of direct save.
+  /// Whether this file was opened from a content:// URI.
   final bool isContentUri;
+
+  /// The actual content URI if this was opened from SAF (Android).
+  final String? contentUri;
+
+  /// The display name of the file from the content provider.
+  final String? displayName;
+}
+
+/// Result of a file save operation.
+class FileSaveResult {
+  /// Creates a new instance of [FileSaveResult].
+  FileSaveResult({
+    required this.path,
+    required this.isContentUri,
+    this.contentUri,
+    this.displayName,
+  });
+
+  /// The path to the saved file (may be a document identifier on Android).
+  final String path;
+
+  /// Whether this is a content URI that requires "Save As" for future saves.
+  final bool isContentUri;
+
+  /// The actual content URI if saved via SAF (Android).
+  final String? contentUri;
+
+  /// The display name of the saved file.
+  final String? displayName;
 }
 
 /// Service for handling file operations.
@@ -47,11 +77,15 @@ class FileService {
   /// Creates a new instance of [FileService].
   FileService({
     required this.encodingService,
+    required this.contentUriService,
     required this.logger,
   });
 
   /// The encoding service used for text encoding and decoding.
   final EncodingService encodingService;
+
+  /// The content URI service for Android SAF operations.
+  final ContentUriService contentUriService;
 
   /// The logger used for logging events and errors.
   final Logger logger;
@@ -61,45 +95,44 @@ class FileService {
     String? forcedEncoding,
     int? maxBytes,
   }) async {
-    final res = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: fileAllowedExtensions,
-      withData: true,
-    );
-    if (res == null || res.files.isEmpty) {
-      return null;
+    // Use our custom content URI service instead of file_picker
+    final result = await contentUriService.pickFile();
+    if (result == null) {
+      return null; // User cancelled
     }
-    final file = res.files.single;
-    final bytes =
-        file.bytes ??
-        await File(file.path!).readAsBytes(); // fallback for large
-    if (maxBytes != null && bytes.length > maxBytes) {
+
+    final uri = result['uri']!;
+    final displayName = result['displayName']!;
+
+    // Read the file content using content URI service
+    final uriBytes = await contentUriService.readFromUri(uri);
+    if (uriBytes == null) {
+      throw const FileSystemException('Failed to read from content URI');
+    }
+
+    if (maxBytes != null && uriBytes.length > maxBytes) {
       throw const FileSystemException('File exceeds size threshold');
     }
+
     final content = await encodingService.decode(
-      bytes,
+      uriBytes,
       forcedEncoding: forcedEncoding,
     );
     final le = detectLineEndings(content);
 
-    // Check if the path is a content URI or temporary path
-    // File picker on Android often returns content:// URIs or cache paths
-    // that don't point to the actual file location
-    final path = file.path ?? '';
-    final isContentUri =
-        path.startsWith('content://') ||
-        path.contains('/cache/') ||
-        path.contains('/tmp/');
-
-    logger.d('Picked file path: $path (isContentUri: $isContentUri)');
+    logger.d(
+      'Opened file: $uri (displayName: $displayName, size: ${uriBytes.length})',
+    );
 
     return FileOpenResult(
       content: content,
-      path: path,
-      encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
+      path: uri,
+      encoding: forcedEncoding ?? encodingService.detectEncoding(uriBytes),
       lineEndingStyle: le,
-      bytes: bytes,
-      isContentUri: isContentUri, // Mark as content URI if temporary
+      bytes: uriBytes,
+      isContentUri: true,
+      contentUri: uri,
+      displayName: displayName,
     );
   }
 
@@ -111,48 +144,34 @@ class FileService {
     int? maxBytes,
   }) async {
     try {
-      final bytes = <int>[];
-      var finalPath = path;
+      List<int> bytes;
+      String? contentUri;
+      String? displayName;
+      final isContentUri = path.startsWith('content://');
 
-      // Handle Android content:// URIs
-      if (path.startsWith('content://')) {
-        logger.d('Handling content URI: $path');
-
-        // For content URIs, we need to read the file and copy it
-        // to a temp location because we can't directly work with
-        // content:// URIs as File paths
-        final file = File(path);
-
-        try {
-          // Try to read the bytes directly - this works on Android
-          final contentBytes = await file.readAsBytes();
-          bytes.addAll(contentBytes);
-          logger.d('Read ${bytes.length} bytes from content URI');
-        } on FileSystemException catch (e) {
-          logger.e('Failed to read from content URI: $e');
-          rethrow;
+      if (isContentUri) {
+        // Use content URI service to read directly
+        contentUri = path;
+        final uriBytes = await contentUriService.readFromUri(path);
+        if (uriBytes == null) {
+          throw FileSystemException('Failed to read from content URI', path);
         }
+        bytes = uriBytes;
 
-        // Extract filename from the content URI if possible
-        final pathSegments = Uri.parse(path).pathSegments;
-        final filename = pathSegments.isNotEmpty
-            ? pathSegments.last
-            : 'shared_file.txt';
+        // Try to take persistable permission
+        await contentUriService.takePersistableUriPermission(path);
 
-        // Copy to a temporary file so we have a real path
-        final tempDir = await getTemporaryDirectory();
-        final tempFile = File('${tempDir.path}/$filename');
-        await tempFile.writeAsBytes(bytes);
-        finalPath = tempFile.path;
-        logger.d('Copied content to temporary file: $finalPath');
+        // Get display name
+        displayName = await contentUriService.getDisplayName(path);
+
+        logger.d('Opened content URI: $path (displayName: $displayName)');
       } else {
         // Regular file path
         final file = File(path);
         if (!file.existsSync()) {
           throw FileSystemException('File does not exist', path);
         }
-        bytes.addAll(await file.readAsBytes());
-        finalPath = path;
+        bytes = await file.readAsBytes();
       }
 
       if (maxBytes != null && bytes.length > maxBytes) {
@@ -167,11 +186,13 @@ class FileService {
 
       return FileOpenResult(
         content: content,
-        path: finalPath,
+        path: path,
         encoding: forcedEncoding ?? encodingService.detectEncoding(bytes),
         lineEndingStyle: le,
         bytes: bytes,
-        isContentUri: path.startsWith('content://'), // Track content URI status
+        isContentUri: isContentUri,
+        contentUri: contentUri,
+        displayName: displayName,
       );
     } catch (e) {
       logger.e('Failed to open file at path $path: $e');
@@ -180,7 +201,10 @@ class FileService {
   }
 
   /// Saves a new file with the specified content and encoding.
-  Future<File?> saveNew({
+  ///
+  /// Returns null if the user cancels, otherwise returns a FileSaveResult
+  /// with the path and content URI information.
+  Future<FileSaveResult?> saveNew({
     required String initialName,
     required String content,
     required String encoding,
@@ -191,17 +215,41 @@ class FileService {
       lineEndingStyle: lineEndingStyle,
       encoding: encoding,
     );
-    final filePath = await FilePicker.platform.saveFile(
-      fileName: initialName,
-      type: FileType.custom,
-      allowedExtensions: fileAllowedExtensions,
-      bytes: Uint8List.fromList(bytes),
+
+    // Use our custom content URI service instead of file_picker
+    final result = await contentUriService.createFile(initialName);
+    if (result == null) {
+      return null; // User cancelled
+    }
+
+    final uri = result['uri']!;
+    final displayName = result['displayName']!;
+
+    // Write the bytes to the content URI
+    final success = await contentUriService.writeToUri(
+      uri,
+      Uint8List.fromList(bytes),
     );
-    // TODO: fix returned path different from actual saved file path on Android
-    return filePath != null ? File(filePath) : null;
+
+    if (!success) {
+      throw const FileSystemException('Failed to write to content URI');
+    }
+
+    logger.d(
+      'Saved file: $uri (displayName: $displayName, size: ${bytes.length})',
+    );
+
+    return FileSaveResult(
+      path: uri,
+      isContentUri: true,
+      contentUri: uri,
+      displayName: displayName,
+    );
   }
 
   /// Saves the content to the path with the given encoding and line ending.
+  ///
+  /// For content URIs, uses the ContentUriService to write directly.
   Future<String> saveToPath({
     required String path,
     required String content,
@@ -213,8 +261,23 @@ class FileService {
       lineEndingStyle: lineEndingStyle,
       encoding: encoding,
     );
-    final file = File(path);
-    await file.writeAsBytes(bytes, flush: true);
+
+    if (path.startsWith('content://')) {
+      // Use content URI service for direct write
+      final success = await contentUriService.writeToUri(
+        path,
+        Uint8List.fromList(bytes),
+      );
+      if (!success) {
+        throw FileSystemException('Failed to write to content URI', path);
+      }
+      logger.d('Wrote ${bytes.length} bytes to content URI: $path');
+    } else {
+      // Regular file path
+      final file = File(path);
+      await file.writeAsBytes(bytes, flush: true);
+    }
+
     return path;
   }
 
@@ -225,7 +288,7 @@ class FileService {
   }) async {
     // Prepare the content with proper line endings and encoding
     final normalized = normalizeLineEndings(content, lineEndingStyle);
-    return await encodingService.encode(normalized, encoding);
+    return encodingService.encode(normalized, encoding);
   }
 
   /// Gets the directory for caching files.

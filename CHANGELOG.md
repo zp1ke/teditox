@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.5+6] - Current
 
+### Changed
+- Replaced file_picker with native Android Storage Access Framework (SAF) implementation for direct file operations
+- Removed file_picker dependency as it's no longer needed with intent handling
+
+### Fixed
+- Incorrect filename display showing content URI identifier (e.g., "14") instead of actual filename when opening or saving files on Android
+- File path handling where content URIs were not properly resolved to display names
+- Files saved to Downloads folder now correctly show their actual names instead of document identifiers
+
 ## [0.1.4+5] - 2025-10-10
 
 ### Changed

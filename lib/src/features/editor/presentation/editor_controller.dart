@@ -69,12 +69,14 @@ class EditorController extends ChangeNotifier {
   /// Provides access to the text content and cursor position.
   TextEditingController get controller => _controller;
 
-  /// The current file path, null for new/unsaved files.
+  /// The current file path (content URI or real path).
   String? currentPath;
 
-  /// Whether the current file was opened from a content:// URI.
-  /// Files from content URIs are temporary and cannot be saved directly.
-  bool _isFromContentUri = false;
+  /// The display name of the current file.
+  String? _displayName;
+
+  /// The current file name (display name from content provider or filename).
+  String? get currentFileName => _displayName;
 
   /// The text encoding of the current file.
   String currentEncoding = 'utf-8';
@@ -171,6 +173,7 @@ class EditorController extends ChangeNotifier {
   Future<void> newFile(BuildContext context) async {
     if (!await _confirmDiscardIfNeeded(context)) return;
     currentPath = null;
+    _displayName = null;
     currentEncoding = settings.defaultEncoding;
     lineEnding = LineEndingStyle.lf;
     _controller.clear();
@@ -231,7 +234,8 @@ class EditorController extends ChangeNotifier {
       );
       if (res == null) return false;
       currentPath = res.path;
-      _isFromContentUri = res.isContentUri; // Track content URI status
+      _displayName = res.displayName;
+      // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
@@ -293,7 +297,8 @@ class EditorController extends ChangeNotifier {
       if (res == null) return false;
 
       currentPath = res.path;
-      _isFromContentUri = res.isContentUri; // Track content URI status
+      _displayName = res.displayName;
+      // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
       _controller.text = res.content;
@@ -333,11 +338,11 @@ class EditorController extends ChangeNotifier {
   /// Returns true if the save was successful, false otherwise.
   /// Updates the recent files list and clears the dirty flag on success.
   ///
-  /// For files opened from content:// URIs, this will redirect to "Save As"
-  /// since content URIs are temporary and cannot be written to directly.
+  /// For files opened from content:// URIs, we can now save directly to them
+  /// since we have persistable permissions.
   Future<bool> save(BuildContext context) async {
-    // Files from content URIs must use "Save As" since they're temporary
-    if (currentPath == null || _isFromContentUri) {
+    // If no current path, use "Save As"
+    if (currentPath == null) {
       return saveAs(context);
     }
 
@@ -349,24 +354,27 @@ class EditorController extends ChangeNotifier {
         lineEndingStyle: lineEnding,
       );
 
-      // Get actual file size after saving
-      final file = File(currentPath!);
-      final actualFileSize = await file.length();
-
       dirty = false;
       _pushInitial(
         UndoEntry(_controller.text, _controller.selection),
       ); // reset baseline
 
-      await recentFiles.addOrUpdate(
-        RecentFileEntry(
-          path: currentPath!,
-          lastOpened: DateTime.now(),
-          fileSize: actualFileSize, // Use actual file size from disk
-          encoding: currentEncoding,
-          lineEnding: lineEnding.name,
-        ),
-      );
+      // For content URIs, we can't get file size easily, estimate it
+      final fileSize = _controller.text.length;
+
+      // Only add to recent files if we have a display name
+      if (_displayName != null) {
+        await recentFiles.addOrUpdate(
+          RecentFileEntry(
+            path: currentPath!,
+            lastOpened: DateTime.now(),
+            fileSize: fileSize,
+            encoding: currentEncoding,
+            lineEnding: lineEnding.name,
+          ),
+        );
+      }
+
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
@@ -382,58 +390,44 @@ class EditorController extends ChangeNotifier {
   /// flag on success.
   Future<bool> saveAs(BuildContext context) async {
     try {
-      final file = await fileService.saveNew(
+      final result = await fileService.saveNew(
         initialName: AppLocalizations.of(context).new_file_name,
         content: _controller.text,
         encoding: currentEncoding,
         lineEndingStyle: lineEnding,
       );
-      if (file == null) return false;
+      if (result == null) return false;
 
-      final path = file.absolute.path;
-
-      // Check if this is a document/content URI path
-      final isDocumentUri =
-          path.startsWith('/document/') ||
-          path.startsWith('content://') ||
-          path.contains('/cache/') ||
-          path.contains('/tmp/');
-
-      // For document URIs, we can't verify existence or get file size
-      // but if saveFile returned a path, the save was successful
-      int fileSize;
-      if (isDocumentUri) {
-        // Estimate file size from content length
-        fileSize = _controller.text.length;
-        logger.d('Saved to document URI: $path (estimated size: $fileSize)');
-        // Mark as content URI so future saves also prompt for location
-        _isFromContentUri = true;
-      } else {
-        // Real file path - verify it exists and get actual size
-        if (!file.existsSync()) {
-          logger.w('File was not created successfully: $path');
-          return false;
-        }
-        fileSize = await file.length();
-        _isFromContentUri = false;
-      }
-
-      currentPath = path;
+      // The file has been saved
+      // Update our state to reflect the save
+      currentPath = result.path;
+      _displayName = result.displayName;
       dirty = false;
       _pushInitial(
         UndoEntry(_controller.text, _controller.selection),
       );
 
-      // Only add to recent files if it's not a document URI (temporary)
-      if (!isDocumentUri) {
+      // Only add to recent files if it's not a content URI
+      // Content URIs are temporary identifiers and shouldn't be tracked
+      if (!result.isContentUri) {
+        // For real file paths, get the actual file size
+        final file = File(result.path);
+        final fileSize = file.existsSync()
+            ? await file.length()
+            : _controller.text.length;
+
         await recentFiles.addOrUpdate(
           RecentFileEntry(
-            path: path,
+            path: result.path,
             lastOpened: DateTime.now(),
             fileSize: fileSize,
             encoding: currentEncoding,
             lineEnding: lineEnding.name,
           ),
+        );
+      } else {
+        logger.d(
+          'Saved to content URI: ${result.path} - not adding to recent files',
         );
       }
 
@@ -476,6 +470,9 @@ class EditorController extends ChangeNotifier {
       offset: _controller.text.length,
     );
     currentPath = snap.path;
+    _displayName = snap.path != null
+        ? File(snap.path!).uri.pathSegments.last
+        : null;
     currentEncoding = snap.encoding;
     lineEnding = snap.lineEnding;
     dirty = snap.dirty;

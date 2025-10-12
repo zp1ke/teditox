@@ -145,7 +145,7 @@ class _EditorScreenState extends State<EditorScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              ctl.currentPath?.split('/').last ?? loc.new_file,
+                              ctl.currentFileName ?? loc.new_file,
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w500,
