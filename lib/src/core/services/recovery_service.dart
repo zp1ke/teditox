@@ -31,7 +31,7 @@ class RecoverySnapshot {
         encoding: json['e'] as String,
         lineEnding: LineEndingStyle.values.firstWhere(
           (e) => e.name == json['l'],
-          orElse: () => LineEndingStyle.lf,
+          orElse: () => .lf,
         ),
       );
 

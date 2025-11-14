@@ -31,13 +31,13 @@ LineEndingStyle detectLineEndings(String text) {
   final crCount = RegExp(r'\r(?!\n)').allMatches(text).length;
   final lfCount = RegExp(r'(?<!\r)\n').allMatches(text).length;
   if (crlfCount >= lfCount && crlfCount >= crCount && crlfCount > 0) {
-    return LineEndingStyle.crlf;
+    return .crlf;
   }
   if (lfCount >= crCount && lfCount > 0) {
-    return LineEndingStyle.lf;
+    return .lf;
   }
-  if (crCount > 0) return LineEndingStyle.cr;
-  return LineEndingStyle.lf; // default when single line
+  if (crCount > 0) return .cr;
+  return .lf; // default when single line
 }
 
 /// Normalizes line endings in text to the specified style.
@@ -56,8 +56,8 @@ LineEndingStyle detectLineEndings(String text) {
 String normalizeLineEndings(String text, LineEndingStyle style) {
   final unified = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   return switch (style) {
-    LineEndingStyle.lf => unified,
-    LineEndingStyle.crlf => unified.replaceAll('\n', '\r\n'),
-    LineEndingStyle.cr => unified.replaceAll('\n', '\r'),
+    .lf => unified,
+    .crlf => unified.replaceAll('\n', '\r\n'),
+    .cr => unified.replaceAll('\n', '\r'),
   };
 }

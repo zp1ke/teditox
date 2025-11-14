@@ -11,7 +11,7 @@ extension ContextX on BuildContext {
     if (canPop()) {
       return pop(this);
     }
-    navigate(AppRoute.editor, cleanStack: true);
+    navigate(.editor, cleanStack: true);
   }
 
   /// Navigate to a specific [AppRoute].

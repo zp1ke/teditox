@@ -20,7 +20,8 @@ enum AppRoute {
   recent('/recent', 'recent', Icons.history),
 
   /// The route for the about screen.
-  about('/about', 'about', Icons.info_outline);
+  about('/about', 'about', Icons.info_outline)
+  ;
 
   /// Constructor for [AppRoute].
   const AppRoute(this.route, this.name, [this.icon]);
@@ -37,10 +38,10 @@ enum AppRoute {
   /// Returns the localized title for the route.
   String title(AppLocalizations loc) {
     return switch (this) {
-      AppRoute.editor => loc.editor,
-      AppRoute.settings => loc.settings,
-      AppRoute.recent => loc.recent_files,
-      AppRoute.about => loc.about,
+      .editor => loc.editor,
+      .settings => loc.settings,
+      .recent => loc.recent_files,
+      .about => loc.about,
     };
   }
 }

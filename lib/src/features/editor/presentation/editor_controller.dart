@@ -82,7 +82,7 @@ class EditorController extends ChangeNotifier {
   String currentEncoding = 'utf-8';
 
   /// The line ending style of the current file.
-  LineEndingStyle lineEnding = LineEndingStyle.lf;
+  LineEndingStyle lineEnding = .lf;
 
   /// Whether the current content has unsaved changes.
   bool dirty = false;
@@ -175,7 +175,7 @@ class EditorController extends ChangeNotifier {
     currentPath = null;
     _displayName = null;
     currentEncoding = settings.defaultEncoding;
-    lineEnding = LineEndingStyle.lf;
+    lineEnding = .lf;
     _controller.clear();
     _previousText = '';
     dirty = false;
@@ -192,11 +192,11 @@ class EditorController extends ChangeNotifier {
     if (!context.mounted) return false;
 
     switch (action) {
-      case UnsavedChangesAction.save:
+      case .save:
         return save(context);
-      case UnsavedChangesAction.discard:
+      case .discard:
         return true;
-      case UnsavedChangesAction.cancel:
+      case .cancel:
       case null:
         return false;
     }

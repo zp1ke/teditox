@@ -41,11 +41,11 @@ class _EditorScreenState extends State<EditorScreen> {
     if (!mounted) return false;
 
     switch (action) {
-      case UnsavedChangesAction.save:
+      case .save:
         return controller.save(context);
-      case UnsavedChangesAction.discard:
+      case .discard:
         return true;
-      case UnsavedChangesAction.cancel:
+      case .cancel:
       case null:
         return false;
     }

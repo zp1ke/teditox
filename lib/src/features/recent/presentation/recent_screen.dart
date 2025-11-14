@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
@@ -135,7 +134,7 @@ class _RecentScreenState extends State<RecentScreen> {
                         );
                         if (context.mounted) {
                           if (success) {
-                            context.navigate(AppRoute.editor, cleanStack: true);
+                            context.navigate(.editor, cleanStack: true);
                           } else {
                             await showDialog<bool>(
                               context: context,
