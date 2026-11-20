@@ -191,16 +191,17 @@ Localization files are in `lib/src/core/localization/arb/` and can be extended b
 
 The project includes GitHub Actions workflows:
 
-- **CI Pipeline**: Runs on every push/PR
-  - Code analysis (`flutter analyze`)
-  - Unit tests with coverage
-  - Build runner code generation
-  - Integration tests (disabled on headless CI)
+- **CI** (`.github/workflows/ci.yml`, every push/PR)
+  - `dart format` check, `flutter analyze`, unit tests with coverage + a coverage floor
+  - Debug APK build, so Gradle/AGP breakage fails fast
 
-- **Release Pipeline**: Manual workflow dispatch
-  - Builds signed Android App Bundle
-  - Uses GitHub secrets for keystore management
-  - Uploads build artifacts
+- **Integration tests** (`.github/workflows/integration.yml`)
+  - Runs on an Android emulator weekly, on demand, and on PRs labelled `integration`
+
+- **Release** (`.github/workflows/release.yml`, manual dispatch)
+  - Builds a signed Android App Bundle from GitHub secrets
+  - Uploads the AAB as an artifact and creates a GitHub Release
+  - Publishes to the Play internal track when a `PLAY_SERVICE_ACCOUNT_JSON` secret is set
 
 ## License
 MIT (see LICENSE).

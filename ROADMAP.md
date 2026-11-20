@@ -138,21 +138,36 @@ exercise signing outside CI (needs `android/key.properties`), and re-run
 
 ---
 
-## Phase 4 — CI/CD & quality hardening
+## Phase 4 — CI/CD & quality hardening — ✅ DONE (2025-11)
 
-1. `ci.yml`: pin Flutter via `flutter-version-file` (already) + add
-   `dart format --output=none --set-exit-if-changed .` (currently not enforced).
-2. Integration tests: replace the echo stub with a headless emulator job
-   (`reactive-dev/android-emulator-runner` or `melos`-style matrix) running
-   `integration_test/app_flow_test.dart` — at minimum on release-tag pushes, to keep CI
-   time sane.
-3. Add coverage artifact + a floor (e.g. fail under current baseline) to prevent regress.
-4. `release.yml`: after the AAB builds, upload to Play **internal track** via
-   `r0ad/r0ad`-safe alternative — `softprops/action-gh-release` with the AAB attached +
-   `google/publish` step using a service-account secret (`rcupload`/`fastlane supply`).
-   This turns "manual dispatch → download artifact → Play Console drag-drop" into a
-   tagged-push pipeline (Phase 5 needs it).
-5. Optional: dependabot for pub + github-actions.
+- **CI (`ci.yml`)** — two jobs on every push/PR:
+  - `quality`: `dart format --set-exit-if-changed` → `flutter analyze` →
+    `flutter test --coverage` → coverage floor → upload `lcov.info` artifact.
+  - `android-build`: `flutter build apk --debug` (Java 21). Previously CI never built
+    Android, so Gradle/AGP breakage only surfaced at release time.
+- **Coverage gate** — `tool/check_coverage.py --min 18` (ignores generated l10n /
+  `*.g.dart`). Current actual: ~20%. Added tests for `line_endings`,
+  `byte_size_formatter`, `recent_files_service` (incl. JSON round-trip, dedupe,
+  trimming, sorting) and `PreferencesService` defaults/persistence.
+- **Integration tests** — `integration.yml`: Android emulator (API 34,
+  `ReactiveCircus/android-emulator-runner`) weekly + `workflow_dispatch` + PRs labelled
+  `integration`. The test itself was strengthened (app boot, editor focus, typing →
+  dirty marker) and the previous assertion (`textContaining('teditox')`) was wrong
+  (case-sensitive vs the "TeditoX" title).
+- **Bug found & fixed while enabling integration tests**: `IntentService` called
+  `receive_sharing_intent` unconditionally → `MissingPluginException` on Linux/tests.
+  Now guarded by `IntentService.isSupported` (Android only). Side benefit: the
+  integration test runs locally on Linux (`flutter test integration_test -d linux`),
+  no emulator needed.
+- **Release (`release.yml`)** — after the signed AAB: Ruby + `bundle exec fastlane
+  internal` publishes to the Play **internal** track, gated on
+  `PLAY_SERVICE_ACCOUNT_JSON` (skipped when absent). `android/fastlane/Fastfile` +
+  `android/Gemfile` added.
+- **Dependabot** — weekly pub + github-actions, monthly bundler; Flutter-tooling and
+  material_ui-family packages grouped to avoid conflicting bumps.
+
+Not done: `dart format` check covers `lib test integration_test` (not repo root);
+coverage floor is a modest 18% (no widget tests yet to raise it meaningfully).
 
 ---
 
@@ -171,7 +186,8 @@ exercise signing outside CI (needs `android/key.properties`), and re-run
 
 ## Risks & rollback
 
-- **Highest risk:** receive_sharing_intent device flows (Phase 2) — mitigation: device
-  testing before merge, tag `v0.1.6` as known-good fallback.
-- Timeline: Phases 0–2 are done; 3–5 remain (a day or two). Shipping 0.2.0 within a
-  week of device testing is realistic.
+- **Highest risk:** receive_sharing_intent device flows — mitigation: the weekly
+  emulator integration job + manual device testing before a Play upload; tag `v0.1.6`
+  as the known-good fallback.
+- Timeline: Phases 0–4 are done. Only Phase 5 (version bump + release) remains, plus
+  device smoke testing of share/open-with intents.

@@ -112,12 +112,24 @@ Patterns to follow:
 
 ## CI/CD
 
-- `.github/workflows/ci.yml`: analyze → `flutter test --coverage`
-  (integration tests are a stubbed echo step — not yet run on CI).
-- `.github/workflows/release.yml`: manual dispatch → signed AAB build using secrets
-  (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) → artifact upload.
-  Keystore is decoded into `android/app/keystore.jks`; `key.properties` points at it.
-  The workflow does not (yet) upload to Play — that's done manually via Play Console.
+- `.github/workflows/ci.yml` — on push/PR:
+  1. `quality` job: `dart format --set-exit-if-changed` → `flutter analyze` →
+     `flutter test --coverage` → `python3 tool/check_coverage.py --min 18` →
+     uploads `coverage/lcov.info`.
+  2. `android-build` job: `flutter build apk --debug` (Java 21) so Gradle/AGP/Kotlin
+     breakage fails the PR, not the release.
+- `.github/workflows/integration.yml` — weekly + `workflow_dispatch` + PRs labelled
+  `integration`: runs `integration_test` on an Android emulator (API 34) via
+  `ReactiveCircus/android-emulator-runner`.
+- `.github/workflows/release.yml` — manual dispatch → signed AAB using secrets
+  (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) → artifact upload
+  → GitHub Release tag. If `PLAY_SERVICE_ACCOUNT_JSON` is set it also publishes to the
+  Play **internal** track via `fastlane supply` (`android/fastlane/Fastfile`,
+  `android/Gemfile`); otherwise that step is skipped.
+- `.github/dependabot.yml` — weekly pub + github-actions updates (Flutter tooling and
+  material_ui-family packages are grouped to avoid conflicting bumps).
+- Coverage accounting: `tool/check_coverage.py` ignores generated
+  `app_localizations*` and `*.g.dart`/`*.freezed.dart`; current floor is 18%.
 
 ## Known state / debt (as of 2025-11)
 
@@ -134,6 +146,9 @@ Patterns to follow:
 - ✅ Phase 3 done: Gradle 9.5.0 / AGP 9.3.1 / Kotlin 2.4.20 / Java 17 bytecode
   (JDK 21 build pin in mise.toml), compileSdk 37. Debug APK, release AAB and Linux
   debug all build. Keystore files now gitignored.
-- Test coverage improved (editor controller + encoding service) but still no widget
-  tests, no coverage gate in CI; charset_converter real conversion needs device test.
+- ✅ Phase 4 done: CI now enforces format + coverage floor (20% → gate 18%) and builds
+  a debug APK on every PR; integration tests run on an Android emulator (weekly/label);
+  release publishes to the Play internal track when a service-account key is present;
+  dependabot configured. Also fixed `IntentService` to no-op off-Android (it threw
+  `MissingPluginException` on Linux).
 - Only en + es locales. See `docs/GROWTH.md` for product priorities.

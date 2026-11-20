@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:logger/logger.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:teditox/src/core/services/file_service.dart'
     show fileAllowedExtensions;
 
 /// Service for handling incoming file intents from Android.
+///
+/// The underlying plugin is Android-only. On other platforms (Linux desktop,
+/// tests, web) [initialize] is a no-op instead of throwing
+/// `MissingPluginException`.
 class IntentService {
   /// Creates an intent service with the required logger.
   IntentService({required this.logger});
@@ -15,8 +21,18 @@ class IntentService {
 
   StreamSubscription<List<SharedMediaFile>>? _intentDataStreamSubscription;
 
+  /// Whether incoming-intent handling is available on this platform.
+  static bool get isSupported => !kIsWeb && Platform.isAndroid;
+
   /// Initializes the intent service and sets up listeners for incoming files.
+  ///
+  /// No-op on platforms where `receive_sharing_intent` has no implementation.
   void initialize({required void Function(String filePath) onFileReceived}) {
+    if (!isSupported) {
+      logger.d('Intent handling is unsupported on this platform; skipping.');
+      return;
+    }
+
     // Listen for files shared while the app is already running
     _intentDataStreamSubscription = ReceiveSharingIntent.instance
         .getMediaStream()

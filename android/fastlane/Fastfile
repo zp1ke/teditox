@@ -1,0 +1,25 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload the built AAB to the Play internal testing track"
+  lane :internal do
+    # PLAY_SERVICE_ACCOUNT_JSON holds the Play Console service-account key
+    # (see release.yml). Fails loudly if it is missing so we never publish
+    # silently with the wrong credentials.
+    key_data = ENV.fetch("PLAY_SERVICE_ACCOUNT_JSON") do
+      UI.user_error!("PLAY_SERVICE_ACCOUNT_JSON is not set")
+    end
+
+    upload_to_play_store(
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key_data: key_data,
+      track: ENV.fetch("PLAY_TRACK", "internal"),
+      # Release notes/metadata are managed in Play Console; only ship the binary.
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false,
+      release_status: "completed"
+    )
+  end
+end
