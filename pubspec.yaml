@@ -10,6 +10,7 @@ environment:
 dependencies:
   charset_converter: ^2.5.1
   collection: ^1.19.1
+  cupertino_icons: ^2.0.0
   cupertino_ui: ^1.1.7
   dynamic_color: ^2.1.0
   flex_color_scheme: ^9.0.0

@@ -1,7 +1,6 @@
 # Flutter/Dart/Pub
 .dart_tool/
 .packages
-pubspec.lock
 
 # Generated
 build/
@@ -10,6 +9,12 @@ coverage/
 
 # Platform
 android/local.properties
+
+# Android signing secrets — never commit
+android/key.properties
+**/*.jks
+**/*.keystore
+key.properties
 
 # IDE
 .idea/

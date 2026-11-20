@@ -74,9 +74,9 @@ Deviations from the plan:
 Done already (pulled forward into Phase 0.5): ~~flex_color_scheme~~ 9.0.0,
 ~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0.
 
-- ~~cupertino_icons 1→2~~ — **removed entirely**: it was a template leftover,
-  unreferenced by any code (app uses `Icons.*`), and neither material_ui nor
-  cupertino_ui needs it.
+- **cupertino_icons 1→2** — bump (do NOT remove: `cupertino_ui`'s `CupertinoIcons`
+  needs the font asset; removing it produced a release-build font warning. See
+  Phase 3 note).
 - ~~freezed 3→4 + build_runner 2.15→2.17~~ — **removed entirely**. The project has
   **no codegen**: no `@freezed`, no `part '*.g.dart'`, no generated files; the only
   "generated" sources are l10n (`flutter gen-l10n`, independent of build_runner).
@@ -100,44 +100,41 @@ CHANGELOG under `Changed` and ship as **0.2.0**.
 
 ---
 
-## Phase 3 — Android toolchain & Play target
+## Phase 3 — Android toolchain & Play target — ✅ DONE (2025-11)
 
-1. Java target `11 → 17`:
-   - `android/app/build.gradle.kts`: `JavaVersion.VERSION_17`, `JvmTarget.JVM_17`
-   - `android/build.gradle.kts`: subproject `JVM_17` block
-   - `.java-version`: `17` (and confirm mise has temurin-17 locally — it does)
-   - CI `release.yml` `java-version: '17'` stays (bump to 21 only if AGP requires)
-2. Port the reference-project diffs (see below for how to regenerate the reference
-project; the numbers were captured 2025-11 — re-verify if SDK moved since):
-   - `gradle-wrapper.properties`: 8.13 → **9.5.0** (Gradle 9 is a major: check
-     convention/deprecation warnings in `./gradlew` output; may need `gradle.properties`
-     compatibility flags temporarily)
-   - `settings.gradle.kts`: AGP → **9.3.1**, Kotlin → **2.4.20** (AGP 9 drops defaults
-     like `buildConfig`/`androidResources` behaviors — build a debug APK early in this
-     step to surface failures)
-   - `gradle.properties`: drop `android.enableJetifier` + `kotlin.jvm.target.validation.mode`;
-     add `android.newDsl=false`, `android.builtInKotlin=false` (keep our jvmargs)
-   - `android/build.gradle.kts`: remove our subprojects JVM-target hack once app-level
-     target is 17
-   - `linux/`: port `CMakeLists.txt` + `runner/` diffs (cosmetic here)
-   Then regenerate a reference project again after each SDK upgrade to re-diff.
+Result: Gradle **9.5.0**, AGP **9.3.1**, Kotlin **2.4.20**, Java bytecode target **17**,
+build JDK **21**. Verified: `flutter build apk --debug`, `flutter build appbundle`
+(release, R8) and `flutter build linux --debug` all succeed. Resulting APK:
+minSdk 24, targetSdk 36, compileSdk 37, zero user-facing permissions.
 
-   > How-to (there is **no `flutter migrate` command** — the `.metadata` comment refers
-   > to an unshipped feature; `flutter create .` only *repairs missing* files and never
-   > overwrites existing ones):
-   > ```bash
-   > flutter create --no-pub --org org.zp1ke --project-name teditox --platforms=android,linux /tmp/teditox_ref
-   > diff -rq /tmp/teditox_ref/android android && diff -rq /tmp/teditox_ref/linux linux
-   > ```
-   > Optionally also run `flutter create --no-pub --platforms=android,linux .` to repair
-   > missing files — then delete template junk it recreates (`test/widget_test.dart`,
-   > stock `ic_launcher.png` mipmaps; our icons are `launcher_icon.png`).
-3. Confirm `targetSdk`/`compileSdk` resolve from `flutter.targetSdkVersion` and meet
-   the current Play target-API policy (Android 15/API 35 for updates). If Flutter 3.50's
-   default is below policy, set explicitly.
-4. Build a **release AAB locally** with the real keystore once (`flutter build appbundle`)
-   to catch signing/R8 issues outside CI.
-5. Re-run `flutter_launcher_icons` + `flutter_native_splash` (template changes can drift).
+What changed:
+1. Gradle wrapper → 9.5.0 (jar + `gradlew` + `gradlew.bat` copied from a fresh template).
+2. `android/settings.gradle.kts`: AGP 8.13.0 → 9.3.1, Kotlin 2.2.20 → 2.4.20.
+3. `android/gradle.properties`: dropped `android.enableJetifier` and
+   `kotlin.jvm.target.validation.mode`; added template flags `android.newDsl=false`
+   and `android.builtInKotlin=false`.
+4. `android/build.gradle.kts`: removed the subprojects JVM-target hack (app-level 17
+   covers it).
+5. `android/app/build.gradle.kts`: `VERSION_17` + `JVM_17`; the `kotlin-android` plugin
+   id was removed because Flutter's Gradle plugin auto-applies KGP when
+   `builtInKotlin=false` (verified: `MainActivity.class` is produced). Release signing
+   now falls back to debug keys when `key.properties` is absent (local/contributor
+   builds work).
+6. `compileSdk = maxOf(flutter.compileSdkVersion, 37)` — `receive_sharing_intent`
+   requires API 37, Flutter's default is 36.
+7. Build JDK pinned: `mise.toml` `[tools] java = "21"`, `.java-version` → 21,
+   `release.yml` `java-version: '21'`. Bare `flutter build` picks up the machine-global
+   JDK 25 (incompatible with AGP/Gradle) — use `mise x --` / `mise run build`.
+8. `.gitignore`: added `android/key.properties`, `**/*.jks`, `**/*.keystore` (secret
+   leak guard — release.yml writes those).
+
+Note: `cupertino_icons` was re-added (`^2.0.0`) — the font warning during a release
+build proved `cupertino_ui`'s `CupertinoIcons` needs it (Phase 2 had wrongly removed
+it). Original plan was right.
+
+Remaining manual step: build a local release AAB **with the real keystore** once to
+exercise signing outside CI (needs `android/key.properties`), and re-run
+`flutter_launcher_icons` / `flutter_native_splash` only if icon assets change.
 
 ---
 

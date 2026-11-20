@@ -63,6 +63,10 @@ A simple, modular Flutter text editor.
 - Flutter SDK 3.50.1 (pinned in `environment:` of `pubspec.yaml`; CI reads it via
   `flutter-version-file`)
 - Dart SDK 3.14+ (ships with Flutter 3.50.1)
+- **JDK 21** for Android builds (AGP 9 / Gradle 9). Pinned in `mise.toml`; with mise
+  run `mise x -- flutter build ...` (a bare `flutter build` may pick up a newer
+  machine-global JDK that AGP rejects).
+- Android SDK 37 (compileSdk), with platform-tools.
 
 ### Setup
 ```bash
@@ -94,10 +98,10 @@ flutter analyze
 ### Building
 ```bash
 # Debug build
-flutter build apk --debug
+mise x -- flutter build apk --debug
 
-# Release build (requires signing configuration)
-flutter build appbundle --release
+# Release build (requires android/key.properties + keystore; CI supplies them)
+mise x -- flutter build appbundle --release
 ```
 
 ## Project Structure

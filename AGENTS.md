@@ -18,8 +18,19 @@ Android SAF + share-intent file handling, en/es localization.
   Current toolchain on this machine: **Flutter 3.50.1 / Dart 3.14.0**.
 - `pubspec.yaml` pins `environment: flutter: 3.50.1` (exact) and `sdk: >=3.10.0`.
   CI reads the Flutter version from it via `flutter-version-file`.
-- Java 11 is the Android bytecode target (`.java-version`, Gradle `JVM_11`); CI uses
-  Temurin 17 to run Gradle. Keep these consistent if you change one.
+- Java **17** is the Android bytecode target (`compileOptions` + `kotlin.compilerOptions`
+  in `android/app/build.gradle.kts`). Gradle itself runs on **JDK 21**, pinned in
+  `mise.toml` (`[tools] java = "21"`); CI `release.yml` uses Temurin 21. Keep the
+  bytecode target and the build JDK distinct concepts when changing either.
+- The system/global JDK here is 25, which AGP/Gradle reject. Run builds as
+  `mise x -- flutter build ...` (or `mise run build`) so JDK 21 from `mise.toml` is used;
+  a bare `flutter build` picks up the global JDK and fails.
+- Android toolchain (ROADMAP Phase 3): Gradle **9.5.0**, AGP **9.3.1**, Kotlin **2.4.20**.
+  `compileSdk = maxOf(flutter.compileSdkVersion, 37)` because `receive_sharing_intent`
+  requires API 37; `targetSdk` follows Flutter (36). `gradle.properties` sets
+  `android.newDsl=false` + `android.builtInKotlin=false` (from the template) — with
+  built-in Kotlin off, Flutter's Gradle plugin auto-applies `kotlin-android`, so
+  `app/build.gradle.kts` must NOT apply the Kotlin plugin manually.
 - **There is no `flutter migrate` command** (the `.metadata` comment refers to an
   unshipped feature). `flutter create .` only *repairs missing* files — it never
   updates existing platform files, and it can add template junk (delete any recreated
@@ -28,6 +39,10 @@ Android SAF + share-intent file handling, en/es localization.
   ROADMAP.md Phase 0.
 - Shell notes: use `rg`/`fdfind`/`batcat` if available; `pubspec.lock` is gitignored by
   design (it will appear locally after `pub get` — never commit it).
+- Zero-permission note: the *source* `AndroidManifest.xml` declares no
+  `<uses-permission>`. Merged builds add `INTERNET` only in **debug** (Dart VM service)
+  and a signature-level `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` from AndroidX in
+  release (not a user-facing capability). Neither needs justification.
 
 ## Commands
 
@@ -37,7 +52,8 @@ flutter analyze                                          # lint (very_good_analy
 flutter test --coverage                                  # unit tests
 flutter test integration_test                             # integration (needs a device)
 flutter run -d linux                                     # quick manual smoke
-flutter build apk --debug                                # Android debug build
+flutter build apk --debug                                # Android debug (prefix with `mise x --`)
+mise run build                                           # debug APK via JDK 21 from mise.toml
 ```
 
 **There is no build_runner/freezed codegen in this project** (removed in
@@ -111,12 +127,13 @@ Patterns to follow:
   deprecated delegates; their `localizationsDelegates` const is unused by the app).
 - ✅ Phase 1 dep bumps done (intl/logger/get_it/url_launcher/mocktail/splash/
   charset_converter/collection; receive_sharing_intent already at 1.9.0).
-- ✅ Phase 2 done: cupertino_icons removed (unused), **freezed/freezed_annotation/
+- ✅ Phase 2 done: cupertino_icons 2.x, **freezed/freezed_annotation/
   build_runner removed** (never used — no codegen in project), go_router 18,
   package_info_plus 10, very_good_analysis 11 (5 `async_return_with_no_await` fixes).
   All direct deps now on latest.
-- Android platform files still on old template (Gradle 8.13, AGP 8.13, Java 11
-  target). → ROADMAP.md Phase 3
+- ✅ Phase 3 done: Gradle 9.5.0 / AGP 9.3.1 / Kotlin 2.4.20 / Java 17 bytecode
+  (JDK 21 build pin in mise.toml), compileSdk 37. Debug APK, release AAB and Linux
+  debug all build. Keystore files now gitignored.
 - Test coverage improved (editor controller + encoding service) but still no widget
   tests, no coverage gate in CI; charset_converter real conversion needs device test.
 - Only en + es locales. See `docs/GROWTH.md` for product priorities.
