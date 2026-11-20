@@ -65,7 +65,7 @@ jobs:
         run: bundle exec fastlane internal
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Releases
           path: |
