@@ -77,6 +77,13 @@ Patterns to follow:
 
 ## Conventions
 
+- **UI imports: use `package:material_ui/material_ui.dart` — never
+  `package:flutter/material.dart`** (unbundled from the SDK in Flutter 3.47+; the two
+  are NOT type-compatible; migration completed 2025-11, see ROADMAP Phase 0.5).
+  `package:flutter/widgets.dart`, `services`, `foundation` etc. stay as-is. Before
+  adding any UI-flavored dependency, verify its pubspec depends on material_ui
+  (flex_color_scheme ≥9, dynamic_color ≥2.1, google_fonts ≥9 do).
+  Localization delegates come from material_ui: `...GlobalMaterialLocalizations.delegates`.
 - `very_good_analysis` lint set: public members **require doc comments** — most analyzer
   errors here are missing `///`.
 - Immutable models use `freezed`; run codegen before `flutter analyze`.
@@ -99,8 +106,17 @@ Patterns to follow:
 
 ## Known state / debt (as of 2025-11)
 
-- SDK pin 3.38.1 vs toolchain 3.50.1 (blocks builds locally). → ROADMAP.md Phase 0
-- 12+ deps behind latest majors. → ROADMAP.md Phase 2
-- README prerequisites section is stale (lists Flutter 3.35.6, mentions `file_picker`).
-- Test coverage is thin (one unit test file); no coverage gate in CI.
+- ✅ Flutter 3.50.1 / Dart 3.14 pinned; analyze/test/format green.
+- ✅ material_ui unbundle migration done (see ROADMAP Phase 0.5). Generated
+  `app_localizations*.dart` are analyzer-excluded (gen-l10n template still emits
+  deprecated delegates; their `localizationsDelegates` const is unused by the app).
+- ✅ Phase 1 dep bumps done (intl/logger/get_it/url_launcher/mocktail/splash/
+  charset_converter/collection; receive_sharing_intent already at 1.9.0).
+- Android platform files still on old template (Gradle 8.13, AGP 8.13, Java 11
+  target). → ROADMAP.md Phase 3
+- Remaining dep majors: go_router 17→18, freezed 3→4 (+ build_runner 2.17 — coupled,
+  2.17 breaks freezed 3), package_info_plus 9→10, very_good_analysis 10→11.
+  → ROADMAP.md Phase 2
+- Test coverage improved (editor controller + encoding service) but still no widget
+  tests, no coverage gate in CI; charset_converter real conversion needs device test.
 - Only en + es locales. See `docs/GROWTH.md` for product priorities.

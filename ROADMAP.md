@@ -51,24 +51,21 @@ depend on material_ui (check its pubspec before adding).
 
 ---
 
-## Phase 1 — Safe (minor/patch) dependency bumps
+## Phase 1 — Safe (minor/patch) dependency bumps — ✅ DONE (2025-11)
 
-Bump constraints — near-zero API risk:
+Bumped constraints + `flutter pub upgrade`; all resolved and verified:
+intl 0.20.3, logger 2.8.0, get_it 9.3.0, url_launcher 6.3.3,
+mocktail 1.0.5, flutter_native_splash 2.4.8, charset_converter 2.5.1,
+collection 1.19.1 (+ shared_preferences 2.5.6 / path_provider 2.1.6 within range).
 
-| Package | From | To | Risk |
-|---|---|---|---|
-| intl | 0.20.2 | 0.20.3 | none |
-| logger | ^2.6.2 | ^2.8.0 | low |
-| get_it | ^9.0.5 | ^9.3.0 | low |
-| url_launcher | ^6.3.1 | ^6.3.3 | none |
-| build_runner | ^2.10.3 | ^2.17.1 | low (regen + CI timing) |
-| mocktail | ^1.0.3 | ^1.0.5 | none |
-| flutter_native_splash | ^2.4.7 | ^2.4.8 | none |
-| charset_converter | ^2.3.0 | ^2.5.1 | low — re-test encoding round-trips |
-| collection | ^1.18.0 | ^1.19.1 | none |
-
-Then `flutter pub upgrade --major-versions` **scoped to these packages** (avoid the
-indiscriminate flag — it will also pull the Phase-2 majors). Verify gate.
+Deviations from the plan:
+- **build_runner stays `^2.15.1`** — 2.17.1 conflicts with freezed 3.x
+  (they are coupled; move together in Phase 2.3).
+- **receive_sharing_intent already resolved 1.9.0** (latest, within `^1.8.0`) —
+  constraint pinned to `^1.9.0`. Phase 2.2 remains as *device* verification work.
+- charset_converter round-trips can't run headless (native platform channel):
+  added `test/encoding_service_test.dart` covering BOM detection, UTF-8 paths and
+  the graceful fallback; conversion itself must be smoke-tested on a device.
 
 ---
 
@@ -78,14 +75,14 @@ Done already (pulled forward into Phase 0.5): ~~flex_color_scheme~~ 9.0.0,
 ~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0. Remaining:
 
 1. **cupertino_icons `1.x → 2.x`** — constraint bump only (iOS glyphs unused here).
-2. **receive_sharing_intent `^1.8.0 → ^1.9.0`** — check `IntentService` still compiles;
-   re-test "open with Teditox" + "share to Teditox" flows on a real device (cold start
-   and warm). This is the app's most fragile platform integration (plugin, not maintained
-   hard — evaluate `flutter_sharing_intent` as successor if 1.9 misbehaves).
-3. **freezed `3.2 → 4.x` + build_runner** — rerun codegen; freezed 4 may require
-   annotation/import tweaks in models (`UndoEntry` etc. are handwritten, so likely just
-   regeneration + `json_serializable` alignment). Grep for generated files committed
-   anywhere; they must not be.
+2. **receive_sharing_intent** — already at 1.9.0 (Phase 1); remaining work is
+   *device* testing: re-test "open with Teditox" + "share to Teditox" flows on a real
+   device (cold start and warm). Plugin is lightly maintained — evaluate
+   `flutter_sharing_intent` as successor if 1.9 misbehaves.
+3. **freezed `3.2 → 4.x` + build_runner `2.15 → 2.17` together** — they are coupled
+   (2.17 breaks freezed 3). Rerun codegen; freezed 4 may require annotation/import
+   tweaks (`UndoEntry` etc. are handwritten, so likely just regeneration). Grep for
+   generated files committed anywhere; they must not be.
 4. **very_good_analysis `10 → 11`** — expect a wave of new lint findings; fix in a
    dedicated lint-only commit so feature diffs stay clean.
 5. **package_info_plus `9 → 10`** — used only in about screen; check API for
