@@ -16,9 +16,8 @@ Android SAF + share-intent file handling, en/es localization.
 
 - Flutter and Dart are installed at `/home/matt/Tools/flutter` (not mise-managed).
   Current toolchain on this machine: **Flutter 3.50.1 / Dart 3.14.0**.
-- `pubspec.yaml` currently pins `environment: flutter: 3.38.1` (exact), which **fails
-  `pub get` on newer SDKs**. See `ROADMAP.md` Phase 0 — do not "fix" this incidentally;
-  the SDK upgrade is a deliberate, tested step.
+- `pubspec.yaml` pins `environment: flutter: 3.50.1` (exact) and `sdk: >=3.10.0`.
+  CI reads the Flutter version from it via `flutter-version-file`.
 - Java 11 is the Android bytecode target (`.java-version`, Gradle `JVM_11`); CI uses
   Temurin 17 to run Gradle. Keep these consistent if you change one.
 - **There is no `flutter migrate` command** (the `.metadata` comment refers to an
@@ -34,7 +33,6 @@ Android SAF + share-intent file handling, en/es localization.
 
 ```bash
 flutter pub get                                          # dependencies
-dart run build_runner build # freezed + l10n codegen
 flutter analyze                                          # lint (very_good_analysis)
 flutter test --coverage                                  # unit tests
 flutter test integration_test                             # integration (needs a device)
@@ -42,13 +40,13 @@ flutter run -d linux                                     # quick manual smoke
 flutter build apk --debug                                # Android debug build
 ```
 
-Codegen outputs are committed/generated artifacts:
+**There is no build_runner/freezed codegen in this project** (removed in
+ROADMAP Phase 2 — no `@freezed`, no `*.g.dart`, nothing to generate). The only
+generated sources are the localizations:
 - `lib/src/core/localization/app_localizations*.dart` — generated from `arb/` by
-  `flutter gen-l10n` (runs automatically via `generate: true` + `flutter pub get`);
+  `flutter gen-l10n`, which runs automatically via `generate: true` + `flutter pub get`;
   excluded from the analyzer — do not hand-edit, do not "fix" their deprecations.
-- `*.g.dart` / `*.freezed.dart` — excluded in `analysis_options.yaml`; edit the source
-  file, then re-run build_runner (note: `--delete-conflicting-outputs` was removed in
-  build_runner 2.17; plain `build` is enough).
+  After editing an `.arb` file, run `flutter gen-l10n` (or `flutter pub get`).
 
 ## Architecture map
 
@@ -86,7 +84,8 @@ Patterns to follow:
   Localization delegates come from material_ui: `...GlobalMaterialLocalizations.delegates`.
 - `very_good_analysis` lint set: public members **require doc comments** — most analyzer
   errors here are missing `///`.
-- Immutable models use `freezed`; run codegen before `flutter analyze`.
+- Plain Dart classes for models (no freezed/codegen — the `freezed`/`build_runner`
+  toolchain was removed in ROADMAP Phase 2 as unused).
 - Tests use `flutter_test` + `mocktail`; see `test/editor_controller_test.dart` for the
   fake-service pattern (subclass + override, real `PreferencesService` is lightweight).
 - Commit style: Conventional Commits (`feat:`/`fix:`/`chore:`/`refactor:`), sometimes
@@ -97,7 +96,7 @@ Patterns to follow:
 
 ## CI/CD
 
-- `.github/workflows/ci.yml`: analyze → build_runner → `flutter test --coverage`
+- `.github/workflows/ci.yml`: analyze → `flutter test --coverage`
   (integration tests are a stubbed echo step — not yet run on CI).
 - `.github/workflows/release.yml`: manual dispatch → signed AAB build using secrets
   (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) → artifact upload.
@@ -112,11 +111,12 @@ Patterns to follow:
   deprecated delegates; their `localizationsDelegates` const is unused by the app).
 - ✅ Phase 1 dep bumps done (intl/logger/get_it/url_launcher/mocktail/splash/
   charset_converter/collection; receive_sharing_intent already at 1.9.0).
+- ✅ Phase 2 done: cupertino_icons removed (unused), **freezed/freezed_annotation/
+  build_runner removed** (never used — no codegen in project), go_router 18,
+  package_info_plus 10, very_good_analysis 11 (5 `async_return_with_no_await` fixes).
+  All direct deps now on latest.
 - Android platform files still on old template (Gradle 8.13, AGP 8.13, Java 11
   target). → ROADMAP.md Phase 3
-- Remaining dep majors: go_router 17→18, freezed 3→4 (+ build_runner 2.17 — coupled,
-  2.17 breaks freezed 3), package_info_plus 9→10, very_good_analysis 10→11.
-  → ROADMAP.md Phase 2
 - Test coverage improved (editor controller + encoding service) but still no widget
   tests, no coverage gate in CI; charset_converter real conversion needs device test.
 - Only en + es locales. See `docs/GROWTH.md` for product priorities.

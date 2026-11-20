@@ -6,12 +6,7 @@ import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 /// List of available fonts for the application.
-const List<String> appFonts = [
-  'Roboto',
-  'Open Sans',
-  'Nata Sans',
-  'Inter',
-];
+const List<String> appFonts = ['Roboto', 'Open Sans', 'Nata Sans', 'Inter'];
 
 /// List of available fonts for the editor.
 const List<String> editorFonts = [
@@ -204,10 +199,7 @@ TextStyle getTextStyle(
   final textTheme = _getTextTheme(fontFamily);
   // If the font is not available, return a default style
   if (textTheme == null) {
-    return TextStyle(
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-    );
+    return TextStyle(fontFamily: fontFamily, fontSize: fontSize);
   }
   // Return the body text style from the text theme or a default style
   return textTheme.bodyMedium?.copyWith(fontSize: fontSize) ??

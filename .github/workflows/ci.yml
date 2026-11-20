@@ -24,9 +24,6 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Run Build Runner
-        run: dart run build_runner build
-
       - name: Test
         run: flutter test --coverage
 

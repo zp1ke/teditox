@@ -193,7 +193,7 @@ class EditorController extends ChangeNotifier {
 
     switch (action) {
       case .save:
-        return save(context);
+        return await save(context);
       case .discard:
         return true;
       case .cancel:
@@ -212,9 +212,7 @@ class EditorController extends ChangeNotifier {
     if (!await _confirmDiscardIfNeeded(context)) return false;
 
     try {
-      final res = await fileService.pickAndOpen(
-        maxBytes: settings.maxFileSize,
-      );
+      final res = await fileService.pickAndOpen(maxBytes: settings.maxFileSize);
       if (res == null) return false;
       currentPath = res.path;
       _displayName = res.displayName;
@@ -324,7 +322,7 @@ class EditorController extends ChangeNotifier {
   Future<bool> save(BuildContext context) async {
     // If no current path, use "Save As"
     if (currentPath == null) {
-      return saveAs(context);
+      return await saveAs(context);
     }
 
     try {
@@ -385,9 +383,7 @@ class EditorController extends ChangeNotifier {
       currentPath = result.path;
       _displayName = result.displayName;
       dirty = false;
-      _pushInitial(
-        UndoEntry(_controller.text, _controller.selection),
-      );
+      _pushInitial(UndoEntry(_controller.text, _controller.selection));
 
       // Add to recent files with display name
       // Estimate file size from content length

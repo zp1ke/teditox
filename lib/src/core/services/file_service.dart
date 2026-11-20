@@ -285,12 +285,12 @@ class FileService {
     required String content,
     required LineEndingStyle lineEndingStyle,
     required String encoding,
-  }) async {
+  }) {
     // Prepare the content with proper line endings and encoding
     final normalized = normalizeLineEndings(content, lineEndingStyle);
     return encodingService.encode(normalized, encoding);
   }
 
   /// Gets the directory for caching files.
-  Future<Directory> getCacheDir() async => getTemporaryDirectory();
+  Future<Directory> getCacheDir() => getTemporaryDirectory();
 }

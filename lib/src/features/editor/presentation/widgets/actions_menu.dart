@@ -42,20 +42,14 @@ class ActionsMenu extends StatelessWidget {
           value: _newAction,
           child: Row(
             spacing: 12,
-            children: [
-              const Icon(Icons.add),
-              Text(loc.new_file),
-            ],
+            children: [const Icon(Icons.add), Text(loc.new_file)],
           ),
         ),
         PopupMenuItem(
           value: _saveAsAction,
           child: Row(
             spacing: 12,
-            children: [
-              const Icon(Icons.save_as_sharp),
-              Text(loc.save_as),
-            ],
+            children: [const Icon(Icons.save_as_sharp), Text(loc.save_as)],
           ),
         ),
         const PopupMenuDivider(),
@@ -66,10 +60,7 @@ class ActionsMenu extends StatelessWidget {
                 value: route.name,
                 child: Row(
                   spacing: 12,
-                  children: [
-                    Icon(route.icon),
-                    Text(route.title(loc)),
-                  ],
+                  children: [Icon(route.icon), Text(route.title(loc))],
                 ),
               ),
             ),

@@ -30,10 +30,7 @@ class ContentUriService {
       if (uri == null) return null;
 
       logger.d('Picked file: $uri (displayName: $displayName)');
-      return {
-        'uri': uri,
-        'displayName': displayName ?? 'unknown',
-      };
+      return {'uri': uri, 'displayName': displayName ?? 'unknown'};
     } on PlatformException catch (e) {
       logger.e('Failed to pick file: ${e.message}');
       return null;
@@ -57,10 +54,7 @@ class ContentUriService {
       if (uri == null) return null;
 
       logger.d('Created file: $uri (displayName: $displayName)');
-      return {
-        'uri': uri,
-        'displayName': displayName ?? fileName,
-      };
+      return {'uri': uri, 'displayName': displayName ?? fileName};
     } on PlatformException catch (e) {
       logger.e('Failed to create file: ${e.message}');
       return null;
@@ -72,10 +66,9 @@ class ContentUriService {
   /// Returns null if the URI cannot be read.
   Future<Uint8List?> readFromUri(String uri) async {
     try {
-      final result = await _channel.invokeMethod<Uint8List>(
-        'readFromUri',
-        {'uri': uri},
-      );
+      final result = await _channel.invokeMethod<Uint8List>('readFromUri', {
+        'uri': uri,
+      });
       logger.d('Read ${result?.length ?? 0} bytes from URI: $uri');
       return result;
     } on PlatformException catch (e) {
@@ -89,10 +82,10 @@ class ContentUriService {
   /// Returns true if the write was successful, false otherwise.
   Future<bool> writeToUri(String uri, Uint8List bytes) async {
     try {
-      final result = await _channel.invokeMethod<bool>(
-        'writeToUri',
-        {'uri': uri, 'bytes': bytes},
-      );
+      final result = await _channel.invokeMethod<bool>('writeToUri', {
+        'uri': uri,
+        'bytes': bytes,
+      });
       logger.d('Wrote ${bytes.length} bytes to URI: $uri');
       return result ?? false;
     } on PlatformException catch (e) {
@@ -106,10 +99,9 @@ class ContentUriService {
   /// Returns null if the name cannot be retrieved.
   Future<String?> getDisplayName(String uri) async {
     try {
-      final result = await _channel.invokeMethod<String>(
-        'getDisplayName',
-        {'uri': uri},
-      );
+      final result = await _channel.invokeMethod<String>('getDisplayName', {
+        'uri': uri,
+      });
       logger.d('Display name for $uri: $result');
       return result;
     } on PlatformException catch (e) {

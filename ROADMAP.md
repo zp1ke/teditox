@@ -5,9 +5,9 @@ several majors behind) to **Flutter 3.50.1 / Dart 3.14** with latest dependencie
 a modernized Android toolchain — in small, verifiable phases, ending in a Play release.
 
 Each phase ends with the **verify gate**:
-`flutter pub get` → `dart run build_runner build --delete-conflicting-outputs` →
-`flutter analyze` → `flutter test` → manual smoke on a debug APK (open/save/share a
-file, undo/redo, crash recovery, settings, both locales, light/dark).
+`flutter pub get` → `flutter analyze` → `flutter test` → manual smoke on a debug APK
+(open/save/share a file, undo/redo, crash recovery, settings, both locales,
+light/dark). (No build_runner step — the project has no codegen; see Phase 2.)
 
 Commit per phase; bump `pubspec.yaml` version + `CHANGELOG.md` at the end (0.2.0+8 is
 suggested — see Breaking-change note under Phase 2).
@@ -69,29 +69,30 @@ Deviations from the plan:
 
 ---
 
-## Phase 2 — Breaking majors (one PR per package, in this order)
+## Phase 2 — Breaking majors — ✅ DONE (2025-11)
 
 Done already (pulled forward into Phase 0.5): ~~flex_color_scheme~~ 9.0.0,
-~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0. Remaining:
+~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0.
 
-1. **cupertino_icons `1.x → 2.x`** — constraint bump only (iOS glyphs unused here).
-2. **receive_sharing_intent** — already at 1.9.0 (Phase 1); remaining work is
-   *device* testing: re-test "open with Teditox" + "share to Teditox" flows on a real
-   device (cold start and warm). Plugin is lightly maintained — evaluate
-   `flutter_sharing_intent` as successor if 1.9 misbehaves.
-3. **freezed `3.2 → 4.x` + build_runner `2.15 → 2.17` together** — they are coupled
-   (2.17 breaks freezed 3). Rerun codegen; freezed 4 may require annotation/import
-   tweaks (`UndoEntry` etc. are handwritten, so likely just regeneration). Grep for
-   generated files committed anywhere; they must not be.
-4. **very_good_analysis `10 → 11`** — expect a wave of new lint findings; fix in a
-   dedicated lint-only commit so feature diffs stay clean.
-5. **package_info_plus `9 → 10`** — used only in about screen; check API for
-   `PackageInfo.fromPlatform()` and plugin's new minSdk/namespace requirements.
-6. **go_router `17 → 18`** — update `router.dart`; majors historically change
-   navigation APIs (e.g. error/no-op builder handling, ShellRoute generics). Re-test
-   back-button behavior with unsaved-changes dialog and drawer navigation.
-7. **package_info_plus / receive_sharing_intent** — as listed above; verify each new
-   version's pubspec depends on `material_ui` (not framework material) before bumping.
+- ~~cupertino_icons 1→2~~ — **removed entirely**: it was a template leftover,
+  unreferenced by any code (app uses `Icons.*`), and neither material_ui nor
+  cupertino_ui needs it.
+- ~~freezed 3→4 + build_runner 2.15→2.17~~ — **removed entirely**. The project has
+  **no codegen**: no `@freezed`, no `part '*.g.dart'`, no generated files; the only
+  "generated" sources are l10n (`flutter gen-l10n`, independent of build_runner).
+  Dropping the dead toolchain removed 9 transitive packages and a no-op CI step.
+- **package_info_plus 9→10** — API unchanged (`PackageInfo.fromPlatform()`).
+- **go_router 17→18** — 18.0.0's only break was the material_ui migration + Flutter
+  3.44 min; our usage (`GoRoute`, `errorBuilder`, `state.uri`) is unaffected.
+- **very_good_analysis 10→11** — 5 new `async_return_with_no_await` findings fixed
+  (2 dropped `async`, 3 `return await`).
+- **receive_sharing_intent** — already 1.9.0; remaining work is *device* verification
+  only: re-test "open with Teditox" + "share to Teditox" (cold start and warm).
+  Plugin is lightly maintained — evaluate `flutter_sharing_intent` as successor if it
+  misbehaves.
+
+All direct dependencies are now on their latest versions (`flutter pub outdated` is
+clean).
 
 **Breaking-change policy:** Phase 2 changes are internal; user-visible behavior should
 not change. If any observable UI/behavior shift is unavoidable, document it in
@@ -173,12 +174,7 @@ project; the numbers were captured 2025-11 — re-verify if SDK moved since):
 
 ## Risks & rollback
 
-- **Highest risk:** receive_sharing_intent (Phase 2.2) and go_router (Phase 2.6) —
-  both affect core open/save navigation flows. Mitigation: one PR each, device testing
-  before merge, tag `v0.1.6` as known-good fallback.
-- **Google Fonts 6→9** may be a dead end if APIs moved incompatibly; fallback plan is
-  removing the dep and wiring bundled fonts via `pubspec` `fonts:` declarations.
-- If freezed 4 codegen fights the current models, staying on freezed 3 for one more
-  release is acceptable — it is not SDK-blocked.
-- Timeline: Phases 0–1 are ~an hour each; 2 is the bulk (a day); 3–5 a day. Realistically
-  a weekend project, shipping 0.2.0 within a week of device testing.
+- **Highest risk:** receive_sharing_intent device flows (Phase 2) — mitigation: device
+  testing before merge, tag `v0.1.6` as known-good fallback.
+- Timeline: Phases 0–2 are done; 3–5 remain (a day or two). Shipping 0.2.0 within a
+  week of device testing is realistic.

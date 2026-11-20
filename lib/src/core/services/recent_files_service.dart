@@ -94,9 +94,7 @@ class RecentFilesService {
     final updated = getAll()
         .where((element) => element.path != path)
         .map((e) => e.toJson());
-    await prefs.setRecentFiles(
-      updated.map(jsonEncode).toList(growable: false),
-    );
+    await prefs.setRecentFiles(updated.map(jsonEncode).toList(growable: false));
   }
 
   /// Clears all recent file entries.

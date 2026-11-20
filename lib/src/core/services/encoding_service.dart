@@ -38,10 +38,7 @@ class EncodingService {
     try {
       return switch (encoding) {
         'utf-8' => utf8.encode(text),
-        String() => await CharsetConverter.encode(
-          encoding,
-          text,
-        ),
+        String() => await CharsetConverter.encode(encoding, text),
       };
     } on Exception catch (_) {
       return utf8.encode(text);

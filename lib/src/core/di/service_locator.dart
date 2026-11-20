@@ -49,9 +49,7 @@ Future<void> configureDependencies() async {
     ..registerLazySingleton<RecoveryService>(
       () => RecoveryService(logger: sl()),
     )
-    ..registerLazySingleton<IntentService>(
-      () => IntentService(logger: sl()),
-    )
+    ..registerLazySingleton<IntentService>(() => IntentService(logger: sl()))
     ..registerSingleton<SettingsController>(settings)
     ..registerLazySingleton<EditorController>(
       () => EditorController(

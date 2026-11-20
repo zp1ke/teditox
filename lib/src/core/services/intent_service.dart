@@ -16,9 +16,7 @@ class IntentService {
   StreamSubscription<List<SharedMediaFile>>? _intentDataStreamSubscription;
 
   /// Initializes the intent service and sets up listeners for incoming files.
-  void initialize({
-    required void Function(String filePath) onFileReceived,
-  }) {
+  void initialize({required void Function(String filePath) onFileReceived}) {
     // Listen for files shared while the app is already running
     _intentDataStreamSubscription = ReceiveSharingIntent.instance
         .getMediaStream()

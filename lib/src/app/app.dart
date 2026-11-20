@@ -23,9 +23,7 @@ class TeditoxApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = sl<SettingsController>();
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: settings),
-      ],
+      providers: [ChangeNotifierProvider.value(value: settings)],
       child: DynamicColorBuilder(
         builder: (lightDynamic, darkDynamic) {
           return _AppContent(
@@ -39,10 +37,7 @@ class TeditoxApp extends StatelessWidget {
 }
 
 class _AppContent extends StatefulWidget {
-  const _AppContent({
-    required this.lightDynamic,
-    required this.darkDynamic,
-  });
+  const _AppContent({required this.lightDynamic, required this.darkDynamic});
 
   final ColorScheme? lightDynamic;
   final ColorScheme? darkDynamic;
@@ -73,9 +68,7 @@ class _AppContentState extends State<_AppContent> {
 
     // Initialize intent service to handle incoming file intents
     _intentService = sl<IntentService>();
-    _intentService.initialize(
-      onFileReceived: _handleIncomingFile,
-    );
+    _intentService.initialize(onFileReceived: _handleIncomingFile);
 
     FlutterNativeSplash.remove();
   }

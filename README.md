@@ -66,11 +66,11 @@ A simple, modular Flutter text editor.
 
 ### Setup
 ```bash
-# Get dependencies
+# Get dependencies (also generates localizations via `generate: true`)
 flutter pub get
 
-# Generate code (Freezed models, localizations)
-dart run build_runner build
+# Regenerate localizations after editing an .arb file
+flutter gen-l10n
 
 # Generate app icons
 dart run flutter_launcher_icons
@@ -173,11 +173,15 @@ Localization files are in `lib/src/core/localization/arb/` and can be extended b
 - **get_it**: Service locator/DI
 - **go_router**: Declarative routing
 
+#### UI platform packages
+- **material_ui**: Material Design widgets (unbundled from the Flutter SDK in 3.47+)
+- **cupertino_ui**: Cupertino widgets
+
 #### Development
-- **freezed**: Immutable data classes
-- **build_runner**: Code generation
 - **very_good_analysis**: Linting rules
 - **mocktail**: Testing utilities
+- **flutter_launcher_icons**: App icon generation
+- **flutter_native_splash**: Splash screen generation
 
 ## CI/CD
 

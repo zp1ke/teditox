@@ -11,10 +11,7 @@ void main() {
 
   group('detectEncoding', () {
     test('detects UTF-8 BOM', () {
-      expect(
-        service.detectEncoding([0xEF, 0xBB, 0xBF, 0x61]),
-        'utf-8',
-      );
+      expect(service.detectEncoding([0xEF, 0xBB, 0xBF, 0x61]), 'utf-8');
     });
 
     test('detects UTF-16LE BOM', () {
@@ -39,9 +36,12 @@ void main() {
     });
 
     test('decode auto-detects and drops UTF-8 BOM bytes', () async {
-      final bytes = Uint8List.fromList(
-        [0xEF, 0xBB, 0xBF, ...utf8.encode('hello')],
-      );
+      final bytes = Uint8List.fromList([
+        0xEF,
+        0xBB,
+        0xBF,
+        ...utf8.encode('hello'),
+      ]);
       final decoded = await service.decode(bytes);
       // dart:convert's UTF-8 decoder strips a leading BOM.
       expect(decoded, 'hello');

@@ -173,9 +173,7 @@ class _RecentScreenState extends State<RecentScreen> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        ?.copyWith(fontWeight: FontWeight.w500),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),

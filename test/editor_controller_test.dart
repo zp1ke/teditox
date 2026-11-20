@@ -30,10 +30,7 @@ class _FakeRecovery extends RecoveryService {
 }
 
 class _FakeSettings extends SettingsController {
-  _FakeSettings()
-    : super(
-        prefs: PreferencesService(),
-      );
+  _FakeSettings() : super(prefs: PreferencesService());
 
   @override
   int get undoDepth => 5;

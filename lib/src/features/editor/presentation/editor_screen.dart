@@ -42,7 +42,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
     switch (action) {
       case .save:
-        return controller.save(context);
+        return await controller.save(context);
       case .discard:
         return true;
       case .cancel:
@@ -71,9 +71,7 @@ class _EditorScreenState extends State<EditorScreen> {
           builder: (context, ctl, _) {
             return Scaffold(
               appBar: AppBar(
-                title: Text(
-                  '${loc.app_name}${ctl.dirty ? ' *' : ''}',
-                ),
+                title: Text('${loc.app_name}${ctl.dirty ? ' *' : ''}'),
                 actions: [
                   IconButton(
                     tooltip: loc.open,
@@ -101,10 +99,7 @@ class _EditorScreenState extends State<EditorScreen> {
               body: Row(
                 children: [
                   if (MediaQuery.of(context).size.width >= 600)
-                    const SizedBox(
-                      width: 220,
-                      child: SidePanel(),
-                    ),
+                    const SizedBox(width: 220, child: SidePanel()),
                   Expanded(
                     child: Column(
                       children: [
@@ -187,10 +182,7 @@ class _StatusBar extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                items.join('  |  '),
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(items.join('  |  '), overflow: TextOverflow.ellipsis),
             ),
           ],
         ),
