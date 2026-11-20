@@ -4,6 +4,9 @@ A simple, modular Flutter text editor.
 
 [![CI](https://github.com/zp1ke/teditox/actions/workflows/ci.yml/badge.svg)](https://github.com/zp1ke/teditox/actions/workflows/ci.yml)
 
+**Docs:** [AGENTS.md](AGENTS.md) · [ROADMAP.md](ROADMAP.md) ·
+[CONTRIBUTING.md](CONTRIBUTING.md) · [Growth analysis](docs/GROWTH.md)
+
 ## Features
 
 ### Core Functionality
@@ -57,8 +60,9 @@ A simple, modular Flutter text editor.
 ## Development
 
 ### Prerequisites
-- Flutter 3.35.6
-- Dart SDK 3.9.0+
+- Flutter SDK matching the `environment:` pin in `pubspec.yaml` (currently 3.38.1;
+  see [ROADMAP.md](ROADMAP.md) for the in-progress upgrade to 3.50+)
+- Dart SDK 3.10+
 
 ### Setup
 ```bash
@@ -109,6 +113,7 @@ lib/
     │   ├── di/                 # Dependency injection (GetIt)
     │   ├── localization/       # i18n setup and ARB files
     │   ├── services/           # Core services
+    │   │   ├── content_uri_service.dart   # Android SAF content-URI access
     │   │   ├── encoding_service.dart      # Text encoding conversion
     │   │   ├── file_service.dart          # File I/O operations
     │   │   ├── intent_service.dart        # Android intent handling
@@ -150,7 +155,6 @@ Localization files are in `lib/src/core/localization/arb/` and can be extended b
 
 #### Core
 - **charset_converter**: Text encoding conversion
-- **file_picker**: Cross-platform file selection
 - **path_provider**: Platform-specific paths
 - **shared_preferences**: Persistent storage
 - **package_info_plus**: App metadata
