@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **v0.1.6+7** Current
+- **v0.2.0+8** Current - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
+- **v0.1.6+7** - Dependency and SDK maintenance
 - **v0.1.5+6** - Storage Access Framework (SAF) integration, recent files redesign
 - **v0.1.4+5** - File handling fixes
 - **v0.1.3+4** - External file handling, UI improvements
@@ -17,7 +18,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.6+7] - Current
+## [0.2.0+8] - 2025-11-20
+
+Maintenance release focused on keeping Teditox buildable and shippable on current
+Flutter/Android tooling. No intentional UI redesign; behaviour is unchanged apart from
+the fixes listed below.
+
+### Changed
+- Upgraded to **Flutter 3.50.1 / Dart 3.14**.
+- Migrated from the deprecated `package:flutter/material.dart` to the `material_ui` /
+  `cupertino_ui` packages (Material/Cupertino were unbundled from the Flutter SDK).
+- Updated all direct dependencies to their latest versions, including `go_router` 18,
+  `flex_color_scheme` 9, `dynamic_color` 2.1, `google_fonts` 9, `package_info_plus` 10,
+  `get_it` 9.3, `logger` 2.8, `intl` 0.20.3 and `charset_converter` 2.5.
+- Modernized the Android toolchain: Gradle 9.5, Android Gradle Plugin 9.3.1,
+  Kotlin 2.4.20, Java 17 bytecode target (built with JDK 21), `compileSdk` 37.
+- Removed the unused `freezed` / `build_runner` code-generation toolchain.
+- Release builds now fall back to debug signing when no keystore is configured, so
+  contributors can build locally.
+
+### Fixed
+- `IntentService` no longer throws `MissingPluginException` on non-Android platforms
+  (Linux desktop, tests); incoming share/open-with intents remain Android-only.
+- Corrected the integration test, which asserted a lowercase app title and could never
+  pass.
+
+### Added
+- Continuous integration now enforces formatting and a test-coverage floor, and builds a
+  debug APK on every push/PR.
+- Android emulator integration tests (weekly and on demand).
+- Automated publishing to the Google Play internal testing track from the release
+  workflow when a service-account key is configured.
+- Dependabot configuration for pub, GitHub Actions and the Android bundler setup.
+
+---
+
+## [0.1.6+7] - 2025-10-12
+
+### Changed
+- Dependency and SDK maintenance.
 
 ## [0.1.5+6] - 2025-10-12
 

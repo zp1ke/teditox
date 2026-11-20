@@ -37,8 +37,9 @@ Android SAF + share-intent file handling, en/es localization.
   `test/widget_test.dart` / stock `ic_launcher.png` mipmaps; keep `launcher_icon.png`).
   For platform upgrades, diff against a freshly generated reference project — see
   ROADMAP.md Phase 0.
-- Shell notes: use `rg`/`fdfind`/`batcat` if available; `pubspec.lock` is gitignored by
-  design (it will appear locally after `pub get` — never commit it).
+- Shell notes: use `rg`/`fdfind`/`batcat` if available. `pubspec.lock` **is committed**
+  (reproducible CI/release builds) — keep it in sync with `pubspec.yaml` and commit the
+  lock change together with any dependency bump.
 - Zero-permission note: the *source* `AndroidManifest.xml` declares no
   `<uses-permission>`. Merged builds add `INTERNET` only in **debug** (Dart VM service)
   and a signature-level `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` from AndroidX in

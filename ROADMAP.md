@@ -171,16 +171,26 @@ coverage floor is a modest 18% (no widget tests yet to raise it meaningfully).
 
 ---
 
-## Phase 5 — Release 0.2.0
+## Phase 5 — Release 0.2.0 — ✅ PREPARED (tag + upload are manual)
 
-1. Version bump `0.2.0+8` in `pubspec.yaml`; CHANGELOG entry summarizing: SDK, deps,
-   toolchain, CI. Update README prerequisites + deps list (it currently still mentions
-   `file_picker` and Flutter 3.35.6 — fix as part of this).
-2. GitHub tag `v0.2.0` → CI builds signed AAB → Play internal → closed testing (let
-   crash-free-rate settle ≥ 7 days) → production.
-3. Refresh store assets in `android/store/` if any UI changed; update
-   `what's new` text from CHANGELOG (en + es).
-4. Post-release: monitor Play vitals for ANR/crash deltas vs 0.1.6.
+Done:
+1. `pubspec.yaml` → `version: 0.2.0+8`; CHANGELOG has a full `[0.2.0+8]` entry and the
+   version-history summary is updated.
+2. README prerequisites/deps refreshed (Flutter 3.50.1, JDK 21, material_ui; the stale
+   `file_picker`/build_runner references are gone).
+3. `release.yml` now builds **both** the AAB (Play) and a release APK (GitHub
+   downloads / sideloading) and attaches both to the GitHub Release.
+4. `pubspec.lock` is committed, so CI/release resolve identical transitive versions.
+
+Remaining (manual, needs credentials/console access):
+1. `git tag v0.2.0+8 && git push --tags`, then run the *Build & Release* workflow
+   (`workflow_dispatch`) → AAB + APK artifact + GitHub Release.
+2. If `PLAY_SERVICE_ACCOUNT_JSON` is configured, the workflow pushes to the Play
+   **internal** track; otherwise upload the AAB manually.
+3. Promote internal → closed testing for ≥ 7 days (watch crash-free rate / ANRs vs
+   0.1.6+7) → production.
+4. Before promoting: smoke-test share/open-with intents on a real device, and confirm
+   the store listing (en + es) — see `docs/GROWTH.md` for listing/ASO ideas.
 
 ---
 
@@ -189,5 +199,5 @@ coverage floor is a modest 18% (no widget tests yet to raise it meaningfully).
 - **Highest risk:** receive_sharing_intent device flows — mitigation: the weekly
   emulator integration job + manual device testing before a Play upload; tag `v0.1.6`
   as the known-good fallback.
-- Timeline: Phases 0–4 are done. Only Phase 5 (version bump + release) remains, plus
-  device smoke testing of share/open-with intents.
+- Timeline: phases 0–4 are done and 0.2.0 is prepared; only the tag/upload and device
+  smoke testing of share/open-with intents remain.
