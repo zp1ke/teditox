@@ -7,7 +7,7 @@ details live in [AGENTS.md](AGENTS.md).
 
 1. Install Flutter (see `environment:` in `pubspec.yaml` for the required SDK).
 2. `flutter pub get`
-3. `dart run build_runner build --delete-conflicting-outputs`
+3. `dart run build_runner build`
 4. `flutter run -d linux` (or an Android device/emulator)
 
 ## Workflow

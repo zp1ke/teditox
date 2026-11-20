@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:teditox/src/core/services/preferences_service.dart';
 
 /// Controller for managing application settings and preferences.

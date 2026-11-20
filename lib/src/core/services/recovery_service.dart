@@ -55,13 +55,13 @@ class RecoverySnapshot {
 
   /// Converts this snapshot to a JSON representation.
   Map<String, dynamic> toJson() => {
-        'c': content,
-        'p': path,
-        'd': dirty,
-        't': timestamp.toIso8601String(),
-        'e': encoding,
-        'l': lineEnding.name,
-      };
+    'c': content,
+    'p': path,
+    'd': dirty,
+    't': timestamp.toIso8601String(),
+    'e': encoding,
+    'l': lineEnding.name,
+  };
 }
 
 /// Service for managing editor state recovery functionality.

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/features/editor/presentation/editor_screen.dart';
@@ -20,8 +20,7 @@ enum AppRoute {
   recent('/recent', 'recent', Icons.history),
 
   /// The route for the about screen.
-  about('/about', 'about', Icons.info_outline)
-  ;
+  about('/about', 'about', Icons.info_outline);
 
   /// Constructor for [AppRoute].
   const AppRoute(this.route, this.name, [this.icon]);

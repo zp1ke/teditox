@@ -60,9 +60,9 @@ A simple, modular Flutter text editor.
 ## Development
 
 ### Prerequisites
-- Flutter SDK matching the `environment:` pin in `pubspec.yaml` (currently 3.38.1;
-  see [ROADMAP.md](ROADMAP.md) for the in-progress upgrade to 3.50+)
-- Dart SDK 3.10+
+- Flutter SDK 3.50.1 (pinned in `environment:` of `pubspec.yaml`; CI reads it via
+  `flutter-version-file`)
+- Dart SDK 3.14+ (ships with Flutter 3.50.1)
 
 ### Setup
 ```bash
@@ -70,7 +70,7 @@ A simple, modular Flutter text editor.
 flutter pub get
 
 # Generate code (Freezed models, localizations)
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 # Generate app icons
 dart run flutter_launcher_icons

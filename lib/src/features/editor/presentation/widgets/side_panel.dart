@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';

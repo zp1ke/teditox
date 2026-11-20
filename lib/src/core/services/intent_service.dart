@@ -23,7 +23,7 @@ class IntentService {
     _intentDataStreamSubscription = ReceiveSharingIntent.instance
         .getMediaStream()
         .listen(
-          (List<SharedMediaFile> value) {
+          (value) {
             logger.i('Received files while app running: ${value.length}');
             _handleSharedFiles(value, onFileReceived);
           },
@@ -36,7 +36,7 @@ class IntentService {
     unawaited(
       ReceiveSharingIntent.instance
           .getInitialMedia()
-          .then((List<SharedMediaFile> value) {
+          .then((value) {
             logger.i('Received files on app launch: ${value.length}');
             _handleSharedFiles(value, onFileReceived);
           })

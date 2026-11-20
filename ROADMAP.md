@@ -14,26 +14,46 @@ suggested — see Breaking-change note under Phase 2).
 
 ---
 
-## Phase 0 — Unblock the SDK (prerequisite for everything)
+## Phase 0 — Unblock the SDK — ✅ DONE (2025-11)
 
-**Problem:** `environment: flutter: 3.38.1` is an *exact* pin; `flutter pub get` fails
-on Flutter 3.50.1. No branch can even build right now.
+Unpinned `environment: flutter: 3.50.1`, Dart SDK 3.14. `pub get`, codegen,
+`analyze`, `test`, `format` all pass.
 
-1. Change `pubspec.yaml`:
-   - `environment: sdk: ^3.14.0` (or `>=3.14.0 <4.0.0`), `flutter: ">=3.50.1"`
-     (keep the pin in the file so CI's `flutter-version-file:` keeps working; if you
-     prefer reproducibility, pin exact `3.50.1` and install that version).
-2. Run `flutter migrate` to refresh platform template files (android/, linux/) —
-   review diffs, don't blind-accept.
-3. Verify gate. Commit `chore: upgrade SDK pin to Flutter 3.50.1 / Dart 3.14`.
+Note: build_runner 2.17 **removed `--delete-conflicting-outputs`** (now a no-op
+warning flag). Plain `dart run build_runner build` is enough — update CI + docs.
 
-**Deliverable:** repo builds again. This alone unblocks all other work.
+---
+
+## Phase 0.5 — material_ui unbundle migration — ✅ DONE (2025-11, unplanned)
+
+Flutter 3.47+ deprecated `package:flutter/material.dart` and `cupertino.dart`:
+Material/Cupertino were **unbundled** into the `material_ui` / `cupertino_ui`
+packages (flutter/packages). The two implementations are **not type-compatible**,
+so migrating the app forces the theming plugins onto the package versions.
+
+What was done:
+- Added `material_ui: ^1.11.1`, `cupertino_ui: ^1.1.7`.
+- Ran the official migration: `dart fix --apply --code=migrate_design_widgets`
+  (swapped imports in 15 files) + `dart fix --apply --code=directives_ordering`.
+- Upgraded the plugins that had already moved to material_ui (pulled forward from
+  Phase 2/1): **flex_color_scheme 8→9.0.0**, **dynamic_color 1.7→2.1.0**,
+  **google_fonts 6→9.0.0** (v6 returned framework `TextTheme` → type errors).
+- `app.dart`: replaced flutter_localizations delegates with
+  `...GlobalMaterialLocalizations.delegates` (material_ui) — removed the
+  flutter_localizations import entirely.
+- `analysis_options.yaml`: excluded generated `app_localizations*.dart` (the
+  gen-l10n template still emits deprecated Global delegates; their
+  `localizationsDelegates` const is unused by the app).
+
+Rules going forward: **import `package:material_ui/material_ui.dart`, never
+`package:flutter/material.dart`** — and any new UI-flavored dependency must already
+depend on material_ui (check its pubspec before adding).
 
 ---
 
 ## Phase 1 — Safe (minor/patch) dependency bumps
 
-Bump constraints within `^` ranges first — near-zero API risk:
+Bump constraints — near-zero API risk:
 
 | Package | From | To | Risk |
 |---|---|---|---|
@@ -54,7 +74,8 @@ indiscriminate flag — it will also pull the Phase-2 majors). Verify gate.
 
 ## Phase 2 — Breaking majors (one PR per package, in this order)
 
-Order chosen so riskier theme/router changes land after the mechanical ones.
+Done already (pulled forward into Phase 0.5): ~~flex_color_scheme~~ 9.0.0,
+~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0. Remaining:
 
 1. **cupertino_icons `1.x → 2.x`** — constraint bump only (iOS glyphs unused here).
 2. **receive_sharing_intent `^1.8.0 → ^1.9.0`** — check `IntentService` still compiles;
@@ -72,13 +93,8 @@ Order chosen so riskier theme/router changes land after the mechanical ones.
 6. **go_router `17 → 18`** — update `router.dart`; majors historically change
    navigation APIs (e.g. error/no-op builder handling, ShellRoute generics). Re-test
    back-button behavior with unsaved-changes dialog and drawer navigation.
-7. **google_fonts `6 → 9`** — three majors. `GoogleFonts.config.allowRuntimeFetching`
-   in `main.dart` and any generated `GoogleFonts.xxx()` calls need review; app bundles
-   the fonts as assets, so worst case is dropping google_fonts entirely and declaring
-   `fontFamily` from bundled assets (nice-to-have: removes a network-capable dep).
-8. **flex_color_scheme `8 → 9` + dynamic_color `1.7 → 2.1`** — touch `app_theme.dart`
-   only; screenshot-compare light/dark/M3-dynamic on Android 12+. Re-generate splash +
-   launcher icons after (Phase 3 tooling).
+7. **package_info_plus / receive_sharing_intent** — as listed above; verify each new
+   version's pubspec depends on `material_ui` (not framework material) before bumping.
 
 **Breaking-change policy:** Phase 2 changes are internal; user-visible behavior should
 not change. If any observable UI/behavior shift is unavoidable, document it in
@@ -93,8 +109,31 @@ CHANGELOG under `Changed` and ship as **0.2.0**.
    - `android/build.gradle.kts`: subproject `JVM_17` block
    - `.java-version`: `17` (and confirm mise has temurin-17 locally — it does)
    - CI `release.yml` `java-version: '17'` stays (bump to 21 only if AGP requires)
-2. `flutter migrate` again on this SDK to update Gradle wrapper (8.13 → template's
-   version), AGP, Kotlin, and `android/gradle.properties` (e.g. `flutter.*` flags).
+2. Port the reference-project diffs (see below for how to regenerate the reference
+project; the numbers were captured 2025-11 — re-verify if SDK moved since):
+   - `gradle-wrapper.properties`: 8.13 → **9.5.0** (Gradle 9 is a major: check
+     convention/deprecation warnings in `./gradlew` output; may need `gradle.properties`
+     compatibility flags temporarily)
+   - `settings.gradle.kts`: AGP → **9.3.1**, Kotlin → **2.4.20** (AGP 9 drops defaults
+     like `buildConfig`/`androidResources` behaviors — build a debug APK early in this
+     step to surface failures)
+   - `gradle.properties`: drop `android.enableJetifier` + `kotlin.jvm.target.validation.mode`;
+     add `android.newDsl=false`, `android.builtInKotlin=false` (keep our jvmargs)
+   - `android/build.gradle.kts`: remove our subprojects JVM-target hack once app-level
+     target is 17
+   - `linux/`: port `CMakeLists.txt` + `runner/` diffs (cosmetic here)
+   Then regenerate a reference project again after each SDK upgrade to re-diff.
+
+   > How-to (there is **no `flutter migrate` command** — the `.metadata` comment refers
+   > to an unshipped feature; `flutter create .` only *repairs missing* files and never
+   > overwrites existing ones):
+   > ```bash
+   > flutter create --no-pub --org org.zp1ke --project-name teditox --platforms=android,linux /tmp/teditox_ref
+   > diff -rq /tmp/teditox_ref/android android && diff -rq /tmp/teditox_ref/linux linux
+   > ```
+   > Optionally also run `flutter create --no-pub --platforms=android,linux .` to repair
+   > missing files — then delete template junk it recreates (`test/widget_test.dart`,
+   > stock `ic_launcher.png` mipmaps; our icons are `launcher_icon.png`).
 3. Confirm `targetSdk`/`compileSdk` resolve from `flutter.targetSdkVersion` and meet
    the current Play target-API policy (Android 15/API 35 for updates). If Flutter 3.50's
    default is below policy, set explicitly.

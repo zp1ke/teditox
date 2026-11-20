@@ -1,0 +1,7 @@
+
+[tasks.test]
+description = "Analyze and run tests"
+run = '''
+flutter analyze
+flutter test
+'''

@@ -21,6 +21,12 @@ Android SAF + share-intent file handling, en/es localization.
   the SDK upgrade is a deliberate, tested step.
 - Java 11 is the Android bytecode target (`.java-version`, Gradle `JVM_11`); CI uses
   Temurin 17 to run Gradle. Keep these consistent if you change one.
+- **There is no `flutter migrate` command** (the `.metadata` comment refers to an
+  unshipped feature). `flutter create .` only *repairs missing* files — it never
+  updates existing platform files, and it can add template junk (delete any recreated
+  `test/widget_test.dart` / stock `ic_launcher.png` mipmaps; keep `launcher_icon.png`).
+  For platform upgrades, diff against a freshly generated reference project — see
+  ROADMAP.md Phase 0.
 - Shell notes: use `rg`/`fdfind`/`batcat` if available; `pubspec.lock` is gitignored by
   design (it will appear locally after `pub get` — never commit it).
 
@@ -28,7 +34,7 @@ Android SAF + share-intent file handling, en/es localization.
 
 ```bash
 flutter pub get                                          # dependencies
-dart run build_runner build --delete-conflicting-outputs # freezed + l10n codegen
+dart run build_runner build # freezed + l10n codegen
 flutter analyze                                          # lint (very_good_analysis)
 flutter test --coverage                                  # unit tests
 flutter test integration_test                             # integration (needs a device)
@@ -38,9 +44,11 @@ flutter build apk --debug                                # Android debug build
 
 Codegen outputs are committed/generated artifacts:
 - `lib/src/core/localization/app_localizations*.dart` — generated from `arb/` by
-  `flutter gen-l10n` (runs automatically via `generate: true` + `flutter pub get`).
+  `flutter gen-l10n` (runs automatically via `generate: true` + `flutter pub get`);
+  excluded from the analyzer — do not hand-edit, do not "fix" their deprecations.
 - `*.g.dart` / `*.freezed.dart` — excluded in `analysis_options.yaml`; edit the source
-  file, then re-run build_runner.
+  file, then re-run build_runner (note: `--delete-conflicting-outputs` was removed in
+  build_runner 2.17; plain `build` is enough).
 
 ## Architecture map
 
