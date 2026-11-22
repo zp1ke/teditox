@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the limit and links to Settings.
 - Saves of normal files are atomic. Startup reopens the last file unless a crash snapshot
   exists or the new setting is turned off.
+- Find and replace in the current file, including replace-all as one undo step.
+- Keyboard shortcuts for save, open, new, find, and undo/redo. Listed on the About screen.
+- Share sends the current text to another app on Android. Elsewhere it is copied.
+- The next save can use a chosen line ending and encoding.
 
 ---
 

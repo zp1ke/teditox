@@ -10,6 +10,7 @@ import 'package:teditox/src/core/utils/line_endings.dart';
 import 'package:teditox/src/core/widgets/file_open_error_dialog.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/text_delta.dart';
+import 'package:teditox/src/features/editor/presentation/text_search.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
 final _whitespace = RegExp(r'\s+');
@@ -705,6 +706,54 @@ class EditorController extends ChangeNotifier {
       lineEnding: lineEnding,
     );
     unawaited(recoveryService.saveSnapshot(fileService, snap));
+  }
+
+  /// Selects [start] inclusive to [end] exclusive in the buffer.
+  void selectRange(int start, int end) {
+    final length = _controller.text.length;
+    final clampedStart = start.clamp(0, length);
+    final clampedEnd = end.clamp(0, length);
+    _controller.selection = TextSelection(
+      baseOffset: clampedStart,
+      extentOffset: clampedEnd,
+    );
+  }
+
+  /// Replaces one span and records a single undo step.
+  void replaceRange(int start, int end, String replacement) {
+    final next = _controller.text.replaceRange(start, end, replacement);
+    _controller.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: start + replacement.length),
+    );
+    commitEdit();
+  }
+
+  /// Replaces every [matches] span and records a single undo step.
+  void replaceAll(List<TextMatch> matches, String replacement) {
+    if (matches.isEmpty) return;
+    _controller.text = replaceAllMatches(
+      _controller.text,
+      matches,
+      replacement,
+    );
+    commitEdit();
+  }
+
+  /// Changes how the next save encodes the buffer.
+  ///
+  /// The in-memory text stays as-is. Line endings and charset are applied
+  /// on save.
+  void setSaveFormat({LineEndingStyle? endings, String? encoding}) {
+    if (endings != null) lineEnding = endings;
+    if (encoding != null) currentEncoding = encoding;
+    notifyListeners();
+  }
+
+  /// Flushes the coalesced undo timer so the latest edit is one undo step.
+  void commitEdit() {
+    _debounce?.cancel();
+    _pushUndo();
   }
 
   /// Disposes of resources used by the controller.

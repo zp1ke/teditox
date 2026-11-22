@@ -1,14 +1,17 @@
 package org.zp1ke.teditox
 
+import android.content.ClipData
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
+import java.io.File
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "org.zp1ke.teditox/content_uri"
@@ -121,6 +124,33 @@ class MainActivity : FlutterActivity() {
                     } catch (e: Exception) {
                         // Permission might already be taken or not available
                         result.success(false)
+                    }
+                }
+                "shareFile" -> {
+                    val path = call.argument<String>("path")
+                    val text = call.argument<String>("text") ?: ""
+                    if (path == null) {
+                        result.error("INVALID_ARGUMENT", "path is required", null)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        val file = File(path)
+                        val uri = FileProvider.getUriForFile(
+                            this,
+                            "$packageName.fileprovider",
+                            file,
+                        )
+                        val send = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_TEXT, text)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            clipData = ClipData.newRawUri("shared", uri)
+                        }
+                        startActivity(Intent.createChooser(send, null))
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("SHARE_ERROR", e.message, null)
                     }
                 }
                 else -> result.notImplemented()

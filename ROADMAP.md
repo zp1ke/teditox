@@ -161,21 +161,35 @@ Acceptance: relaunch returns to the last file with its encoding/line endings.
 
 ---
 
-## Phase C — Missing features (highest user value first)
+## Phase C — Missing features — C1–C3 and C5 done, C4 still open
 
-### C1. Search & replace in the buffer ⭐
+### C1. Search & replace — ✅
+Find bar with next/previous, match count, case and whole-word toggles, replace and
+replace-all. Replace records one undo step. Logic is in `text_search.dart` and covered
+by unit tests. The bar sits above the editor, so wrapping and the gutter are unchanged.
+
+### C1 notes
 The single biggest gap versus competing notepads (see `docs/GROWTH.md`).
 Scope: in-file find bar (Ctrl/Cmd+F), match count, next/prev, case/whole-word toggles,
 optional replace/replace-all with a single undo entry.
 Acceptance: works with wrapping on/off and with the line-number gutter; covered by
 controller tests (no UI-only logic).
 
-### C2. Keyboard shortcuts (ChromeOS / tablet / external keyboards)
+### C2. Keyboard shortcuts — ✅
+Ctrl/Cmd+S, Shift+S, O, N, F, Z, Shift+Z, Y, and Esc (closes find) are handled before
+the text field sees them, so they do not fight the field's own undo. Listed on the
+About screen.
+
+### C2 notes
 Ctrl/Cmd + S (save), Shift+S (save as), O (open), N (new), F (find), Z/Y (undo/redo),
 and Escape to dismiss dialogs. Today only on-screen actions exist.
 Acceptance: documented in the About screen; no conflicts with `TextField` defaults.
 
-### C3. Share / export the current buffer
+### C3. Share — ✅
+Share writes a cache copy and, on Android, sends it with `ACTION_SEND` through a
+FileProvider (no new permission). Other platforms copy the text to the clipboard.
+
+### C3 notes
 The app ingests shared text files but cannot send one out. Add "Share" that writes a
 cache copy and fires `ACTION_SEND` (no new permissions needed).
 Acceptance: round-trips with a stock file manager/messaging app.
@@ -184,7 +198,11 @@ Acceptance: round-trips with a stock file manager/messaging app.
 Syntax-free preview toggle + heading/list highlighting. Keep it off by default so
 "simple" stays simple.
 
-### C5. Line-ending / encoding conversion on save
+### C5. Save format — ✅
+The actions menu can set the line ending and encoding used on the next save, and shows
+the chosen pair. The buffer itself is not rewritten until save.
+
+### C5 notes
 Currently the detected style is preserved; let users deliberately convert (LF → CRLF,
 UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
@@ -231,6 +249,5 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
 1. ~~A1–A5~~ done.
 2. ~~B1–B5~~ done.
-3. **C1** (feature gap, then release 0.3.0)
-4. **C2, C3**
-5. **D1–D4**, **C4/C5**, Phase E — as feedback dictates.
+3. ~~C1–C3, C5~~ done. **C4** (optional markdown) is still open.
+4. **D1–D4**, then **C4** if feedback asks for it, then Phase E.

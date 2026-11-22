@@ -104,5 +104,34 @@
   },
   "file_unreadable_unknown": "this file",
   "reopen_with_encoding": "Reopen with encoding",
-  "restore_last_file": "Reopen last file on startup"
+  "restore_last_file": "Reopen last file on startup",
+  "find": "Find",
+  "find_hint": "Find",
+  "find_next": "Next match",
+  "find_previous": "Previous match",
+  "find_match_case": "Match case",
+  "find_whole_word": "Whole word",
+  "find_no_matches": "No matches",
+  "find_match_count": "{current}/{total}",
+  "@find_match_count": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "replace": "Replace",
+  "replace_hint": "Replace",
+  "replace_all": "Replace all",
+  "close": "Close",
+  "share": "Share",
+  "share_copied": "Sharing is not available here. The text was copied instead.",
+  "convert_format": "Save as encoding",
+  "convert_format_applied": "Next save will use {endings} and {encoding}.",
+  "@convert_format_applied": {
+    "placeholders": {
+      "endings": {"type": "String"},
+      "encoding": {"type": "String"}
+    }
+  },
+  "keyboard_shortcuts": "Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find."
 }

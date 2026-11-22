@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:teditox/src/app/router.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/utils/context.dart';
+import 'package:teditox/src/core/utils/line_endings.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 
 const _newAction = 'new';
 const _saveAsAction = 'save_as';
 const _reopenEncodingAction = 'reopen_encoding';
+const _convertFormatAction = 'convert_format';
 
 Future<void> _reopenWithEncoding(
   BuildContext context,
@@ -33,6 +35,73 @@ Future<void> _reopenWithEncoding(
   await controller.reopenWithEncoding(context, encoding);
 }
 
+Future<void> _convertFormat(
+  BuildContext context,
+  EditorController controller,
+) async {
+  final loc = AppLocalizations.of(context);
+  var endings = controller.lineEnding;
+  var encoding = controller.currentEncoding;
+  final saved = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(loc.convert_format),
+      content: StatefulBuilder(
+        builder: (context, setState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButton<LineEndingStyle>(
+              isExpanded: true,
+              value: endings,
+              items: [
+                for (final style in LineEndingStyle.values)
+                  DropdownMenuItem(
+                    value: style,
+                    child: Text(style.name.toUpperCase()),
+                  ),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => endings = value);
+              },
+            ),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: encoding,
+              items: [
+                for (final name
+                    in controller.fileService.encodingService.supported)
+                  DropdownMenuItem(value: name, child: Text(name)),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => encoding = value);
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(loc.cancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(loc.ok),
+        ),
+      ],
+    ),
+  );
+  if (saved != true || !context.mounted) return;
+  controller.setSaveFormat(endings: endings, encoding: encoding);
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        loc.convert_format_applied(endings.name.toUpperCase(), encoding),
+      ),
+    ),
+  );
+}
+
 /// Actions menu widget that provides a popup menu with various editor actions.
 class ActionsMenu extends StatelessWidget {
   /// Creates an actions menu widget.
@@ -53,6 +122,8 @@ class ActionsMenu extends StatelessWidget {
           unawaited(ctl.saveAs(context));
         } else if (value case _reopenEncodingAction) {
           unawaited(_reopenWithEncoding(context, ctl));
+        } else if (value case _convertFormatAction) {
+          unawaited(_convertFormat(context, ctl));
         } else {
           for (final route in AppRoute.values) {
             if (value == route.name) {
@@ -75,6 +146,13 @@ class ActionsMenu extends StatelessWidget {
           child: Row(
             spacing: 12,
             children: [const Icon(Icons.save_as_sharp), Text(loc.save_as)],
+          ),
+        ),
+        PopupMenuItem(
+          value: _convertFormatAction,
+          child: Row(
+            spacing: 12,
+            children: [const Icon(Icons.swap_horiz), Text(loc.convert_format)],
           ),
         ),
         PopupMenuItem(

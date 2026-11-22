@@ -83,5 +83,22 @@
   "file_unreadable": "No se pudo leer {name}.",
   "file_unreadable_unknown": "este archivo",
   "reopen_with_encoding": "Reabrir con codificación",
-  "restore_last_file": "Reabrir el último archivo al iniciar"
+  "restore_last_file": "Reabrir el último archivo al iniciar",
+  "find": "Buscar",
+  "find_hint": "Buscar",
+  "find_next": "Siguiente",
+  "find_previous": "Anterior",
+  "find_match_case": "Coincidir mayúsculas",
+  "find_whole_word": "Palabra completa",
+  "find_no_matches": "Sin coincidencias",
+  "find_match_count": "{current}/{total}",
+  "replace": "Reemplazar",
+  "replace_hint": "Reemplazar",
+  "replace_all": "Reemplazar todo",
+  "close": "Cerrar",
+  "share": "Compartir",
+  "share_copied": "Compartir no está disponible aquí. El texto se copió.",
+  "convert_format": "Guardar con codificación",
+  "convert_format_applied": "El próximo guardado usará {endings} y {encoding}.",
+  "keyboard_shortcuts": "Atajos: Ctrl/Cmd+S guardar, Shift+S guardar como, O abrir, N nuevo, F buscar, Z deshacer, Shift+Z o Y rehacer, Esc cerrar búsqueda."
 }

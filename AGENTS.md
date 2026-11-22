@@ -152,7 +152,7 @@ Patterns to follow:
   replace, keyboard shortcuts, share-out).
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
   conversion can only be verified on a device.
-- ROADMAP Phases A and B are done (gutter/undo/counts/recovery, plus encoding
-  detection, recent-file pruning, classified open errors, atomic saves, and last-file
-  restore). Next work is Phase C: search and replace.
+- ROADMAP Phases A–C are done except optional markdown preview (C4). Search/replace,
+  shortcuts, share, and save-format conversion shipped with C. Next work is Phase D
+  (accessibility, locales, tablet polish) or C4 if feedback asks for markdown.
 - Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.

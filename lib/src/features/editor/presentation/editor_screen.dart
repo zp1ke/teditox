@@ -5,10 +5,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/services/share_service.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/actions_menu.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/editor_text_area.dart';
+import 'package:teditox/src/features/editor/presentation/widgets/find_bar.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/side_panel.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
@@ -26,12 +28,82 @@ class EditorScreen extends StatefulWidget {
 
 class _EditorScreenState extends State<EditorScreen> {
   late final EditorController controller;
+  final _findKey = GlobalKey<FindBarState>();
+  var _findOpen = false;
 
   @override
   void initState() {
     super.initState();
     controller = sl<EditorController>();
     unawaited(controller.restoreSession());
+    HardwareKeyboard.instance.addHandler(_onKey);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKey);
+    super.dispose();
+  }
+
+  bool _onKey(KeyEvent event) {
+    if (event is! KeyDownEvent || !mounted) return false;
+    if (ModalRoute.of(context)?.isCurrent != true) return false;
+    final pressed = HardwareKeyboard.instance.logicalKeysPressed;
+    final shortcut =
+        pressed.contains(LogicalKeyboardKey.controlLeft) ||
+        pressed.contains(LogicalKeyboardKey.controlRight) ||
+        pressed.contains(LogicalKeyboardKey.metaLeft) ||
+        pressed.contains(LogicalKeyboardKey.metaRight);
+    final shift =
+        pressed.contains(LogicalKeyboardKey.shiftLeft) ||
+        pressed.contains(LogicalKeyboardKey.shiftRight);
+    if (event.logicalKey == LogicalKeyboardKey.escape && _findOpen) {
+      setState(() => _findOpen = false);
+      return true;
+    }
+    if (!shortcut) return false;
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.keyS:
+        unawaited(
+          shift ? controller.saveAs(context) : controller.save(context),
+        );
+      case LogicalKeyboardKey.keyO:
+        unawaited(controller.openFile(context));
+      case LogicalKeyboardKey.keyN:
+        unawaited(controller.newFile(context));
+      case LogicalKeyboardKey.keyF:
+        _openFind();
+      case LogicalKeyboardKey.keyZ:
+        if (shift) {
+          controller.redo();
+        } else {
+          controller.undo();
+        }
+      case LogicalKeyboardKey.keyY:
+        controller.redo();
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  void _openFind() {
+    setState(() => _findOpen = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _findKey.currentState?.focusQuery();
+    });
+  }
+
+  Future<void> _share() async {
+    final loc = AppLocalizations.of(context);
+    final shared = await sl<ShareService>().shareText(
+      text: controller.controller.text,
+      fileName: controller.currentFileName ?? loc.new_file_name,
+    );
+    if (!mounted || shared) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(loc.share_copied)));
   }
 
   Future<bool> _handleBack() async {
@@ -82,6 +154,16 @@ class _EditorScreenState extends State<EditorScreen> {
                     tooltip: loc.save,
                     icon: const Icon(Icons.save),
                     onPressed: () => ctl.save(context),
+                  ),
+                  IconButton(
+                    tooltip: loc.find,
+                    icon: const Icon(Icons.search),
+                    onPressed: _openFind,
+                  ),
+                  IconButton(
+                    tooltip: loc.share,
+                    icon: const Icon(Icons.share),
+                    onPressed: _share,
                   ),
                   IconButton(
                     tooltip: loc.undo,
@@ -137,6 +219,12 @@ class _EditorScreenState extends State<EditorScreen> {
                             ),
                           ),
                         ),
+                        if (_findOpen)
+                          FindBar(
+                            key: _findKey,
+                            controller: controller,
+                            onClose: () => setState(() => _findOpen = false),
+                          ),
                         Expanded(
                           child: EditorTextArea(
                             showLineNumbers: settings.showLineNumbers,

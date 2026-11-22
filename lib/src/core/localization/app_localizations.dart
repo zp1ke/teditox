@@ -517,6 +517,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reopen last file on startup'**
   String get restore_last_file;
+
+  /// No description provided for @find.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get find;
+
+  /// No description provided for @find_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get find_hint;
+
+  /// No description provided for @find_next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get find_next;
+
+  /// No description provided for @find_previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get find_previous;
+
+  /// No description provided for @find_match_case.
+  ///
+  /// In en, this message translates to:
+  /// **'Match case'**
+  String get find_match_case;
+
+  /// No description provided for @find_whole_word.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole word'**
+  String get find_whole_word;
+
+  /// No description provided for @find_no_matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches'**
+  String get find_no_matches;
+
+  /// No description provided for @find_match_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total}'**
+  String find_match_count(int current, int total);
+
+  /// No description provided for @replace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replace;
+
+  /// No description provided for @replace_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get replace_hint;
+
+  /// No description provided for @replace_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all'**
+  String get replace_all;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @share_copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing is not available here. The text was copied instead.'**
+  String get share_copied;
+
+  /// No description provided for @convert_format.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as encoding'**
+  String get convert_format;
+
+  /// No description provided for @convert_format_applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Next save will use {endings} and {encoding}.'**
+  String convert_format_applied(String endings, String encoding);
+
+  /// No description provided for @keyboard_shortcuts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find.'**
+  String get keyboard_shortcuts;
 }
 
 class _AppLocalizationsDelegate

@@ -85,6 +85,10 @@ class _AboutScreenState extends State<AboutScreen> {
               loc.app_description,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+            Text(
+              loc.keyboard_shortcuts,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             const SizedBox(height: 32),
 
             // License link

@@ -229,4 +229,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restore_last_file => 'Reopen last file on startup';
+
+  @override
+  String get find => 'Find';
+
+  @override
+  String get find_hint => 'Find';
+
+  @override
+  String get find_next => 'Next match';
+
+  @override
+  String get find_previous => 'Previous match';
+
+  @override
+  String get find_match_case => 'Match case';
+
+  @override
+  String get find_whole_word => 'Whole word';
+
+  @override
+  String get find_no_matches => 'No matches';
+
+  @override
+  String find_match_count(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get replace => 'Replace';
+
+  @override
+  String get replace_hint => 'Replace';
+
+  @override
+  String get replace_all => 'Replace all';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get share_copied =>
+      'Sharing is not available here. The text was copied instead.';
+
+  @override
+  String get convert_format => 'Save as encoding';
+
+  @override
+  String convert_format_applied(String endings, String encoding) {
+    return 'Next save will use $endings and $encoding.';
+  }
+
+  @override
+  String get keyboard_shortcuts =>
+      'Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find.';
 }

@@ -229,4 +229,61 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get restore_last_file => 'Reabrir el último archivo al iniciar';
+
+  @override
+  String get find => 'Buscar';
+
+  @override
+  String get find_hint => 'Buscar';
+
+  @override
+  String get find_next => 'Siguiente';
+
+  @override
+  String get find_previous => 'Anterior';
+
+  @override
+  String get find_match_case => 'Coincidir mayúsculas';
+
+  @override
+  String get find_whole_word => 'Palabra completa';
+
+  @override
+  String get find_no_matches => 'Sin coincidencias';
+
+  @override
+  String find_match_count(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get replace => 'Reemplazar';
+
+  @override
+  String get replace_hint => 'Reemplazar';
+
+  @override
+  String get replace_all => 'Reemplazar todo';
+
+  @override
+  String get close => 'Cerrar';
+
+  @override
+  String get share => 'Compartir';
+
+  @override
+  String get share_copied =>
+      'Compartir no está disponible aquí. El texto se copió.';
+
+  @override
+  String get convert_format => 'Guardar con codificación';
+
+  @override
+  String convert_format_applied(String endings, String encoding) {
+    return 'El próximo guardado usará $endings y $encoding.';
+  }
+
+  @override
+  String get keyboard_shortcuts =>
+      'Atajos: Ctrl/Cmd+S guardar, Shift+S guardar como, O abrir, N nuevo, F buscar, Z deshacer, Shift+Z o Y rehacer, Esc cerrar búsqueda.';
 }
