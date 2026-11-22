@@ -9,7 +9,10 @@ import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
 import 'package:teditox/src/core/utils/line_endings.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
+import 'package:teditox/src/features/editor/presentation/text_delta.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
+
+final _whitespace = RegExp(r'\s+');
 
 /// Non-blank trimmed name, or null.
 String? _usableName(String? value) {
@@ -23,14 +26,23 @@ String? _usableName(String? value) {
 /// Contains both the text content and cursor selection position
 /// for a specific point in the editing history.
 class UndoEntry {
-  /// Creates an undo entry with the given text and selection.
-  UndoEntry(this.text, this.selection);
+  /// Creates a base entry holding the full [text].
+  UndoEntry(this.text, this.selection) : delta = null;
 
-  /// The text content at this point in history.
-  final String text;
+  /// Creates an entry that transforms the previous text by [delta].
+  UndoEntry.delta(this.delta, this.selection) : text = null;
 
-  /// The cursor selection position at this point in history.
+  /// Full text, set only on the base entry and after the stack is folded.
+  final String? text;
+
+  /// Change from the previous entry. Null on the base entry.
+  final TextDelta? delta;
+
+  /// Cursor selection after this step.
   final TextSelection selection;
+
+  /// Characters retained by this step.
+  int get payloadBytes => text?.length ?? delta?.payloadBytes ?? 0;
 }
 
 /// Controller for managing text editor state and operations.
@@ -47,10 +59,8 @@ class EditorController extends ChangeNotifier {
     required this.logger,
   }) {
     _controller.addListener(_onTextChanged);
-    _previousText = _controller.text;
-    _recoveryTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      _maybeSnapshot();
-    });
+    _markSeen(_controller.text);
+    _undoTip = _controller.text;
   }
 
   /// Service for file operations (open, save, etc.).
@@ -69,7 +79,13 @@ class EditorController extends ChangeNotifier {
   final Logger logger;
 
   final TextEditingController _controller = TextEditingController();
-  String _previousText = '';
+  int _seenFingerprint = 0;
+  String _undoTip = '';
+  int _wordCount = 0;
+  int _charCount = 0;
+  int _lineCount = 1;
+  bool _countsStale = true;
+  int? _lastSnapshotFingerprint;
 
   /// The underlying text editing controller.
   ///
@@ -102,16 +118,48 @@ class EditorController extends ChangeNotifier {
   int get undoDepth => settings.undoDepth;
 
   Timer? _debounce;
+  Timer? _countsTimer;
   Timer? _recoveryTimer;
 
   void _onTextChanged() {
-    // Only notify and mark dirty if the actual text content changed
-    // (not just selection or focus changes)
-    if (_controller.text != _previousText) {
-      _previousText = _controller.text;
-      dirty = true;
-      _scheduleCoalescedPush();
-      notifyListeners();
+    // Selection and focus also notify the controller. A fingerprint avoids
+    // retaining a second copy of a large buffer just to detect a change.
+    final text = _controller.text;
+    final fingerprint = _fingerprint(text);
+    if (fingerprint == _seenFingerprint) return;
+    _seenFingerprint = fingerprint;
+    _countsStale = true;
+    _setDirty(true);
+    _scheduleCoalescedPush();
+    if (settings.showWordCount) _scheduleCounts();
+    notifyListeners();
+  }
+
+  void _markSeen(String text) {
+    _seenFingerprint = _fingerprint(text);
+  }
+
+  int _fingerprint(String text) {
+    if (text.isEmpty) return 0;
+    return Object.hash(
+      text.length,
+      text.hashCode,
+      text.codeUnitAt(0),
+      text.codeUnitAt(text.length ~/ 2),
+      text.codeUnitAt(text.length - 1),
+    );
+  }
+
+  void _setDirty(bool value) {
+    dirty = value;
+    if (value) {
+      _recoveryTimer ??= Timer.periodic(const Duration(seconds: 10), (_) {
+        _maybeSnapshot();
+      });
+    } else {
+      _recoveryTimer?.cancel();
+      _recoveryTimer = null;
+      _lastSnapshotFingerprint = null;
     }
   }
 
@@ -121,20 +169,53 @@ class EditorController extends ChangeNotifier {
   }
 
   void _pushInitial(UndoEntry entry) {
-    _undoStack.clear();
+    _undoStack
+      ..clear()
+      ..add(entry);
     _redoStack.clear();
-    _undoStack.add(entry);
+    _undoTip = entry.text ?? _controller.text;
   }
 
   void _pushUndo() {
-    final entry = UndoEntry(_controller.text, _controller.selection);
-    if (_undoStack.isEmpty || _undoStack.last.text != entry.text) {
-      _undoStack.add(entry);
-      if (_undoStack.length > undoDepth) {
+    final current = _controller.text;
+    if (current.length == _undoTip.length && current == _undoTip) return;
+    _undoStack.add(
+      UndoEntry.delta(diffText(_undoTip, current), _controller.selection),
+    );
+    _undoTip = current;
+    _trimUndo();
+    _redoStack.clear();
+  }
+
+  void _trimUndo() {
+    while (_undoStack.length > undoDepth && _undoStack.length > 1) {
+      final baseText = _undoStack.first.text;
+      final next = _undoStack[1];
+      final delta = next.delta;
+      if (baseText == null || delta == null) {
         _undoStack.removeAt(0);
+        continue;
       }
-      _redoStack.clear();
+      _undoStack
+        ..removeAt(0)
+        ..removeAt(0)
+        ..insert(0, UndoEntry(delta.apply(baseText), next.selection));
     }
+  }
+
+  /// Characters retained by the undo and redo stacks.
+  ///
+  /// Visible for tests. Large documents should stay near one buffer plus the
+  /// changed spans, not one full copy per undo level.
+  int get undoPayloadBytes {
+    var total = 0;
+    for (final entry in _undoStack) {
+      total += entry.payloadBytes;
+    }
+    for (final entry in _redoStack) {
+      total += entry.payloadBytes;
+    }
+    return total;
   }
 
   /// Whether undo operation is available.
@@ -151,8 +232,12 @@ class EditorController extends ChangeNotifier {
     if (!canUndo) return;
     final last = _undoStack.removeLast();
     _redoStack.add(last);
-    final prev = _undoStack.last;
-    _applyUndoEntry(prev);
+    final delta = last.delta;
+    if (delta == null) return;
+    _applyText(
+      delta.invert().apply(_controller.text),
+      _undoStack.last.selection,
+    );
   }
 
   /// Redoes the last undone operation, restoring the previously undone state.
@@ -160,18 +245,24 @@ class EditorController extends ChangeNotifier {
   void redo() {
     if (!canRedo) return;
     final entry = _redoStack.removeLast();
+    final delta = entry.delta;
+    if (delta == null) return;
     _undoStack.add(entry);
-    _applyUndoEntry(entry);
+    _applyText(delta.apply(_controller.text), entry.selection);
   }
 
-  void _applyUndoEntry(UndoEntry entry, {bool markDirty = true}) {
-    _controller
-      ..text = entry.text
-      ..selection = entry.selection;
-    _previousText = entry.text;
-    if (markDirty) {
-      dirty = true;
-    }
+  void _applyText(String text, TextSelection selection) {
+    final end = text.length;
+    final clamped = TextSelection(
+      baseOffset: selection.baseOffset.clamp(0, end),
+      extentOffset: selection.extentOffset.clamp(0, end),
+    );
+    _markSeen(text);
+    _undoTip = text;
+    _controller.value = TextEditingValue(text: text, selection: clamped);
+    _countsStale = true;
+    _setDirty(true);
+    if (settings.showWordCount) _scheduleCounts();
     notifyListeners();
   }
 
@@ -184,8 +275,8 @@ class EditorController extends ChangeNotifier {
     currentEncoding = settings.defaultEncoding;
     lineEnding = .lf;
     _controller.clear();
-    _previousText = '';
-    dirty = false;
+    _markSeen('');
+    _setDirty(false);
     _pushInitial(UndoEntry('', const TextSelection.collapsed(offset: 0)));
     await recoveryService.clear(fileService);
     notifyListeners();
@@ -226,13 +317,15 @@ class EditorController extends ChangeNotifier {
       // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
+      _markSeen(res.content);
       _controller.text = res.content;
-      _previousText = res.content;
       _controller.selection = TextSelection.collapsed(
         offset: _controller.text.length,
       );
-      dirty = false;
+      _setDirty(false);
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
+      _countsStale = true;
+      if (settings.showWordCount) _scheduleCounts();
 
       // Add to recent files with display name
       await recentFiles.addOrUpdate(
@@ -295,13 +388,15 @@ class EditorController extends ChangeNotifier {
       // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
+      _markSeen(res.content);
       _controller.text = res.content;
-      _previousText = res.content;
       _controller.selection = TextSelection.collapsed(
         offset: _controller.text.length,
       );
-      dirty = false;
+      _setDirty(false);
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
+      _countsStale = true;
+      if (settings.showWordCount) _scheduleCounts();
 
       // Add to recent files with display name
       await recentFiles.addOrUpdate(
@@ -347,7 +442,7 @@ class EditorController extends ChangeNotifier {
         lineEndingStyle: lineEnding,
       );
 
-      dirty = false;
+      _setDirty(false);
       _pushInitial(
         UndoEntry(_controller.text, _controller.selection),
       ); // reset baseline
@@ -396,7 +491,7 @@ class EditorController extends ChangeNotifier {
       // Update our state to reflect the save
       currentPath = result.path;
       _displayName = result.displayName;
-      dirty = false;
+      _setDirty(false);
       _pushInitial(UndoEntry(_controller.text, _controller.selection));
 
       // Add to recent files with display name
@@ -424,21 +519,56 @@ class EditorController extends ChangeNotifier {
   }
 
   /// The number of words in the current text.
-  /// Returns 0 for empty text, otherwise counts whitespace-separated words.
+  ///
+  /// Cached and refreshed about 250 ms after the text changes, and only while
+  /// the word-count setting is on.
   int get wordCount {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return 0;
-    return text.split(RegExp(r'\s+')).length;
+    _scheduleCountsIfNeeded();
+    return _wordCount;
   }
 
   /// The total number of characters in the current text.
-  int get charCount => _controller.text.length;
+  int get charCount {
+    _scheduleCountsIfNeeded();
+    return _charCount;
+  }
 
   /// The total number of lines in the current text.
-  /// Returns 1 for empty text, otherwise counts newline characters plus 1.
-  int get lineCount => _controller.text.isEmpty
-      ? 1
-      : '\n'.allMatches(_controller.text).length + 1;
+  ///
+  /// Empty text counts as one line.
+  int get lineCount {
+    _scheduleCountsIfNeeded();
+    return _lineCount;
+  }
+
+  void _scheduleCountsIfNeeded() {
+    if (!settings.showWordCount || !_countsStale || _countsTimer != null) {
+      return;
+    }
+    _scheduleCounts();
+  }
+
+  void _scheduleCounts() {
+    _countsTimer?.cancel();
+    _countsTimer = Timer(const Duration(milliseconds: 250), _recomputeCounts);
+  }
+
+  void _recomputeCounts() {
+    _countsTimer = null;
+    final text = _controller.text;
+    final trimmed = text.trim();
+    final words = trimmed.isEmpty ? 0 : trimmed.split(_whitespace).length;
+    final chars = text.length;
+    final lines = text.isEmpty ? 1 : '\n'.allMatches(text).length + 1;
+    _countsStale = false;
+    if (words == _wordCount && chars == _charCount && lines == _lineCount) {
+      return;
+    }
+    _wordCount = words;
+    _charCount = chars;
+    _lineCount = lines;
+    notifyListeners();
+  }
 
   /// Attempts to recover content from a previously saved recovery snapshot.
   /// Loads the most recent snapshot and restores the text content and
@@ -447,8 +577,8 @@ class EditorController extends ChangeNotifier {
     final snap = await recoveryService.loadSnapshot(fileService);
     if (snap == null) return;
     // Simple heuristic: if snapshot is newer than nothing.
+    _markSeen(snap.content);
     _controller.text = snap.content;
-    _previousText = snap.content;
     _controller.selection = TextSelection.collapsed(
       offset: _controller.text.length,
     );
@@ -456,15 +586,26 @@ class EditorController extends ChangeNotifier {
     _displayName = snap.path == null ? null : displayNameForPath(snap.path!);
     currentEncoding = snap.encoding;
     lineEnding = snap.lineEnding;
-    dirty = snap.dirty;
+    _setDirty(snap.dirty);
     _pushInitial(UndoEntry(_controller.text, _controller.selection));
+    _countsStale = true;
     notifyListeners();
   }
 
   void _maybeSnapshot() {
     if (!dirty) return;
+    final text = _controller.text;
+    final fingerprint = Object.hash(
+      text.length,
+      text.hashCode,
+      currentPath,
+      currentEncoding,
+      lineEnding.name,
+    );
+    if (fingerprint == _lastSnapshotFingerprint) return;
+    _lastSnapshotFingerprint = fingerprint;
     final snap = RecoverySnapshot(
-      content: _controller.text,
+      content: text,
       path: currentPath,
       dirty: dirty,
       timestamp: DateTime.now(),
@@ -479,6 +620,7 @@ class EditorController extends ChangeNotifier {
   @override
   void dispose() {
     _debounce?.cancel();
+    _countsTimer?.cancel();
     _recoveryTimer?.cancel();
     _controller.dispose();
     super.dispose();

@@ -16,12 +16,17 @@ debug build with a 1 MB file (the worst realistic case in the app).
 
 ---
 
-## Phase A — Performance & memory (highest impact, no UI redesign)
+## Phase A — Performance & memory — ✅ DONE
 
-The editor is currently O(document) per keystroke in several places. With the default
-2 MB file-size ceiling these are the things that make it feel slow.
+The editor was O(document) per keystroke in several places. With the default 2 MB
+file-size ceiling these were the things that made it feel slow.
 
-### A1. Line-number gutter rebuilds the whole document every keystroke ⚠️
+### A1. Line-number gutter — ✅
+The gutter is a `CustomPaint` of the visible line window (`LineNumberGutter`), not one
+widget per line. Wrapping still measures logical-line heights, but only when the text or
+width changes, and only the visible numbers are painted.
+
+### A1 notes
 `widgets/editor_text_area.dart` does `text.split('\n')` and
 `List<Widget>.generate(lines.length, …)` inside a `ValueListenableBuilder` on the text
 controller. For a 5 000-line file that allocates 5 000 widgets + 5 000 `Text`s **per
@@ -32,7 +37,11 @@ line height and recompute only on style/metric change.
 Acceptance: typing in a 5 000-line file shows no dropped frames in the Flutter
 performance overlay; gutter still aligns when wrapping is enabled/disabled.
 
-### A2. Undo history stores full text snapshots
+### A2. Undo history — ✅
+Steps after the base entry are prefix/suffix deltas (`text_delta.dart`). A 200k-character
+buffer plus one edit stays under two copies. Undo/redo behaviour is covered by tests.
+
+### A2 notes
 `EditorController._pushUndo` stores an entire `String` per undo step (depth 5/10/20).
 A 2 MB file × 20 steps ≈ 40 MB+ of live strings, and each push compares whole strings.
 Fix: keep bounded snapshots (e.g. store text only while `< 64 KB`, otherwise store
@@ -41,7 +50,11 @@ string compare.
 Acceptance: opening a 2 MB file and typing 100 characters keeps heap growth bounded
 (measure with DevTools memory); undo/redo behaviour unchanged.
 
-### A3. Word/char/line counts are recomputed in `build`
+### A3. Word/char/line counts — ✅
+Counts are cached on the controller and refreshed 250 ms after a text change, and only
+while the word-count setting is on.
+
+### A3 notes
 `editor_screen.dart` reads `ctl.wordCount` (which does `text.trim().split(RegExp)`) on
 every rebuild — i.e. on every keystroke when the counter is enabled.
 Fix: compute counts once per text change in the controller (already has a change hook),
@@ -49,7 +62,12 @@ debounce ~250 ms, and store the results; make it lazy when the setting is off.
 Acceptance: with the counter enabled, typing in a 1 MB file does not spike frame times;
 values update within 250 ms.
 
-### A4. Recovery snapshots are heavy and unconditional
+### A4. Recovery snapshots — ✅
+The 10 s timer starts only while the buffer is dirty, skips a write when the content
+fingerprint is unchanged, and replaces the snapshot via a temp file + rename so a failed
+write leaves the previous snapshot intact.
+
+### A4 notes
 `Timer.periodic(10s)` writes the full buffer to JSON on disk whenever `dirty`. On large
 files that is a 2 MB encode + write every 10 s, forever.
 Fix: snapshot on a content-version change only, skip when nothing changed since the last
@@ -58,7 +76,11 @@ consider stopping the timer while the buffer is clean.
 Acceptance: idle app does zero disk writes; kill-and-relaunch still restores unsaved
 content.
 
-### A5. Micro-optimisations while in there
+### A5. Micro-optimisations — ✅
+Text-change detection uses a fingerprint instead of retaining `_previousText`. Selection
+changes already did not notify listeners. `displayNameForPath` stays off the typing path.
+
+### A5 notes
 - `EditorController` notifies listeners on every text change; split the "document
   changed" notification from "selection changed" so the app bar/status bar don't rebuild
   on cursor moves.
@@ -181,8 +203,8 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
 ## Suggested order
 
-1. **A1, A3** (biggest perceived speed wins, low risk)
+1. ~~A1–A5~~ done.
 2. **B1, B2, B5** (correctness users hit immediately)
 3. **C1** (feature gap, then release 0.3.0)
-4. **C2, C3**, then **A2, A4, B4** (deeper performance/data-safety work)
+4. **C2, C3**, then **B4** (atomic saves)
 5. **D1–D4**, **C4/C5**, Phase E — as feedback dictates.

@@ -152,6 +152,7 @@ Patterns to follow:
   replace, keyboard shortcuts, share-out).
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
   conversion can only be verified on a device.
-- Perf hot spots identified, not yet fixed: gutter rebuilds per keystroke, full-text undo
-  snapshots, `wordCount` computed inside `build`, full-buffer recovery write every 10 s.
+- Perf hot spots from the first audit are addressed (ROADMAP Phase A): visible-line
+  gutter, undo deltas, debounced counts, recovery writes only while dirty. Next work is
+  Phase B (encoding detection, recent-file pruning, atomic saves, session restore).
 - Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.

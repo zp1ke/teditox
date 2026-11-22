@@ -93,7 +93,15 @@ class RecoveryService {
   ) async {
     try {
       final f = await _file(fileService);
-      await f.writeAsString(jsonEncode(snap.toJson()), flush: true);
+      final tmp = File('${f.path}.tmp');
+      await tmp.writeAsString(jsonEncode(snap.toJson()), flush: true);
+      try {
+        await tmp.rename(f.path);
+      } on FileSystemException {
+        // rename can fail across filesystems; the previous file stays intact.
+        await f.writeAsString(await tmp.readAsString(), flush: true);
+        if (tmp.existsSync()) await tmp.delete();
+      }
     } on Exception catch (e) {
       logger.w('Recovery write failed: $e');
     }

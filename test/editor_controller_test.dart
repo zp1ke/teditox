@@ -78,6 +78,13 @@ class _FakeSettings extends SettingsController {
   int get maxFileSize => 1 << 20; // 1 MiB
   @override
   String get defaultEncoding => 'utf-8';
+  @override
+  bool get showWordCount => false;
+}
+
+class _CountingSettings extends _FakeSettings {
+  @override
+  bool get showWordCount => true;
 }
 
 /// File service whose backend reports no display name (e.g. a content:// URI
@@ -257,6 +264,46 @@ void main() {
       expect(controller.currentFileName, isNull);
     },
   );
+
+  test('undo and redo restore text without copying a large buffer', () async {
+    final controller = EditorController(
+      fileService: _FakeFileService(),
+      recentFiles: _FakeRecent(),
+      recoveryService: _FakeRecovery(),
+      settings: _FakeSettings(),
+      logger: Logger(),
+    );
+    addTearDown(controller.dispose);
+    final base = 'a' * 200000;
+    controller.controller.text = base;
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    controller.controller.text = '$base!';
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+
+    // One base buffer plus the changed span, not a copy per undo level.
+    expect(controller.undoPayloadBytes, lessThan(base.length * 2));
+    controller.undo();
+    expect(controller.controller.text, base);
+    controller.redo();
+    expect(controller.controller.text, '$base!');
+  });
+
+  test('word count is cached and not recomputed during build', () async {
+    final controller = EditorController(
+      fileService: _FakeFileService(),
+      recentFiles: _FakeRecent(),
+      recoveryService: _FakeRecovery(),
+      settings: _CountingSettings(),
+      logger: Logger(),
+    );
+    addTearDown(controller.dispose);
+    controller.controller.text = 'one two three';
+    expect(controller.wordCount, 0);
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    expect(controller.wordCount, 3);
+    expect(controller.charCount, 'one two three'.length);
+    expect(controller.lineCount, 1);
+  });
 
   test('Line ending default', () {
     final controller = EditorController(

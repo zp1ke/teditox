@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **Unreleased** - Editor performance: gutter, undo deltas, counts, recovery writes
 - **v0.2.1+9** Current - Fix: recently opened files showed the title "New File"
 - **v0.2.0+8** - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
 - **v0.1.6+7** - Dependency and SDK maintenance
@@ -16,6 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **v0.1.2+3** - Play Store assets, dependency updates
 - **v0.1.1+2** - Navigation fixes, privacy policy, CI/CD
 - **v0.1.0+1** - Initial release with core features
+
+---
+
+## [Unreleased]
+
+### Changed
+- The line-number gutter paints only the visible lines instead of rebuilding a widget per
+  line on every keystroke.
+- Undo history keeps one base copy plus the changed span, instead of a full copy of the
+  buffer per step.
+- Word, character, and line counts update about 250 ms after typing, and only when the
+  counter is enabled.
+- Crash-recovery writes happen only while the buffer is dirty and the text has changed,
+  and they replace the previous snapshot atomically.
 
 ---
 
