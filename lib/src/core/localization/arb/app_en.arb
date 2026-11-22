@@ -133,5 +133,8 @@
       "encoding": {"type": "String"}
     }
   },
-  "keyboard_shortcuts": "Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find."
+  "keyboard_shortcuts": "Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find.",
+  "show_side_panel": "Show navigation panel",
+  "hide_side_panel": "Hide navigation panel",
+  "shared_document": "Shared document"
 }

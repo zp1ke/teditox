@@ -19,6 +19,7 @@ class PreferencesService {
   static const _keyRecentFiles = 'recent_files';
   static const _keyEncoding = 'default_encoding';
   static const _keyRestoreLastFile = 'restore_last_file';
+  static const _keyShowSidePanel = 'show_side_panel';
 
   late SharedPreferences _prefs;
 
@@ -125,6 +126,15 @@ class PreferencesService {
   /// Sets whether to display the word count in the UI.
   Future<void> setShowWordCount({required bool value}) =>
       _prefs.setBool(_keyWordCount, value);
+
+  /// Whether the wide-layout navigation panel is visible.
+  ///
+  /// Defaults to true. Narrow layouts use a drawer instead.
+  bool get showSidePanel => _prefs.getBool(_keyShowSidePanel) ?? true;
+
+  /// Sets whether the wide-layout navigation panel is visible.
+  Future<void> setShowSidePanel({required bool value}) =>
+      _prefs.setBool(_keyShowSidePanel, value);
 
   /// Whether to reopen the most recent file when there is nothing to recover.
   ///

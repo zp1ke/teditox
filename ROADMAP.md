@@ -208,16 +208,19 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
 ---
 
-## Phase D — UX, accessibility, localization
+## Phase D — UX, accessibility, localization — ✅ except new locales
 
-- **D1. Accessibility pass**: verify TalkBack labels for the toolbar, actions menu,
-  gutter toggle and dialogs; ensure 200% text scaling doesn't clip the status bar.
-- **D2. More locales**: pipeline is ARB-based; add `de`, `pt-BR`, `fr`, `it` (community
-  translation via Weblate), keeping `app_en.arb`/`app_es.arb` in sync.
-- **D3. Tablet/desktop polish**: side panel exists at ≥600 px — make the drawer/panel
-  state persist, and confirm layout at 1280×800 and 800×1280.
-- **D4. Empty states**: recent list, editor and error dialogs should never show raw
-  paths; show file name + parent folder.
+- **D1. Accessibility — ✅** Toolbar buttons keep tooltips (TalkBack labels). The
+  line-number gutter is excluded from the semantics tree so it is not read digit by
+  digit. Dialogs have semantic labels. The status bar is one label and wraps to two
+  lines so 200% text scale does not clip it.
+- **D2. More locales — deferred.** English and Spanish stay the only locales until
+  that decision is revisited. Do not add `de` / `pt-BR` / `fr` / `it` yet. New strings
+  still go in both `app_en.arb` and `app_es.arb`.
+- **D3. Tablet/desktop — ✅** Width ≥ 600 (1280×800 and 800×1280) shows the side panel.
+  Hiding it is remembered. Narrow widths use a drawer with the same panel.
+- **D4. Empty states — ✅** Recent rows show the file name and parent folder, never a
+  raw path or content URI. Open errors use the same rule.
 
 ---
 
@@ -250,4 +253,4 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 1. ~~A1–A5~~ done.
 2. ~~B1–B5~~ done.
 3. ~~C1–C3, C5~~ done. **C4** (optional markdown) is still open.
-4. **D1–D4**, then **C4** if feedback asks for it, then Phase E.
+4. ~~D1, D3, D4~~ done. **D2** stays en/es only. Then **C4** if feedback asks, then Phase E.

@@ -152,7 +152,7 @@ Patterns to follow:
   replace, keyboard shortcuts, share-out).
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
   conversion can only be verified on a device.
-- ROADMAP Phases A–C are done except optional markdown preview (C4). Search/replace,
-  shortcuts, share, and save-format conversion shipped with C. Next work is Phase D
-  (accessibility, locales, tablet polish) or C4 if feedback asks for markdown.
+- ROADMAP Phases A–D are done except optional markdown preview (C4) and extra locales.
+  English and Spanish stay the only languages until that is explicitly revisited.
+  Next work is Phase E (release/growth) or C4 if feedback asks for markdown.
 - Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.

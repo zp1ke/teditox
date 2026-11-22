@@ -286,4 +286,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get keyboard_shortcuts =>
       'Atajos: Ctrl/Cmd+S guardar, Shift+S guardar como, O abrir, N nuevo, F buscar, Z deshacer, Shift+Z o Y rehacer, Esc cerrar búsqueda.';
+
+  @override
+  String get show_side_panel => 'Mostrar panel de navegación';
+
+  @override
+  String get hide_side_panel => 'Ocultar panel de navegación';
+
+  @override
+  String get shared_document => 'Documento compartido';
 }

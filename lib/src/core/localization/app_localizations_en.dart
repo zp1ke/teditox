@@ -286,4 +286,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get keyboard_shortcuts =>
       'Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find.';
+
+  @override
+  String get show_side_panel => 'Show navigation panel';
+
+  @override
+  String get hide_side_panel => 'Hide navigation panel';
+
+  @override
+  String get shared_document => 'Shared document';
 }

@@ -42,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keyboard shortcuts for save, open, new, find, and undo/redo. Listed on the About screen.
 - Share sends the current text to another app on Android. Elsewhere it is copied.
 - The next save can use a chosen line ending and encoding.
+- Wide screens remember whether the navigation panel is open. Phones use a drawer.
+- Recent files and open errors show a file name and folder, not a raw path.
+- The status bar wraps instead of clipping at large text sizes. Locales remain English and Spanish.
 
 ---
 

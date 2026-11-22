@@ -12,7 +12,7 @@ Future<void> showFileOpenError(BuildContext context, FileOpenException error) {
   final loc = AppLocalizations.of(context);
   final name = error.path == null
       ? loc.file_unreadable_unknown
-      : (displayNameForPath(error.path!) ?? error.path!);
+      : (displayNameForPath(error.path!) ?? loc.shared_document);
   final message = switch (error.failure) {
     FileOpenFailure.tooLarge => loc.file_too_large(
       formatBytes(error.limitBytes ?? 0),
@@ -23,6 +23,7 @@ Future<void> showFileOpenError(BuildContext context, FileOpenException error) {
   return showDialog<void>(
     context: context,
     builder: (dialogContext) => AlertDialog(
+      semanticLabel: loc.open_file_error,
       title: Text(loc.open_file_error),
       content: Text(message),
       actions: [

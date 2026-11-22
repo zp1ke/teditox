@@ -58,6 +58,15 @@ class SettingsController extends ChangeNotifier {
   /// Gets the maximum file size limit in bytes.
   int get maxFileSize => prefs.maxFileSize;
 
+  /// Whether the wide-layout navigation panel is visible.
+  bool get showSidePanel => prefs.showSidePanel;
+
+  /// Sets whether the wide-layout navigation panel is visible.
+  Future<void> setShowSidePanel({required bool value}) async {
+    await prefs.setShowSidePanel(value: value);
+    notifyListeners();
+  }
+
   /// Whether startup reopens the most recent file when nothing crashed.
   bool get restoreLastFile => prefs.restoreLastFile;
 

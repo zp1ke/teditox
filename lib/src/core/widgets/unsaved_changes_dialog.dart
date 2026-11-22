@@ -40,6 +40,7 @@ class UnsavedChangesDialog extends StatelessWidget {
     final loc = AppLocalizations.of(context);
 
     return AlertDialog(
+      semanticLabel: loc.unsaved_changes,
       title: Text(loc.unsaved_changes),
       content: Text(loc.unsaved_changes_message),
       actions: [

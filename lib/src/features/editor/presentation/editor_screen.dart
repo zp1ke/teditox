@@ -8,6 +8,7 @@ import 'package:teditox/src/core/localization/app_localizations.dart';
 import 'package:teditox/src/core/services/share_service.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
+import 'package:teditox/src/features/editor/presentation/editor_layout.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/actions_menu.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/editor_text_area.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/find_bar.dart';
@@ -141,10 +142,32 @@ class _EditorScreenState extends State<EditorScreen> {
         value: controller,
         child: Consumer<EditorController>(
           builder: (context, ctl, _) {
+            final width = MediaQuery.sizeOf(context).width;
+            final showPanel = editorShowsSidePanel(
+              width: width,
+              enabled: settings.showSidePanel,
+            );
+            final useDrawer = editorUsesDrawer(width);
             return Scaffold(
+              drawer: useDrawer
+                  ? const Drawer(child: SafeArea(child: SidePanel()))
+                  : null,
               appBar: AppBar(
-                title: Text('${loc.app_name}${ctl.dirty ? ' *' : ''}'),
+                title: Text(
+                  '${loc.app_name}${ctl.dirty ? ' *' : ''}',
+                  overflow: TextOverflow.ellipsis,
+                ),
                 actions: [
+                  if (!useDrawer)
+                    IconButton(
+                      tooltip: showPanel
+                          ? loc.hide_side_panel
+                          : loc.show_side_panel,
+                      icon: Icon(showPanel ? Icons.menu_open : Icons.menu),
+                      onPressed: () {
+                        unawaited(settings.setShowSidePanel(value: !showPanel));
+                      },
+                    ),
                   IconButton(
                     tooltip: loc.open,
                     icon: const Icon(Icons.folder_open),
@@ -180,8 +203,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
               body: Row(
                 children: [
-                  if (MediaQuery.of(context).size.width >= 600)
-                    const SizedBox(width: 220, child: SidePanel()),
+                  if (showPanel) const SizedBox(width: 220, child: SidePanel()),
                   Expanded(
                     child: Column(
                       children: [
@@ -206,16 +228,19 @@ class _EditorScreenState extends State<EditorScreen> {
                             ),
                           ),
                           child: Center(
-                            child: Text(
-                              ctl.currentFileName ?? loc.new_file,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                  ),
-                              overflow: TextOverflow.ellipsis,
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                ctl.currentFileName ?? loc.new_file,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ),
@@ -260,19 +285,20 @@ class _StatusBar extends StatelessWidget {
         'W:${ctl.wordCount} C:${ctl.charCount} L:${ctl.lineCount}',
     ];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      color: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      child: DefaultTextStyle(
-        style: Theme.of(context).textTheme.labelSmall!,
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(items.join('  |  '), overflow: TextOverflow.ellipsis),
-            ),
-          ],
+    final label = items.join('  |  ');
+    return Semantics(
+      container: true,
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        child: Text(
+          label,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall,
         ),
       ),
     );

@@ -619,6 +619,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shortcuts: Ctrl/Cmd+S save, Shift+S save as, O open, N new, F find, Z undo, Shift+Z or Y redo, Esc close find.'**
   String get keyboard_shortcuts;
+
+  /// No description provided for @show_side_panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show navigation panel'**
+  String get show_side_panel;
+
+  /// No description provided for @hide_side_panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide navigation panel'**
+  String get hide_side_panel;
+
+  /// No description provided for @shared_document.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared document'**
+  String get shared_document;
 }
 
 class _AppLocalizationsDelegate

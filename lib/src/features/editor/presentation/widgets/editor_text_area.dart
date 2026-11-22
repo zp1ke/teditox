@@ -119,13 +119,15 @@ class _EditorTextAreaState extends State<EditorTextArea> {
                   ),
                 ),
               ),
-              child: LineNumberGutter(
-                textController: textController,
-                scrollController: _verticalScrollController,
-                textStyle: textStyle,
-                wrap: widget.wrap,
-                contentPadding: textFieldPadding,
-                textMaxWidth: textMaxWidth,
+              child: ExcludeSemantics(
+                child: LineNumberGutter(
+                  textController: textController,
+                  scrollController: _verticalScrollController,
+                  textStyle: textStyle,
+                  wrap: widget.wrap,
+                  contentPadding: textFieldPadding,
+                  textMaxWidth: textMaxWidth,
+                ),
               ),
             ),
             Expanded(child: textField),

@@ -9,6 +9,7 @@ import 'package:teditox/src/core/utils/byte_size_formatter.dart';
 import 'package:teditox/src/core/utils/context.dart';
 import 'package:teditox/src/core/utils/icons.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
+import 'package:teditox/src/features/recent/presentation/recent_file_label.dart';
 
 /// Screen that displays recently opened files.
 ///
@@ -98,10 +99,14 @@ class _RecentScreenState extends State<RecentScreen> {
       ),
       body: entries.isEmpty
           ? Center(
-              child: Text(
-                loc.no_recent_files,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+              child: Semantics(
+                label: loc.no_recent_files,
+                child: Text(
+                  loc.no_recent_files,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             )
@@ -165,7 +170,9 @@ class _RecentScreenState extends State<RecentScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    e.displayName ?? e.path.split('/').last,
+                                    recentFileTitle(e).isEmpty
+                                        ? loc.shared_document
+                                        : recentFileTitle(e),
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleMedium
@@ -175,11 +182,10 @@ class _RecentScreenState extends State<RecentScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    e.path,
+                                    recentFileFolder(e) ?? loc.shared_document,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: colorScheme.onSurfaceVariant,
-                                          fontSize: 11,
                                         ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
