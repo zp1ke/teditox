@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **v0.2.0+8** Current - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
+- **v0.2.1+9** Current - Fix: recently opened files showed the title "New File"
+- **v0.2.0+8** - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
 - **v0.1.6+7** - Dependency and SDK maintenance
 - **v0.1.5+6** - Storage Access Framework (SAF) integration, recent files redesign
 - **v0.1.4+5** - File handling fixes
@@ -15,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **v0.1.2+3** - Play Store assets, dependency updates
 - **v0.1.1+2** - Navigation fixes, privacy policy, CI/CD
 - **v0.1.0+1** - Initial release with core features
+
+---
+
+## [0.2.1+9] - 2025-11-20
+
+### Fixed
+- Opening a file from the recent-files list now shows its real name in the editor title.
+  Plain file paths previously carried no display name, so every recently opened file was
+  labelled "New File". The name stored with the recent entry is preferred over a later
+  content-resolver query, which can return a document id or a blank string. Content URIs
+  are no longer given a title invented from the URI itself.
 
 ---
 

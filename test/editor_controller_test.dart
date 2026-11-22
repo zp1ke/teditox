@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:teditox/src/core/services/content_uri_service.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/services/file_service.dart';
@@ -17,6 +20,12 @@ class _FakeFileService extends FileService {
         contentUriService: ContentUriService(logger: Logger()),
         logger: Logger(),
       );
+
+  // path_provider has no implementation under `flutter test`; avoid touching
+  // it.
+  @override
+  Future<Directory> getCacheDir() =>
+      Directory.systemTemp.createTemp('teditox_fake_cache');
 }
 
 class _FakeRecent extends RecentFilesService {
@@ -26,7 +35,38 @@ class _FakeRecent extends RecentFilesService {
 }
 
 class _FakeRecovery extends RecoveryService {
-  _FakeRecovery() : super(logger: Logger());
+  _FakeRecovery([this.snapshot]) : super(logger: Logger());
+
+  final RecoverySnapshot? snapshot;
+
+  @override
+  Future<void> clear(FileService fileService) async {}
+
+  @override
+  Future<RecoverySnapshot?> loadSnapshot(FileService fileService) async =>
+      snapshot;
+}
+
+class _FakeNamedFileService extends _FakeFileService {
+  _FakeNamedFileService(this.name);
+
+  final String name;
+
+  @override
+  Future<FileOpenResult?> openByPath({
+    required String path,
+    String? forcedEncoding,
+    int? maxBytes,
+  }) async => FileOpenResult(
+    content: 'from content uri',
+    path: path,
+    encoding: 'utf-8',
+    lineEndingStyle: LineEndingStyle.lf,
+    bytes: const [1, 2, 3],
+    isContentUri: true,
+    contentUri: path,
+    displayName: name,
+  );
 }
 
 class _FakeSettings extends SettingsController {
@@ -35,7 +75,37 @@ class _FakeSettings extends SettingsController {
   @override
   int get undoDepth => 5;
   @override
+  int get maxFileSize => 1 << 20; // 1 MiB
+  @override
   String get defaultEncoding => 'utf-8';
+}
+
+/// File service whose backend reports no display name (e.g. a content:// URI
+/// whose metadata query failed).
+class _FakeNamelessFileService extends _FakeFileService {
+  @override
+  Future<FileOpenResult?> openByPath({
+    required String path,
+    String? forcedEncoding,
+    int? maxBytes,
+  }) async => FileOpenResult(
+    content: 'from content uri',
+    path: path,
+    encoding: 'utf-8',
+    lineEndingStyle: LineEndingStyle.lf,
+    bytes: const [1, 2, 3],
+    isContentUri: true,
+    contentUri: path,
+  );
+}
+
+/// Context stub for cases where [EditorController.openFileByPath] runs with
+/// `skipConfirmation: true` and therefore never touches the context. Using a
+/// plain `test` (not `testWidgets`) avoids the controller's periodic recovery
+/// timer keeping the widget-test harness alive.
+class _StubBuildContext implements BuildContext {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -58,6 +128,135 @@ void main() {
       ..undo();
     expect(controller.controller.text.length <= 3, true);
   });
+
+  test(
+    'opening a recent file sets the editor title to its file name',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('teditox_ctrl_test');
+      addTearDown(() => dir.delete(recursive: true));
+      final file = File('${dir.path}/shopping-list.txt');
+      await file.writeAsString('milk\neggs');
+
+      final controller = EditorController(
+        fileService: _FakeFileService(),
+        recentFiles: _FakeRecent(),
+        recoveryService: _FakeRecovery(),
+        settings: _FakeSettings(),
+        logger: Logger(),
+      );
+
+      addTearDown(controller.dispose);
+
+      // Title starts as the unnamed-buffer state.
+      expect(controller.currentFileName, isNull);
+
+      final context = _StubBuildContext();
+
+      final opened = await controller.openFileByPath(
+        context,
+        file.path,
+        skipConfirmation: true,
+      );
+
+      expect(opened, isTrue);
+      expect(controller.currentFileName, 'shopping-list.txt');
+      expect(controller.controller.text, 'milk\neggs');
+      expect(controller.dirty, isFalse);
+    },
+  );
+
+  test('displayNameHint wins when the file reports no name', () async {
+    final controller = EditorController(
+      fileService: _FakeNamelessFileService(),
+      recentFiles: _FakeRecent(),
+      recoveryService: _FakeRecovery(),
+      settings: _FakeSettings(),
+      logger: Logger(),
+    );
+
+    addTearDown(controller.dispose);
+    final context = _StubBuildContext();
+
+    final opened = await controller.openFileByPath(
+      context,
+      'content://documents/14',
+      skipConfirmation: true,
+      displayNameHint: 'notes.txt',
+    );
+
+    expect(opened, isTrue);
+    expect(controller.currentFileName, 'notes.txt');
+  });
+
+  test('displayNameHint wins over a document id from the resolver', () async {
+    final controller = EditorController(
+      fileService: _FakeNamedFileService('14'),
+      recentFiles: _FakeRecent(),
+      recoveryService: _FakeRecovery(),
+      settings: _FakeSettings(),
+      logger: Logger(),
+    );
+    addTearDown(controller.dispose);
+
+    final opened = await controller.openFileByPath(
+      _StubBuildContext(),
+      'content://documents/14',
+      skipConfirmation: true,
+      displayNameHint: 'notes.txt',
+    );
+
+    expect(opened, isTrue);
+    expect(controller.currentFileName, 'notes.txt');
+  });
+
+  test('blank names stay unnamed instead of a blank title', () async {
+    final controller = EditorController(
+      fileService: _FakeNamedFileService('   '),
+      recentFiles: _FakeRecent(),
+      recoveryService: _FakeRecovery(),
+      settings: _FakeSettings(),
+      logger: Logger(),
+    );
+    addTearDown(controller.dispose);
+
+    final opened = await controller.openFileByPath(
+      _StubBuildContext(),
+      'content://documents/14',
+      skipConfirmation: true,
+      displayNameHint: '  ',
+    );
+
+    expect(opened, isTrue);
+    expect(controller.currentFileName, isNull);
+  });
+
+  test(
+    'crash recovery does not title a content URI with its document id',
+    () async {
+      final controller = EditorController(
+        fileService: _FakeFileService(),
+        recentFiles: _FakeRecent(),
+        recoveryService: _FakeRecovery(
+          RecoverySnapshot(
+            content: 'recovered',
+            path: 'content://documents/14',
+            dirty: true,
+            timestamp: DateTime(2025),
+            encoding: 'utf-8',
+            lineEnding: LineEndingStyle.lf,
+          ),
+        ),
+        settings: _FakeSettings(),
+        logger: Logger(),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.attemptRecovery();
+
+      expect(controller.controller.text, 'recovered');
+      expect(controller.currentFileName, isNull);
+    },
+  );
 
   test('Line ending default', () {
     final controller = EditorController(

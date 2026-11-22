@@ -10,6 +10,20 @@ import 'package:teditox/src/core/utils/line_endings.dart';
 /// Allowed file extensions for opening and saving files.
 const fileAllowedExtensions = ['txt', 'text', 'log', 'md', 'json', 'csv', ''];
 
+/// File name for a filesystem path, or null.
+///
+/// Returns the last non-empty segment of the file URI. `content://` URIs are
+/// not filesystem paths — their names come from the content resolver — so this
+/// returns null for them instead of a document id.
+String? displayNameForPath(String path) {
+  if (path.startsWith('content://')) return null;
+  final segments = File(
+    path,
+  ).uri.pathSegments.where((segment) => segment.isNotEmpty);
+  if (segments.isEmpty) return null;
+  return segments.last;
+}
+
 /// Result of a file open operation.
 class FileOpenResult {
   /// Creates a new instance of [FileOpenResult].
@@ -172,6 +186,9 @@ class FileService {
           throw FileSystemException('File does not exist', path);
         }
         bytes = await file.readAsBytes();
+        // Derive a display name so callers (e.g. the editor title) do not have
+        // to treat plain paths as unnamed "new file" buffers.
+        displayName = displayNameForPath(path);
       }
 
       if (maxBytes != null && bytes.length > maxBytes) {

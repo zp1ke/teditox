@@ -11,6 +11,13 @@ import 'package:teditox/src/core/utils/line_endings.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
+/// Non-blank trimmed name, or null.
+String? _usableName(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) return null;
+  return trimmed;
+}
+
 /// Represents a single undo/redo state entry.
 ///
 /// Contains both the text content and cursor selection position
@@ -259,10 +266,16 @@ class EditorController extends ChangeNotifier {
   ///
   /// Set [skipConfirmation] to true to bypass the unsaved changes check.
   /// This is useful when opening files from external intents at app startup.
+  ///
+  /// [displayNameHint] is preferred over the name reported by the file when it
+  /// is non-blank. The recent-files list passes the name the user already saw,
+  /// which is more reliable than a later content-resolver query (that query can
+  /// return a document id or an empty string).
   Future<bool> openFileByPath(
     BuildContext context,
     String path, {
     bool skipConfirmation = false,
+    String? displayNameHint,
   }) async {
     // Check for unsaved changes before opening a new file
     if (!skipConfirmation && !await _confirmDiscardIfNeeded(context)) {
@@ -277,7 +290,8 @@ class EditorController extends ChangeNotifier {
       if (res == null) return false;
 
       currentPath = res.path;
-      _displayName = res.displayName;
+      _displayName =
+          _usableName(displayNameHint) ?? _usableName(res.displayName);
       // Track content URI status
       currentEncoding = res.encoding;
       lineEnding = res.lineEndingStyle;
@@ -439,9 +453,7 @@ class EditorController extends ChangeNotifier {
       offset: _controller.text.length,
     );
     currentPath = snap.path;
-    _displayName = snap.path != null
-        ? File(snap.path!).uri.pathSegments.last
-        : null;
+    _displayName = snap.path == null ? null : displayNameForPath(snap.path!);
     currentEncoding = snap.encoding;
     lineEnding = snap.lineEnding;
     dirty = snap.dirty;

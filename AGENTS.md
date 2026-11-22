@@ -25,7 +25,8 @@ Android SAF + share-intent file handling, en/es localization.
 - The system/global JDK here is 25, which AGP/Gradle reject. Run builds as
   `mise x -- flutter build ...` (or `mise run build`) so JDK 21 from `mise.toml` is used;
   a bare `flutter build` picks up the global JDK and fails.
-- Android toolchain (ROADMAP Phase 3): Gradle **9.5.0**, AGP **9.3.1**, Kotlin **2.4.20**.
+- Android toolchain: Gradle **9.5.0**, AGP **9.3.1**, Kotlin **2.4.20**
+  (archived plan: `docs/archive/ROADMAP-upgrade-0.2.0.md`).
   `compileSdk = maxOf(flutter.compileSdkVersion, 37)` because `receive_sharing_intent`
   requires API 37; `targetSdk` follows Flutter (36). `gradle.properties` sets
   `android.newDsl=false` + `android.builtInKotlin=false` (from the template) — with
@@ -36,7 +37,7 @@ Android SAF + share-intent file handling, en/es localization.
   updates existing platform files, and it can add template junk (delete any recreated
   `test/widget_test.dart` / stock `ic_launcher.png` mipmaps; keep `launcher_icon.png`).
   For platform upgrades, diff against a freshly generated reference project — see
-  ROADMAP.md Phase 0.
+  `docs/archive/ROADMAP-upgrade-0.2.0.md` (Phase 0).
 - Shell notes: use `rg`/`fdfind`/`batcat` if available. `pubspec.lock` **is committed**
   (reproducible CI/release builds) — keep it in sync with `pubspec.yaml` and commit the
   lock change together with any dependency bump.
@@ -58,7 +59,7 @@ mise run build                                           # debug APK via JDK 21 
 ```
 
 **There is no build_runner/freezed codegen in this project** (removed in
-ROADMAP Phase 2 — no `@freezed`, no `*.g.dart`, nothing to generate). The only
+the 0.2.0 upgrade — no `@freezed`, no `*.g.dart`, nothing to generate). The only
 generated sources are the localizations:
 - `lib/src/core/localization/app_localizations*.dart` — generated from `arb/` by
   `flutter gen-l10n`, which runs automatically via `generate: true` + `flutter pub get`;
@@ -87,6 +88,7 @@ Patterns to follow:
 - **Files**: all file I/O goes through `FileService` (paths *or* Android content URIs —
   check `FileOpenResult.isContentUri`). Never re-add `file_picker`; SAF replaced it in v0.1.5.
 - **Docs to keep in sync when you change things**: `README.md` (features, deps),
+  `ROADMAP.md` (mark items done),
   `CHANGELOG.md` (Keep-a-Changelog format + version summary list), `pubspec.yaml`
   version (`x.y.z+build`; bump build number for every Play upload).
 
@@ -94,7 +96,8 @@ Patterns to follow:
 
 - **UI imports: use `package:material_ui/material_ui.dart` — never
   `package:flutter/material.dart`** (unbundled from the SDK in Flutter 3.47+; the two
-  are NOT type-compatible; migration completed 2025-11, see ROADMAP Phase 0.5).
+  are NOT type-compatible; migration completed 2025-11, see
+  `docs/archive/ROADMAP-upgrade-0.2.0.md` Phase 0.5).
   `package:flutter/widgets.dart`, `services`, `foundation` etc. stay as-is. Before
   adding any UI-flavored dependency, verify its pubspec depends on material_ui
   (flex_color_scheme ≥9, dynamic_color ≥2.1, google_fonts ≥9 do).
@@ -102,7 +105,7 @@ Patterns to follow:
 - `very_good_analysis` lint set: public members **require doc comments** — most analyzer
   errors here are missing `///`.
 - Plain Dart classes for models (no freezed/codegen — the `freezed`/`build_runner`
-  toolchain was removed in ROADMAP Phase 2 as unused).
+  toolchain was removed in the 0.2.0 upgrade as unused).
 - Tests use `flutter_test` + `mocktail`; see `test/editor_controller_test.dart` for the
   fake-service pattern (subclass + override, real `PreferencesService` is lightweight).
 - Commit style: Conventional Commits (`feat:`/`fix:`/`chore:`/`refactor:`), sometimes
@@ -134,22 +137,21 @@ Patterns to follow:
 
 ## Known state / debt (as of 2025-11)
 
-- ✅ Flutter 3.50.1 / Dart 3.14 pinned; analyze/test/format green.
-- ✅ material_ui unbundle migration done (see ROADMAP Phase 0.5). Generated
-  `app_localizations*.dart` are analyzer-excluded (gen-l10n template still emits
-  deprecated delegates; their `localizationsDelegates` const is unused by the app).
-- ✅ Phase 1 dep bumps done (intl/logger/get_it/url_launcher/mocktail/splash/
-  charset_converter/collection; receive_sharing_intent already at 1.9.0).
-- ✅ Phase 2 done: cupertino_icons 2.x, **freezed/freezed_annotation/
-  build_runner removed** (never used — no codegen in project), go_router 18,
-  package_info_plus 10, very_good_analysis 11 (5 `async_return_with_no_await` fixes).
-  All direct deps now on latest.
-- ✅ Phase 3 done: Gradle 9.5.0 / AGP 9.3.1 / Kotlin 2.4.20 / Java 17 bytecode
-  (JDK 21 build pin in mise.toml), compileSdk 37. Debug APK, release AAB and Linux
-  debug all build. Keystore files now gitignored.
-- ✅ Phase 4 done: CI now enforces format + coverage floor (20% → gate 18%) and builds
-  a debug APK on every PR; integration tests run on an Android emulator (weekly/label);
-  release publishes to the Play internal track when a service-account key is present;
-  dependabot configured. Also fixed `IntentService` to no-op off-Android (it threw
-  `MissingPluginException` on Linux).
-- Only en + es locales. See `docs/GROWTH.md` for product priorities.
+- ✅ **0.2.x shipped to Play open testing.** Flutter 3.50.1 / Dart 3.14, material_ui
+  (Material/Cupertino unbundled), all direct deps on latest, Gradle 9.5.0 / AGP 9.3.1 /
+  Kotlin 2.4.20 / Java 17 bytecode (JDK 21 build pin), compileSdk 37, dead
+  freezed/build_runner toolchain removed. Details: `docs/archive/ROADMAP-upgrade-0.2.0.md`.
+- ✅ CI enforces format + a coverage floor (gate 18%) and builds a debug APK on every
+  PR; emulator integration tests run weekly/on demand; release publishes to the Play
+  internal track when a service-account key exists; dependabot configured.
+- ✅ `IntentService` no-ops off Android (it used to throw `MissingPluginException` on
+  Linux); opening a recent file now sets the editor title correctly.
+- 🎯 Current work is planned in `ROADMAP.md` (product & quality): performance
+  (line-number gutter, undo snapshots, counts, recovery writes), correctness (encoding
+  detection, recent-file pruning, atomic saves, session restore) and features (search &
+  replace, keyboard shortcuts, share-out).
+- Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
+  conversion can only be verified on a device.
+- Perf hot spots identified, not yet fixed: gutter rebuilds per keystroke, full-text undo
+  snapshots, `wordCount` computed inside `build`, full-buffer recovery write every 10 s.
+- Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.

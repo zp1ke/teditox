@@ -131,6 +131,9 @@ class _RecentScreenState extends State<RecentScreen> {
                         final success = await controller.openFileByPath(
                           context,
                           e.path,
+                          // Stored name only. A content:// segment is a document
+                          // id; saving it back would replace a missing name.
+                          displayNameHint: e.displayName,
                         );
                         if (context.mounted) {
                           if (success) {

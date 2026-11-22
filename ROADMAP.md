@@ -1,203 +1,188 @@
-# Teditox Upgrade Roadmap — Flutter 3.50.x + latest dependencies
+# Teditox Roadmap — Product & Quality
 
-Goal: move from the current pinned, unbuildable state (Flutter pin **3.38.1**, deps
-several majors behind) to **Flutter 3.50.1 / Dart 3.14** with latest dependencies and
-a modernized Android toolchain — in small, verifiable phases, ending in a Play release.
+Version 0.2.0 is in **open testing** on Google Play; the toolchain upgrade work is
+archived in [`docs/archive/ROADMAP-upgrade-0.2.0.md`](docs/archive/ROADMAP-upgrade-0.2.0.md).
 
-Each phase ends with the **verify gate**:
-`flutter pub get` → `flutter analyze` → `flutter test` → manual smoke on a debug APK
-(open/save/share a file, undo/redo, crash recovery, settings, both locales,
-light/dark). (No build_runner step — the project has no codegen; see Phase 2.)
+This roadmap is about making the editor better to *use*: faster on real files, fewer
+sharp edges, and the features people expect from a plain-text editor. Product/marketing
+notes live in [`docs/GROWTH.md`](docs/GROWTH.md).
 
-Commit per phase; bump `pubspec.yaml` version + `CHANGELOG.md` at the end (0.2.0+8 is
-suggested — see Breaking-change note under Phase 2).
+Guiding constraints (do not trade away): no ads, no tracking, **no user-facing
+permissions**, manual-save model with crash recovery, small and boring.
 
----
-
-## Phase 0 — Unblock the SDK — ✅ DONE (2025-11)
-
-Unpinned `environment: flutter: 3.50.1`, Dart SDK 3.14. `pub get`, codegen,
-`analyze`, `test`, `format` all pass.
-
-Note: build_runner 2.17 **removed `--delete-conflicting-outputs`** (now a no-op
-warning flag). Plain `dart run build_runner build` is enough — update CI + docs.
+**Definition of done for every item**: `flutter analyze` clean, tests added/adjusted,
+`dart format` clean, coverage ≥ 20% (`tool/check_coverage.py`), and a manual pass on a
+debug build with a 1 MB file (the worst realistic case in the app).
 
 ---
 
-## Phase 0.5 — material_ui unbundle migration — ✅ DONE (2025-11, unplanned)
+## Phase A — Performance & memory (highest impact, no UI redesign)
 
-Flutter 3.47+ deprecated `package:flutter/material.dart` and `cupertino.dart`:
-Material/Cupertino were **unbundled** into the `material_ui` / `cupertino_ui`
-packages (flutter/packages). The two implementations are **not type-compatible**,
-so migrating the app forces the theming plugins onto the package versions.
+The editor is currently O(document) per keystroke in several places. With the default
+2 MB file-size ceiling these are the things that make it feel slow.
 
-What was done:
-- Added `material_ui: ^1.11.1`, `cupertino_ui: ^1.1.7`.
-- Ran the official migration: `dart fix --apply --code=migrate_design_widgets`
-  (swapped imports in 15 files) + `dart fix --apply --code=directives_ordering`.
-- Upgraded the plugins that had already moved to material_ui (pulled forward from
-  Phase 2/1): **flex_color_scheme 8→9.0.0**, **dynamic_color 1.7→2.1.0**,
-  **google_fonts 6→9.0.0** (v6 returned framework `TextTheme` → type errors).
-- `app.dart`: replaced flutter_localizations delegates with
-  `...GlobalMaterialLocalizations.delegates` (material_ui) — removed the
-  flutter_localizations import entirely.
-- `analysis_options.yaml`: excluded generated `app_localizations*.dart` (the
-  gen-l10n template still emits deprecated Global delegates; their
-  `localizationsDelegates` const is unused by the app).
+### A1. Line-number gutter rebuilds the whole document every keystroke ⚠️
+`widgets/editor_text_area.dart` does `text.split('\n')` and
+`List<Widget>.generate(lines.length, …)` inside a `ValueListenableBuilder` on the text
+controller. For a 5 000-line file that allocates 5 000 widgets + 5 000 `Text`s **per
+keystroke**, and re-lays-out a `TextPainter` each time.
+Fix: render the gutter with a single `CustomPaint` (or `ListView.builder` sized by
+line height) driven by the scroll offset + visible line range; cache the `TextPainter`
+line height and recompute only on style/metric change.
+Acceptance: typing in a 5 000-line file shows no dropped frames in the Flutter
+performance overlay; gutter still aligns when wrapping is enabled/disabled.
 
-Rules going forward: **import `package:material_ui/material_ui.dart`, never
-`package:flutter/material.dart`** — and any new UI-flavored dependency must already
-depend on material_ui (check its pubspec before adding).
+### A2. Undo history stores full text snapshots
+`EditorController._pushUndo` stores an entire `String` per undo step (depth 5/10/20).
+A 2 MB file × 20 steps ≈ 40 MB+ of live strings, and each push compares whole strings.
+Fix: keep bounded snapshots (e.g. store text only while `< 64 KB`, otherwise store
+deltas), cap total undo memory, and compare using length + content hash before the
+string compare.
+Acceptance: opening a 2 MB file and typing 100 characters keeps heap growth bounded
+(measure with DevTools memory); undo/redo behaviour unchanged.
 
----
+### A3. Word/char/line counts are recomputed in `build`
+`editor_screen.dart` reads `ctl.wordCount` (which does `text.trim().split(RegExp)`) on
+every rebuild — i.e. on every keystroke when the counter is enabled.
+Fix: compute counts once per text change in the controller (already has a change hook),
+debounce ~250 ms, and store the results; make it lazy when the setting is off.
+Acceptance: with the counter enabled, typing in a 1 MB file does not spike frame times;
+values update within 250 ms.
 
-## Phase 1 — Safe (minor/patch) dependency bumps — ✅ DONE (2025-11)
+### A4. Recovery snapshots are heavy and unconditional
+`Timer.periodic(10s)` writes the full buffer to JSON on disk whenever `dirty`. On large
+files that is a 2 MB encode + write every 10 s, forever.
+Fix: snapshot on a content-version change only, skip when nothing changed since the last
+snapshot, keep the previous snapshot as a backup (write to `.tmp` then rename), and
+consider stopping the timer while the buffer is clean.
+Acceptance: idle app does zero disk writes; kill-and-relaunch still restores unsaved
+content.
 
-Bumped constraints + `flutter pub upgrade`; all resolved and verified:
-intl 0.20.3, logger 2.8.0, get_it 9.3.0, url_launcher 6.3.3,
-mocktail 1.0.5, flutter_native_splash 2.4.8, charset_converter 2.5.1,
-collection 1.19.1 (+ shared_preferences 2.5.6 / path_provider 2.1.6 within range).
-
-Deviations from the plan:
-- **build_runner stays `^2.15.1`** — 2.17.1 conflicts with freezed 3.x
-  (they are coupled; move together in Phase 2.3).
-- **receive_sharing_intent already resolved 1.9.0** (latest, within `^1.8.0`) —
-  constraint pinned to `^1.9.0`. Phase 2.2 remains as *device* verification work.
-- charset_converter round-trips can't run headless (native platform channel):
-  added `test/encoding_service_test.dart` covering BOM detection, UTF-8 paths and
-  the graceful fallback; conversion itself must be smoke-tested on a device.
-
----
-
-## Phase 2 — Breaking majors — ✅ DONE (2025-11)
-
-Done already (pulled forward into Phase 0.5): ~~flex_color_scheme~~ 9.0.0,
-~~dynamic_color~~ 2.1.0, ~~google_fonts~~ 9.0.0.
-
-- **cupertino_icons 1→2** — bump (do NOT remove: `cupertino_ui`'s `CupertinoIcons`
-  needs the font asset; removing it produced a release-build font warning. See
-  Phase 3 note).
-- ~~freezed 3→4 + build_runner 2.15→2.17~~ — **removed entirely**. The project has
-  **no codegen**: no `@freezed`, no `part '*.g.dart'`, no generated files; the only
-  "generated" sources are l10n (`flutter gen-l10n`, independent of build_runner).
-  Dropping the dead toolchain removed 9 transitive packages and a no-op CI step.
-- **package_info_plus 9→10** — API unchanged (`PackageInfo.fromPlatform()`).
-- **go_router 17→18** — 18.0.0's only break was the material_ui migration + Flutter
-  3.44 min; our usage (`GoRoute`, `errorBuilder`, `state.uri`) is unaffected.
-- **very_good_analysis 10→11** — 5 new `async_return_with_no_await` findings fixed
-  (2 dropped `async`, 3 `return await`).
-- **receive_sharing_intent** — already 1.9.0; remaining work is *device* verification
-  only: re-test "open with Teditox" + "share to Teditox" (cold start and warm).
-  Plugin is lightly maintained — evaluate `flutter_sharing_intent` as successor if it
-  misbehaves.
-
-All direct dependencies are now on their latest versions (`flutter pub outdated` is
-clean).
-
-**Breaking-change policy:** Phase 2 changes are internal; user-visible behavior should
-not change. If any observable UI/behavior shift is unavoidable, document it in
-CHANGELOG under `Changed` and ship as **0.2.0**.
+### A5. Micro-optimisations while in there
+- `EditorController` notifies listeners on every text change; split the "document
+  changed" notification from "selection changed" so the app bar/status bar don't rebuild
+  on cursor moves.
+- `_previousText` is a full copy of the document; compare via length + hash for large
+  buffers.
+- Avoid `File(path).uri.pathSegments` in hot paths (it is fine at open time only).
 
 ---
 
-## Phase 3 — Android toolchain & Play target — ✅ DONE (2025-11)
+## Phase B — Correctness & sharp edges
 
-Result: Gradle **9.5.0**, AGP **9.3.1**, Kotlin **2.4.20**, Java bytecode target **17**,
-build JDK **21**. Verified: `flutter build apk --debug`, `flutter build appbundle`
-(release, R8) and `flutter build linux --debug` all succeed. Resulting APK:
-minSdk 24, targetSdk 36, compileSdk 37, zero user-facing permissions.
+### B1. Encoding detection is BOM-only
+`EncodingService.detectEncoding` only looks for UTF-8/UTF-16 BOMs; everything else is
+assumed UTF-8. A Latin-1 or Windows-1252 file therefore opens as mojibake, even though
+the app advertises those encodings.
+Fix: validate UTF-8 by attempting strict decode; fall back to a byte-histogram heuristic
+(or `chardet`-style scoring) between windows-1252/iso-8859-1; keep BOM wins. Persist the
+detected encoding per recent-file entry (already stored) and offer "Reopen with
+encoding…".
+Acceptance: unit tests over sample byte fixtures for each supported encoding, no false
+positives on normal ASCII.
 
-What changed:
-1. Gradle wrapper → 9.5.0 (jar + `gradlew` + `gradlew.bat` copied from a fresh template).
-2. `android/settings.gradle.kts`: AGP 8.13.0 → 9.3.1, Kotlin 2.2.20 → 2.4.20.
-3. `android/gradle.properties`: dropped `android.enableJetifier` and
-   `kotlin.jvm.target.validation.mode`; added template flags `android.newDsl=false`
-   and `android.builtInKotlin=false`.
-4. `android/build.gradle.kts`: removed the subprojects JVM-target hack (app-level 17
-   covers it).
-5. `android/app/build.gradle.kts`: `VERSION_17` + `JVM_17`; the `kotlin-android` plugin
-   id was removed because Flutter's Gradle plugin auto-applies KGP when
-   `builtInKotlin=false` (verified: `MainActivity.class` is produced). Release signing
-   now falls back to debug keys when `key.properties` is absent (local/contributor
-   builds work).
-6. `compileSdk = maxOf(flutter.compileSdkVersion, 37)` — `receive_sharing_intent`
-   requires API 37, Flutter's default is 36.
-7. Build JDK pinned: `mise.toml` `[tools] java = "21"`, `.java-version` → 21,
-   `release.yml` `java-version: '21'`. Bare `flutter build` picks up the machine-global
-   JDK 25 (incompatible with AGP/Gradle) — use `mise x --` / `mise run build`.
-8. `.gitignore`: added `android/key.properties`, `**/*.jks`, `**/*.keystore` (secret
-   leak guard — release.yml writes those).
+### B2. Stale recent files are never pruned
+`RecentFilesService.pruneInvalid()` is an empty placeholder, so deleted/moved files stay
+in the list and fail on tap.
+Fix: implement it (existence check for plain paths; for `content://` URIs check via
+`ContentUriService` or drop after a failed open), call it on app start and after a failed
+open; show the "missing" state in the recent list UI.
+Acceptance: deleting a file outside the app removes/dims it on the next launch.
 
-Note: `cupertino_icons` was re-added (`^2.0.0`) — the font warning during a release
-build proved `cupertino_ui`'s `CupertinoIcons` needs it (Phase 2 had wrongly removed
-it). Original plan was right.
+### B3. File-size rejection has no user-facing reason
+`openByPath` throws `FileSystemException('File exceeds size threshold')` and the UI shows
+a generic "could not open" message.
+Fix: distinguish error kinds (too large / not found / permission / decode) and show a
+localized message with the configured limit and a hint that it can be raised in settings.
+Acceptance: opening a 5 MB file with a 1 MB limit explains the limit and links to the
+setting.
 
-Remaining manual step: build a local release AAB **with the real keystore** once to
-exercise signing outside CI (needs `android/key.properties`), and re-run
-`flutter_launcher_icons` / `flutter_native_splash` only if icon assets change.
+### B4. Saves are not atomic for plain paths
+`FileService.saveToPath` calls `writeAsBytes` directly, so a crash mid-write truncates
+the user's file. Content-URI writes use `openOutputStream(…, "wt")`, same risk.
+Fix: write to a sibling temp file and `rename` (plain paths); keep it best-effort for
+content URIs and document the limitation.
+Acceptance: simulated failure during write leaves the original file intact.
 
----
-
-## Phase 4 — CI/CD & quality hardening — ✅ DONE (2025-11)
-
-- **CI (`ci.yml`)** — two jobs on every push/PR:
-  - `quality`: `dart format --set-exit-if-changed` → `flutter analyze` →
-    `flutter test --coverage` → coverage floor → upload `lcov.info` artifact.
-  - `android-build`: `flutter build apk --debug` (Java 21). Previously CI never built
-    Android, so Gradle/AGP breakage only surfaced at release time.
-- **Coverage gate** — `tool/check_coverage.py --min 18` (ignores generated l10n /
-  `*.g.dart`). Current actual: ~20%. Added tests for `line_endings`,
-  `byte_size_formatter`, `recent_files_service` (incl. JSON round-trip, dedupe,
-  trimming, sorting) and `PreferencesService` defaults/persistence.
-- **Integration tests** — `integration.yml`: Android emulator (API 34,
-  `ReactiveCircus/android-emulator-runner`) weekly + `workflow_dispatch` + PRs labelled
-  `integration`. The test itself was strengthened (app boot, editor focus, typing →
-  dirty marker) and the previous assertion (`textContaining('teditox')`) was wrong
-  (case-sensitive vs the "TeditoX" title).
-- **Bug found & fixed while enabling integration tests**: `IntentService` called
-  `receive_sharing_intent` unconditionally → `MissingPluginException` on Linux/tests.
-  Now guarded by `IntentService.isSupported` (Android only). Side benefit: the
-  integration test runs locally on Linux (`flutter test integration_test -d linux`),
-  no emulator needed.
-- **Release (`release.yml`)** — after the signed AAB: Ruby + `bundle exec fastlane
-  internal` publishes to the Play **internal** track, gated on
-  `PLAY_SERVICE_ACCOUNT_JSON` (skipped when absent). `android/fastlane/Fastfile` +
-  `android/Gemfile` added.
-- **Dependabot** — weekly pub + github-actions, monthly bundler; Flutter-tooling and
-  material_ui-family packages grouped to avoid conflicting bumps.
-
-Not done: `dart format` check covers `lib test integration_test` (not repo root);
-coverage floor is a modest 18% (no widget tests yet to raise it meaningfully).
+### B5. Session continuity
+The app always starts with an empty buffer; the last file is not reopened (only *crash*
+recovery restores content). This reads as a bug to users.
+Fix: on start, if no recovery snapshot exists, offer to (or automatically) reopen the
+most recent file (respect a setting), keeping the manual-save model.
+Acceptance: relaunch returns to the last file with its encoding/line endings.
 
 ---
 
-## Phase 5 — Release 0.2.0 — ✅ PREPARED (tag + upload are manual)
+## Phase C — Missing features (highest user value first)
 
-Done:
-1. `pubspec.yaml` → `version: 0.2.0+8`; CHANGELOG has a full `[0.2.0+8]` entry and the
-   version-history summary is updated.
-2. README prerequisites/deps refreshed (Flutter 3.50.1, JDK 21, material_ui; the stale
-   `file_picker`/build_runner references are gone).
-3. `release.yml` now builds **both** the AAB (Play) and a release APK (GitHub
-   downloads / sideloading) and attaches both to the GitHub Release.
-4. `pubspec.lock` is committed, so CI/release resolve identical transitive versions.
+### C1. Search & replace in the buffer ⭐
+The single biggest gap versus competing notepads (see `docs/GROWTH.md`).
+Scope: in-file find bar (Ctrl/Cmd+F), match count, next/prev, case/whole-word toggles,
+optional replace/replace-all with a single undo entry.
+Acceptance: works with wrapping on/off and with the line-number gutter; covered by
+controller tests (no UI-only logic).
 
-Remaining (manual, needs credentials/console access):
-1. `git tag v0.2.0+8 && git push --tags`, then run the *Build & Release* workflow
-   (`workflow_dispatch`) → AAB + APK artifact + GitHub Release.
-2. If `PLAY_SERVICE_ACCOUNT_JSON` is configured, the workflow pushes to the Play
-   **internal** track; otherwise upload the AAB manually.
-3. Promote internal → closed testing for ≥ 7 days (watch crash-free rate / ANRs vs
-   0.1.6+7) → production.
-4. Before promoting: smoke-test share/open-with intents on a real device, and confirm
-   the store listing (en + es) — see `docs/GROWTH.md` for listing/ASO ideas.
+### C2. Keyboard shortcuts (ChromeOS / tablet / external keyboards)
+Ctrl/Cmd + S (save), Shift+S (save as), O (open), N (new), F (find), Z/Y (undo/redo),
+and Escape to dismiss dialogs. Today only on-screen actions exist.
+Acceptance: documented in the About screen; no conflicts with `TextField` defaults.
+
+### C3. Share / export the current buffer
+The app ingests shared text files but cannot send one out. Add "Share" that writes a
+cache copy and fires `ACTION_SEND` (no new permissions needed).
+Acceptance: round-trips with a stock file manager/messaging app.
+
+### C4. Optional markdown comfort (behind a setting)
+Syntax-free preview toggle + heading/list highlighting. Keep it off by default so
+"simple" stays simple.
+
+### C5. Line-ending / encoding conversion on save
+Currently the detected style is preserved; let users deliberately convert (LF → CRLF,
+UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
 ---
 
-## Risks & rollback
+## Phase D — UX, accessibility, localization
 
-- **Highest risk:** receive_sharing_intent device flows — mitigation: the weekly
-  emulator integration job + manual device testing before a Play upload; tag `v0.1.6`
-  as the known-good fallback.
-- Timeline: phases 0–4 are done and 0.2.0 is prepared; only the tag/upload and device
-  smoke testing of share/open-with intents remain.
+- **D1. Accessibility pass**: verify TalkBack labels for the toolbar, actions menu,
+  gutter toggle and dialogs; ensure 200% text scaling doesn't clip the status bar.
+- **D2. More locales**: pipeline is ARB-based; add `de`, `pt-BR`, `fr`, `it` (community
+  translation via Weblate), keeping `app_en.arb`/`app_es.arb` in sync.
+- **D3. Tablet/desktop polish**: side panel exists at ≥600 px — make the drawer/panel
+  state persist, and confirm layout at 1280×800 and 800×1280.
+- **D4. Empty states**: recent list, editor and error dialogs should never show raw
+  paths; show file name + parent folder.
+
+---
+
+## Phase E — Release & growth (see docs/GROWTH.md)
+
+1. Promote 0.2.x from open testing → production when crash-free ≥ 99.5% for 7 days.
+2. Ship C1 + B5 in 0.3.0 — that is the release worth announcing (Show HN / r/FOSSAndroid
+   / r/privacy), not a maintenance bump.
+3. F-Droid submission (needs only a tagged release + build recipe) and store-listing
+   refresh in en/es.
+4. Add an in-app "rate Teditox" prompt after N successful saves.
+
+---
+
+## Known issues / notes
+
+- **Fixed in this cycle**: opening a recent file showed the title as "New File" — plain
+  paths never produced a `displayName` (`FileService.openByPath`), and the recent list
+  did not pass the name it already knew. Covered by
+  `test/file_service_test.dart` and `test/editor_controller_test.dart`.
+- **Test infrastructure caveat**: `EditorController` starts a periodic recovery timer,
+  so unit tests must call `dispose()`; `testWidgets` + that timer hangs the harness — use
+  plain `test()` with a stub `BuildContext` when `skipConfirmation` is true.
+- `fileAllowedExtensions` includes an empty string, so "open any file" is intentional;
+  do not tighten it without a UX plan.
+- Only `en` + `es` are translated; new strings must land in both ARB files.
+
+## Suggested order
+
+1. **A1, A3** (biggest perceived speed wins, low risk)
+2. **B1, B2, B5** (correctness users hit immediately)
+3. **C1** (feature gap, then release 0.3.0)
+4. **C2, C3**, then **A2, A4, B4** (deeper performance/data-safety work)
+5. **D1–D4**, **C4/C5**, Phase E — as feedback dictates.

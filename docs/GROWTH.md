@@ -86,7 +86,8 @@ monetization would gut the differentiator; do not.
 
 ## Suggested sequencing
 
-1. ROADMAP.md Phases 0–3 (must: the app literally doesn't build on current stable)
+1. `ROADMAP.md` phases A–B — performance and correctness work that makes the app
+   keep its promises (the 0.2.0 toolchain upgrade is done and archived)
 2. → ship **0.2.0** with: GitHub APK release, refreshed listing (en+es), F-Droid MR,
    search/replace + session restore
 3. → launch posts + rate prompt, measure Play console installs/crash-free 4 weeks
