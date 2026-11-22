@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **Unreleased** - Editor performance: gutter, undo deltas, counts, recovery writes
+- **Unreleased** - Performance (Phase A) and correctness (Phase B)
 - **v0.2.1+9** Current - Fix: recently opened files showed the title "New File"
 - **v0.2.0+8** - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
 - **v0.1.6+7** - Dependency and SDK maintenance
@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counter is enabled.
 - Crash-recovery writes happen only while the buffer is dirty and the text has changed,
   and they replace the previous snapshot atomically.
+- Encoding detection now recognises Windows-1252, ISO-8859-1, and UTF-16 without a BOM,
+  instead of treating every file without a BOM as UTF-8. The current file can be reopened
+  with a chosen encoding.
+- Recent files that no longer exist are removed. Opening a file that is too large explains
+  the limit and links to Settings.
+- Saves of normal files are atomic. Startup reopens the last file unless a crash snapshot
+  exists or the new setting is turned off.
 
 ---
 

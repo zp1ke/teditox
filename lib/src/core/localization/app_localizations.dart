@@ -481,6 +481,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get ok;
+
+  /// No description provided for @file_too_large.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is larger than the {limit} limit. You can raise it in Settings.'**
+  String file_too_large(String limit);
+
+  /// No description provided for @file_not_found.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find {name}. It was removed from recent files.'**
+  String file_not_found(String name);
+
+  /// No description provided for @file_unreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read {name}.'**
+  String file_unreadable(String name);
+
+  /// No description provided for @file_unreadable_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'this file'**
+  String get file_unreadable_unknown;
+
+  /// No description provided for @reopen_with_encoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen with encoding'**
+  String get reopen_with_encoding;
+
+  /// No description provided for @restore_last_file.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen last file on startup'**
+  String get restore_last_file;
 }
 
 class _AppLocalizationsDelegate

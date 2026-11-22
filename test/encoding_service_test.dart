@@ -22,8 +22,35 @@ void main() {
       expect(service.detectEncoding([0xFE, 0xFF, 0x00, 0x61]), 'utf-16be');
     });
 
-    test('defaults to UTF-8 without BOM', () {
+    test('keeps ASCII and valid UTF-8 as UTF-8', () {
       expect(service.detectEncoding(utf8.encode('plain ascii-ish')), 'utf-8');
+      expect(service.detectEncoding(utf8.encode('café')), 'utf-8');
+    });
+
+    test('detects Windows-1252 punctuation that is invalid UTF-8', () {
+      // 0x80 is the euro sign in Windows-1252 and illegal as UTF-8.
+      expect(service.detectEncoding([0x50, 0x80, 0x31]), 'windows-1252');
+    });
+
+    test('detects ISO-8859-1 when high bytes are not CP1252 punctuation', () {
+      // 0xE9 is é in ISO-8859-1 and a lone invalid UTF-8 lead byte.
+      expect(service.detectEncoding([0x63, 0x61, 0x66, 0xE9]), 'iso-8859-1');
+    });
+
+    test('detects UTF-16LE without a BOM', () {
+      expect(
+        service.detectEncoding([
+          0x61,
+          0x00,
+          0x62,
+          0x00,
+          0x63,
+          0x00,
+          0x64,
+          0x00,
+        ]),
+        'utf-16le',
+      );
     });
   });
 

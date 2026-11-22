@@ -10,6 +10,20 @@ import 'package:teditox/src/core/utils/line_endings.dart';
 /// Allowed file extensions for opening and saving files.
 const fileAllowedExtensions = ['txt', 'text', 'log', 'md', 'json', 'csv', ''];
 
+/// Writes [bytes] to a sibling temp file, then renames it over [target].
+///
+/// If the write fails, [target] is unchanged. Content URIs cannot use this.
+Future<void> replaceFileAtomically(File target, List<int> bytes) async {
+  final tmp = File('${target.path}.teditox.tmp');
+  try {
+    await tmp.writeAsBytes(bytes, flush: true);
+    await tmp.rename(target.path);
+  } on FileSystemException {
+    if (tmp.existsSync()) await tmp.delete();
+    rethrow;
+  }
+}
+
 /// File name for a filesystem path, or null.
 ///
 /// Returns the last non-empty segment of the file URI. `content://` URIs are
@@ -22,6 +36,36 @@ String? displayNameForPath(String path) {
   ).uri.pathSegments.where((segment) => segment.isNotEmpty);
   if (segments.isEmpty) return null;
   return segments.last;
+}
+
+/// Why opening a file was refused or failed.
+enum FileOpenFailure {
+  /// The file is larger than the configured limit.
+  tooLarge,
+
+  /// The path does not exist.
+  notFound,
+
+  /// The bytes could not be read.
+  unreadable,
+}
+
+/// A classified failure while opening a file.
+class FileOpenException implements Exception {
+  /// Creates a classified open failure.
+  const FileOpenException(this.failure, {this.path, this.limitBytes});
+
+  /// What went wrong.
+  final FileOpenFailure failure;
+
+  /// Path that was requested, when known.
+  final String? path;
+
+  /// Configured size limit, set for [FileOpenFailure.tooLarge].
+  final int? limitBytes;
+
+  @override
+  String toString() => 'FileOpenException($failure, path: $path)';
 }
 
 /// Result of a file open operation.
@@ -168,7 +212,7 @@ class FileService {
         contentUri = path;
         final uriBytes = await contentUriService.readFromUri(path);
         if (uriBytes == null) {
-          throw FileSystemException('Failed to read from content URI', path);
+          throw FileOpenException(FileOpenFailure.unreadable, path: path);
         }
         bytes = uriBytes;
 
@@ -183,7 +227,7 @@ class FileService {
         // Regular file path
         final file = File(path);
         if (!file.existsSync()) {
-          throw FileSystemException('File does not exist', path);
+          throw FileOpenException(FileOpenFailure.notFound, path: path);
         }
         bytes = await file.readAsBytes();
         // Derive a display name so callers (e.g. the editor title) do not have
@@ -192,7 +236,11 @@ class FileService {
       }
 
       if (maxBytes != null && bytes.length > maxBytes) {
-        throw const FileSystemException('File exceeds size threshold');
+        throw FileOpenException(
+          FileOpenFailure.tooLarge,
+          path: path,
+          limitBytes: maxBytes,
+        );
       }
 
       final content = await encodingService.decode(
@@ -290,9 +338,9 @@ class FileService {
       }
       logger.d('Wrote ${bytes.length} bytes to content URI: $path');
     } else {
-      // Regular file path
-      final file = File(path);
-      await file.writeAsBytes(bytes, flush: true);
+      // Write beside the target, then rename. A crash mid-write then leaves
+      // the user's file intact. Content URIs cannot be replaced this way.
+      await replaceFileAtomically(File(path), bytes);
     }
 
     return path;

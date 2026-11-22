@@ -18,6 +18,7 @@ class PreferencesService {
   static const _keyMaxFileSize = 'max_file_size';
   static const _keyRecentFiles = 'recent_files';
   static const _keyEncoding = 'default_encoding';
+  static const _keyRestoreLastFile = 'restore_last_file';
 
   late SharedPreferences _prefs;
 
@@ -124,6 +125,15 @@ class PreferencesService {
   /// Sets whether to display the word count in the UI.
   Future<void> setShowWordCount({required bool value}) =>
       _prefs.setBool(_keyWordCount, value);
+
+  /// Whether to reopen the most recent file when there is nothing to recover.
+  ///
+  /// Defaults to true.
+  bool get restoreLastFile => _prefs.getBool(_keyRestoreLastFile) ?? true;
+
+  /// Sets whether startup should reopen the most recent file.
+  Future<void> setRestoreLastFile({required bool value}) =>
+      _prefs.setBool(_keyRestoreLastFile, value);
 
   /// Gets the default text encoding for file operations.
   ///

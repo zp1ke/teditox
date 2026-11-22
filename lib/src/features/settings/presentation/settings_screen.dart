@@ -253,6 +253,16 @@ class _AdvancedSection extends StatelessWidget {
             },
           ),
         ),
+        Consumer<SettingsController>(
+          builder: (context, settings, child) => SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(loc.restore_last_file),
+            value: settings.restoreLastFile,
+            onChanged: (value) {
+              unawaited(settings.setRestoreLastFile(value: value));
+            },
+          ),
+        ),
       ],
     );
   }

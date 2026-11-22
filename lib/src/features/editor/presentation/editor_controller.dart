@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:logger/logger.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,6 +7,7 @@ import 'package:teditox/src/core/services/file_service.dart';
 import 'package:teditox/src/core/services/recent_files_service.dart';
 import 'package:teditox/src/core/services/recovery_service.dart';
 import 'package:teditox/src/core/utils/line_endings.dart';
+import 'package:teditox/src/core/widgets/file_open_error_dialog.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/text_delta.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
@@ -342,8 +342,8 @@ class EditorController extends ChangeNotifier {
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
-    } on FileSystemException {
-      // propagate UI message
+    } on FileOpenException catch (e) {
+      if (context.mounted) await _reportOpenFailure(context, e);
       return false;
     } on Exception catch (e) {
       logger.e('Open failed: $e');
@@ -413,13 +413,50 @@ class EditorController extends ChangeNotifier {
       await recoveryService.clear(fileService);
       notifyListeners();
       return true;
-    } on FileSystemException {
-      // propagate UI message
+    } on FileOpenException catch (e) {
+      if (e.failure == FileOpenFailure.notFound) {
+        await recentFiles.remove(path);
+      }
+      if (context.mounted) await _reportOpenFailure(context, e);
       return false;
     } on Exception catch (e) {
       logger.e('Open by path failed: $e');
       return false;
     }
+  }
+
+  /// Reloads [currentPath] with [encoding].
+  ///
+  /// No-op when no file is open. Keeps the manual-save model: the reopened
+  /// buffer is clean.
+  Future<bool> reopenWithEncoding(BuildContext context, String encoding) async {
+    final path = currentPath;
+    if (path == null) return false;
+    try {
+      final res = await fileService.openByPath(
+        path: path,
+        forcedEncoding: encoding,
+        maxBytes: settings.maxFileSize,
+      );
+      if (res == null) return false;
+      await _acceptOpened(res, displayNameHint: _displayName);
+      return true;
+    } on FileOpenException catch (e) {
+      if (context.mounted) await _reportOpenFailure(context, e);
+      return false;
+    } on Exception catch (e) {
+      logger.e('Reopen with encoding failed: $e');
+      return false;
+    }
+  }
+
+  Future<void> _reportOpenFailure(
+    BuildContext context,
+    FileOpenException error,
+  ) async {
+    logger.w('Open failed: $error');
+    if (!context.mounted) return;
+    await showFileOpenError(context, error);
   }
 
   /// Saves the current content to the existing file path.
@@ -570,12 +607,35 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Restores a crash snapshot, or the last file when that setting is on.
+  Future<void> restoreSession() async {
+    if (await attemptRecovery()) return;
+    if (!settings.restoreLastFile) return;
+    final recent = recentFiles.getAll();
+    if (recent.isEmpty) return;
+    final entry = recent.first;
+    try {
+      final res = await fileService.openByPath(
+        path: entry.path,
+        forcedEncoding: entry.encoding,
+        maxBytes: settings.maxFileSize,
+      );
+      if (res == null) return;
+      await _acceptOpened(res, displayNameHint: entry.displayName);
+    } on FileOpenException catch (e) {
+      if (e.failure == FileOpenFailure.notFound) {
+        await recentFiles.remove(entry.path);
+      }
+      logger.w('Could not restore last file: $e');
+    }
+  }
+
   /// Attempts to recover content from a previously saved recovery snapshot.
-  /// Loads the most recent snapshot and restores the text content and
-  /// file path.
-  Future<void> attemptRecovery() async {
+  ///
+  /// Returns true when a snapshot was applied.
+  Future<bool> attemptRecovery() async {
     final snap = await recoveryService.loadSnapshot(fileService);
-    if (snap == null) return;
+    if (snap == null) return false;
     // Simple heuristic: if snapshot is newer than nothing.
     _markSeen(snap.content);
     _controller.text = snap.content;
@@ -589,6 +649,38 @@ class EditorController extends ChangeNotifier {
     _setDirty(snap.dirty);
     _pushInitial(UndoEntry(_controller.text, _controller.selection));
     _countsStale = true;
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> _acceptOpened(
+    FileOpenResult res, {
+    String? displayNameHint,
+  }) async {
+    currentPath = res.path;
+    _displayName = _usableName(displayNameHint) ?? _usableName(res.displayName);
+    currentEncoding = res.encoding;
+    lineEnding = res.lineEndingStyle;
+    _markSeen(res.content);
+    _controller.text = res.content;
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
+    );
+    _setDirty(false);
+    _pushInitial(UndoEntry(_controller.text, _controller.selection));
+    _countsStale = true;
+    if (settings.showWordCount) _scheduleCounts();
+    await recentFiles.addOrUpdate(
+      RecentFileEntry(
+        path: res.path,
+        lastOpened: DateTime.now(),
+        fileSize: res.bytes.length,
+        encoding: currentEncoding,
+        lineEnding: lineEnding.name,
+        displayName: _displayName,
+      ),
+    );
+    await recoveryService.clear(fileService);
     notifyListeners();
   }
 

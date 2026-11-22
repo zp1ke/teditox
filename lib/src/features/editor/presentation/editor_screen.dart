@@ -31,7 +31,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void initState() {
     super.initState();
     controller = sl<EditorController>();
-    unawaited(controller.attemptRecovery());
+    unawaited(controller.restoreSession());
   }
 
   Future<bool> _handleBack() async {

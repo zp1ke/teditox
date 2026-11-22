@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
@@ -29,6 +31,13 @@ class _RecentScreenState extends State<RecentScreen> {
     super.initState();
     recentService = sl<RecentFilesService>();
     entries = recentService.getAll();
+    unawaited(_prune());
+  }
+
+  Future<void> _prune() async {
+    await recentService.pruneInvalid();
+    if (!mounted) return;
+    setState(() => entries = recentService.getAll());
   }
 
   Future<void> _remove(String path) async {
@@ -135,26 +144,10 @@ class _RecentScreenState extends State<RecentScreen> {
                           // id; saving it back would replace a missing name.
                           displayNameHint: e.displayName,
                         );
-                        if (context.mounted) {
-                          if (success) {
-                            context.navigate(.editor, cleanStack: true);
-                          } else {
-                            await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: Text(loc.open_file_error),
-                                content: Text(
-                                  loc.open_file_error_message(e.path),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => context.pop(false),
-                                    child: Text(loc.ok),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
+                        if (!context.mounted) return;
+                        setState(() => entries = recentService.getAll());
+                        if (success) {
+                          context.navigate(.editor, cleanStack: true);
                         }
                       },
                       child: Padding(

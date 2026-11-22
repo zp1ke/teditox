@@ -90,9 +90,16 @@ changes already did not notify listeners. `displayNameForPath` stays off the typ
 
 ---
 
-## Phase B — Correctness & sharp edges
+## Phase B — Correctness & sharp edges — ✅ DONE
 
-### B1. Encoding detection is BOM-only
+### B1. Encoding detection — ✅
+BOM still wins. Valid UTF-8, including ASCII, stays UTF-8. Invalid UTF-8 with
+Windows-1252 punctuation bytes is detected as windows-1252; other high bytes as
+ISO-8859-1. UTF-16 without a BOM is recognised from NUL padding. The actions menu
+can reopen the current file with a chosen encoding. The detected encoding was
+already stored on recent entries and is reused when restoring the last file.
+
+### B1 notes
 `EncodingService.detectEncoding` only looks for UTF-8/UTF-16 BOMs; everything else is
 assumed UTF-8. A Latin-1 or Windows-1252 file therefore opens as mojibake, even though
 the app advertises those encodings.
@@ -103,7 +110,12 @@ encoding…".
 Acceptance: unit tests over sample byte fixtures for each supported encoding, no false
 positives on normal ASCII.
 
-### B2. Stale recent files are never pruned
+### B2. Stale recent files — ✅
+`pruneInvalid()` drops plain paths that no longer exist and runs when the recent
+screen opens. `content://` URIs are removed when an open reports not found, because
+they cannot be stat'ed. The open error says the file was removed from the list.
+
+### B2 notes
 `RecentFilesService.pruneInvalid()` is an empty placeholder, so deleted/moved files stay
 in the list and fail on tap.
 Fix: implement it (existence check for plain paths; for `content://` URIs check via
@@ -111,7 +123,11 @@ Fix: implement it (existence check for plain paths; for `content://` URIs check 
 open; show the "missing" state in the recent list UI.
 Acceptance: deleting a file outside the app removes/dims it on the next launch.
 
-### B3. File-size rejection has no user-facing reason
+### B3. File-size rejection — ✅
+Opens throw `FileOpenException` (`tooLarge`, `notFound`, `unreadable`). The dialog
+names the limit and has a Settings button for the too-large case.
+
+### B3 notes
 `openByPath` throws `FileSystemException('File exceeds size threshold')` and the UI shows
 a generic "could not open" message.
 Fix: distinguish error kinds (too large / not found / permission / decode) and show a
@@ -119,14 +135,24 @@ localized message with the configured limit and a hint that it can be raised in 
 Acceptance: opening a 5 MB file with a 1 MB limit explains the limit and links to the
 setting.
 
-### B4. Saves are not atomic for plain paths
+### B4. Atomic saves — ✅
+Plain paths are written to a sibling `.teditox.tmp` and renamed over the target, so a
+failed write leaves the original file. Content-URI writes stay best-effort; Android
+does not offer a rename-over for those streams.
+
+### B4 notes
 `FileService.saveToPath` calls `writeAsBytes` directly, so a crash mid-write truncates
 the user's file. Content-URI writes use `openOutputStream(…, "wt")`, same risk.
 Fix: write to a sibling temp file and `rename` (plain paths); keep it best-effort for
 content URIs and document the limitation.
 Acceptance: simulated failure during write leaves the original file intact.
 
-### B5. Session continuity
+### B5. Session continuity — ✅
+Startup still prefers a crash snapshot. If there is none, and Settings →
+"Reopen last file on startup" is on (the default), the most recent file is opened
+with its stored encoding. The buffer is clean, so the manual-save model is unchanged.
+
+### B5 notes
 The app always starts with an empty buffer; the last file is not reopened (only *crash*
 recovery restores content). This reads as a bug to users.
 Fix: on start, if no recovery snapshot exists, offer to (or automatically) reopen the
@@ -204,7 +230,7 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 ## Suggested order
 
 1. ~~A1–A5~~ done.
-2. **B1, B2, B5** (correctness users hit immediately)
+2. ~~B1–B5~~ done.
 3. **C1** (feature gap, then release 0.3.0)
-4. **C2, C3**, then **B4** (atomic saves)
+4. **C2, C3**
 5. **D1–D4**, **C4/C5**, Phase E — as feedback dictates.

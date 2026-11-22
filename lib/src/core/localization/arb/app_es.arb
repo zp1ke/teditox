@@ -77,5 +77,11 @@
       }
     }
   },
-  "ok": "OK"
+  "ok": "OK",
+  "file_too_large": "Este archivo supera el límite de {limit}. Puedes aumentarlo en Ajustes.",
+  "file_not_found": "No se encontró {name}. Se quitó de los archivos recientes.",
+  "file_unreadable": "No se pudo leer {name}.",
+  "file_unreadable_unknown": "este archivo",
+  "reopen_with_encoding": "Reabrir con codificación",
+  "restore_last_file": "Reabrir el último archivo al iniciar"
 }

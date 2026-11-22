@@ -152,7 +152,7 @@ Patterns to follow:
   replace, keyboard shortcuts, share-out).
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
   conversion can only be verified on a device.
-- Perf hot spots from the first audit are addressed (ROADMAP Phase A): visible-line
-  gutter, undo deltas, debounced counts, recovery writes only while dirty. Next work is
-  Phase B (encoding detection, recent-file pruning, atomic saves, session restore).
+- ROADMAP Phases A and B are done (gutter/undo/counts/recovery, plus encoding
+  detection, recent-file pruning, classified open errors, atomic saves, and last-file
+  restore). Next work is Phase C: search and replace.
 - Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.

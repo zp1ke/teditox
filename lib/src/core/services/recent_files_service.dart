@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:teditox/src/core/services/preferences_service.dart';
 
@@ -102,8 +103,22 @@ class RecentFilesService {
     await prefs.setRecentFiles([]);
   }
 
-  /// Prunes invalid recent file entries.
+  /// Drops recent entries whose plain path no longer exists.
+  ///
+  /// `content://` URIs cannot be stat'ed reliably, so they are kept until an
+  /// open fails and the caller removes them.
   Future<void> pruneInvalid() async {
-    // Deferred: implement existence check; placeholder.
+    final all = getAll();
+    final kept = <RecentFileEntry>[];
+    for (final entry in all) {
+      if (entry.path.startsWith('content://') ||
+          File(entry.path).existsSync()) {
+        kept.add(entry);
+      }
+    }
+    if (kept.length == all.length) return;
+    await prefs.setRecentFiles([
+      for (final entry in kept) jsonEncode(entry.toJson()),
+    ]);
   }
 }

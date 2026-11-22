@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:teditox/src/core/services/preferences_service.dart';
@@ -87,6 +89,40 @@ void main() {
       await service.remove('/a');
       expect(service.getAll().map((e) => e.path), ['/b']);
     });
+
+    test(
+      'pruneInvalid drops missing plain paths and keeps content URIs',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('teditox_prune');
+        addTearDown(() => dir.delete(recursive: true));
+        final kept = File('${dir.path}/kept.txt');
+        await kept.writeAsString('ok');
+        await service.addOrUpdate(
+          _entry(kept.path, at: DateTime(2025), name: 'kept.txt'),
+        );
+        await service.addOrUpdate(
+          _entry(
+            '${dir.path}/gone.txt',
+            at: DateTime(2025, 1, 2),
+            name: 'gone.txt',
+          ),
+        );
+        await service.addOrUpdate(
+          _entry(
+            'content://documents/14',
+            at: DateTime(2025, 1, 3),
+            name: 'from-share.txt',
+          ),
+        );
+
+        await service.pruneInvalid();
+
+        expect(service.getAll().map((e) => e.path), [
+          'content://documents/14',
+          kept.path,
+        ]);
+      },
+    );
 
     test('clearAll empties the list', () async {
       await service.addOrUpdate(_entry('/a'));

@@ -93,7 +93,13 @@ void main() {
     test('throws when the file does not exist', () async {
       expect(
         () => service.openByPath(path: '${tempDir.path}/nope.txt'),
-        throwsA(isA<FileSystemException>()),
+        throwsA(
+          isA<FileOpenException>().having(
+            (error) => error.failure,
+            'failure',
+            FileOpenFailure.notFound,
+          ),
+        ),
       );
     });
 
@@ -103,8 +109,29 @@ void main() {
 
       expect(
         () => service.openByPath(path: file.path, maxBytes: 1024),
-        throwsA(isA<FileSystemException>()),
+        throwsA(
+          isA<FileOpenException>().having(
+            (error) => error.failure,
+            'failure',
+            FileOpenFailure.tooLarge,
+          ),
+        ),
       );
+    });
+
+    test('saveToPath replaces the file and leaves no temp file', () async {
+      final file = File('${tempDir.path}/notes.txt');
+      await file.writeAsString('old');
+
+      await service.saveToPath(
+        path: file.path,
+        content: 'new',
+        encoding: 'utf-8',
+        lineEndingStyle: LineEndingStyle.lf,
+      );
+
+      expect(await file.readAsString(), 'new');
+      expect(File('${file.path}.teditox.tmp').existsSync(), isFalse);
     });
   });
 }

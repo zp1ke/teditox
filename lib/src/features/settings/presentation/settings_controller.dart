@@ -58,6 +58,15 @@ class SettingsController extends ChangeNotifier {
   /// Gets the maximum file size limit in bytes.
   int get maxFileSize => prefs.maxFileSize;
 
+  /// Whether startup reopens the most recent file when nothing crashed.
+  bool get restoreLastFile => prefs.restoreLastFile;
+
+  /// Sets whether startup reopens the most recent file.
+  Future<void> setRestoreLastFile({required bool value}) async {
+    await prefs.setRestoreLastFile(value: value);
+    notifyListeners();
+  }
+
   /// Gets the default text encoding for file operations.
   String get defaultEncoding => prefs.defaultEncoding;
 

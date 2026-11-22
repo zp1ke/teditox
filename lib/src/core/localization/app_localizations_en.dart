@@ -205,4 +205,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String file_too_large(String limit) {
+    return 'This file is larger than the $limit limit. You can raise it in Settings.';
+  }
+
+  @override
+  String file_not_found(String name) {
+    return 'Could not find $name. It was removed from recent files.';
+  }
+
+  @override
+  String file_unreadable(String name) {
+    return 'Could not read $name.';
+  }
+
+  @override
+  String get file_unreadable_unknown => 'this file';
+
+  @override
+  String get reopen_with_encoding => 'Reopen with encoding';
+
+  @override
+  String get restore_last_file => 'Reopen last file on startup';
 }

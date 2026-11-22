@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:teditox/src/core/services/content_uri_service.dart';
 import 'package:teditox/src/core/services/encoding_service.dart';
 import 'package:teditox/src/core/services/file_service.dart';
@@ -85,6 +86,11 @@ class _FakeSettings extends SettingsController {
 class _CountingSettings extends _FakeSettings {
   @override
   bool get showWordCount => true;
+}
+
+class _RestoringSettings extends _FakeSettings {
+  @override
+  bool get restoreLastFile => true;
 }
 
 /// File service whose backend reports no display name (e.g. a content:// URI
@@ -303,6 +309,42 @@ void main() {
     expect(controller.wordCount, 3);
     expect(controller.charCount, 'one two three'.length);
     expect(controller.lineCount, 1);
+  });
+
+  test('restoreSession reopens the most recent file', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = PreferencesService();
+    await prefs.init();
+    final recent = RecentFilesService(prefs: prefs);
+    final dir = await Directory.systemTemp.createTemp('teditox_restore');
+    addTearDown(() => dir.delete(recursive: true));
+    final file = File('${dir.path}/notes.txt');
+    await file.writeAsString('restored text');
+    await recent.addOrUpdate(
+      RecentFileEntry(
+        path: file.path,
+        lastOpened: DateTime(2025),
+        fileSize: 13,
+        encoding: 'utf-8',
+        lineEnding: 'lf',
+        displayName: 'notes.txt',
+      ),
+    );
+
+    final controller = EditorController(
+      fileService: _FakeFileService(),
+      recentFiles: recent,
+      recoveryService: _FakeRecovery(),
+      settings: _RestoringSettings(),
+      logger: Logger(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.restoreSession();
+
+    expect(controller.controller.text, 'restored text');
+    expect(controller.currentFileName, 'notes.txt');
+    expect(controller.currentEncoding, 'utf-8');
   });
 
   test('Line ending default', () {
