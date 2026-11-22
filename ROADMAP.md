@@ -224,7 +224,74 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 
 ---
 
+## Phase D-human — Device approval (you, on an Android phone)
+
+Do this **before** Phase E. Unit tests do not cover Storage Access Framework, the share
+sheet, or how the editor feels. Install a build from this branch (`mise x -- flutter run`
+or an internal-track upload) and tick each item. A fail blocks the release.
+
+Use one phone on the current Play target (Android 14 or 15 is enough) and, if you have
+one, a tablet or a phone in landscape wider than 600 px. Switch the device language to
+English for steps 1–8, then repeat the marked steps in Spanish.
+
+### 1. Install and first launch
+- [ ] App installs and opens to an empty editor titled with the localized "New file".
+- [ ] No permission dialog appears at any point in this whole list.
+- [ ] Light, dark, and system theme all look readable. Dynamic color on Android 12+ follows the wallpaper.
+
+### 2. Open, edit, save (SAF)
+- [ ] Open a `.txt` from the system picker. The title is the real file name, not "New file" and not a number like `14`.
+- [ ] Type, see the dirty marker, Save. Reopen the same file from a file manager: the text is there.
+- [ ] Save As creates a new document with the name you chose. The title updates to that name.
+- [ ] A missing file (delete it outside the app, then tap it in Recent) shows a not-found message and disappears from Recent. The message does not show a raw `content://` URI.
+
+### 3. Recent files and restart
+- [ ] After saving, the file is in Recent with its name and a folder or "Shared document", not the full URI.
+- [ ] Force-stop the app and relaunch. The last file reopens and is **not** marked dirty.
+- [ ] Turn off Settings → "Reopen last file on startup", force-stop, relaunch: empty editor. Turn it back on.
+
+### 4. Crash recovery
+- [ ] Type without saving, then kill the app from the recents screen (swipe away).
+- [ ] Relaunch: the unsaved text is back and marked dirty. Save, kill again: it does not restore over the saved file.
+
+### 5. Share in and share out
+- [ ] From a file manager, "Open with" Teditox (app was closed). The file opens with the right name.
+- [ ] Repeat with Teditox already open.
+- [ ] Share a text file into Teditox from another app. Same result.
+- [ ] In Teditox, Share. The system share sheet opens and a messaging or files app can receive the text. No permission prompt.
+
+### 6. Find, replace, undo
+- [ ] Search finds the next and previous match. Match case and whole word behave as labeled.
+- [ ] Replace one match, then Replace all. Undo once restores the buffer from before replace-all.
+- [ ] Esc closes the find bar.
+
+### 7. Encodings and line endings
+- [ ] Open a Windows-1252 or Latin-1 file (smart quotes or `é` saved as Latin-1). It is not mojibake. The status bar names the encoding.
+- [ ] More actions → Reopen with encoding → UTF-8, then back. The text changes only when the encoding was wrong.
+- [ ] More actions → Save as encoding. The snackbar names the line ending and charset. Save, reopen: the file matches that choice.
+
+### 8. Limits, performance, and text size
+- [ ] Set max file size to 256 KB and open a larger file. The dialog names the limit and the Settings button opens Settings. Raise the limit and open the file.
+- [ ] Open a file of about 1 MB with line numbers on. Typing does not visibly stall. Scrolling the gutter stays aligned with the text, including with wrap on.
+- [ ] Settings → display size / font size at the largest step. The status bar wraps or ellipsizes. It is not cut off. Toolbar buttons still have spoken labels in TalkBack (spot-check Open, Save, Find, Share, Undo).
+
+### 9. Layout
+- [ ] Phone portrait: navigation is a drawer, not a permanent side panel.
+- [ ] Width ≥ 600 px (tablet, or phone landscape if it is wide enough): the side panel is visible. Hide it, leave the app, come back: it stays hidden. Show it again.
+
+### 10. Spanish
+- [ ] Switch the app language to Spanish. Repeat steps 2, 5, and 6. Buttons, errors, and the empty recent list are Spanish, not English and not raw keys.
+
+### Sign-off
+- [ ] I approve this build for the next Play upload.
+
+Write the date and the version (`pubspec.yaml` `version:`) next to the sign-off when you pass it. Do not start Phase E until that line is filled in.
+
+---
+
 ## Phase E — Release & growth (see docs/GROWTH.md)
+
+Blocked on the Phase D-human sign-off above.
 
 1. Promote 0.2.x from open testing → production when crash-free ≥ 99.5% for 7 days.
 2. Ship C1 + B5 in 0.3.0 — that is the release worth announcing (Show HN / r/FOSSAndroid
@@ -253,4 +320,6 @@ UTF-8 → Windows-1252) from the actions menu, with a clear before/after label.
 1. ~~A1–A5~~ done.
 2. ~~B1–B5~~ done.
 3. ~~C1–C3, C5~~ done. **C4** (optional markdown) is still open.
-4. ~~D1, D3, D4~~ done. **D2** stays en/es only. Then **C4** if feedback asks, then Phase E.
+4. ~~D1, D3, D4~~ done. **D2** stays en/es only.
+5. **Phase D-human** — you, on an Android device. Required before release.
+6. Then **C4** if feedback asks, then Phase E.
