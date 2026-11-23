@@ -347,6 +347,47 @@ void main() {
     expect(controller.currentEncoding, 'utf-8');
   });
 
+  test(
+    'restoreSession does not replace a file opened from another app',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = PreferencesService();
+      await prefs.init();
+      final recent = RecentFilesService(prefs: prefs);
+      final dir = await Directory.systemTemp.createTemp(
+        'teditox_restore_intent',
+      );
+      addTearDown(() => dir.delete(recursive: true));
+      final file = File('${dir.path}/notes.txt');
+      await file.writeAsString('restored text');
+      await recent.addOrUpdate(
+        RecentFileEntry(
+          path: file.path,
+          lastOpened: DateTime(2025),
+          fileSize: 13,
+          encoding: 'utf-8',
+          lineEnding: 'lf',
+          displayName: 'notes.txt',
+        ),
+      );
+
+      final controller = EditorController(
+        fileService: _FakeFileService(),
+        recentFiles: recent,
+        recoveryService: _FakeRecovery(),
+        settings: _RestoringSettings(),
+        logger: Logger(),
+      );
+      addTearDown(controller.dispose);
+      controller.claimExternalOpen();
+      controller.controller.text = 'from the file manager';
+
+      await controller.restoreSession();
+
+      expect(controller.controller.text, 'from the file manager');
+    },
+  );
+
   test('Line ending default', () {
     final controller = EditorController(
       fileService: _FakeFileService(),

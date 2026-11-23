@@ -19,11 +19,14 @@ class MainActivity : FlutterActivity() {
     private val CREATE_FILE_REQUEST = 1002
 
     private var pendingResult: MethodChannel.Result? = null
+    private var contentChannel: MethodChannel? = null
+    private var pendingIncoming: HashMap<String, String>? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        contentChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        contentChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "pickFile" -> {
                     pendingResult = result
@@ -153,6 +156,11 @@ class MainActivity : FlutterActivity() {
                         result.error("SHARE_ERROR", e.message, null)
                     }
                 }
+                "takeIncomingFile" -> {
+                    val pending = pendingIncoming
+                    pendingIncoming = null
+                    result.success(pending)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -212,22 +220,92 @@ class MainActivity : FlutterActivity() {
     override fun getInitialRoute(): String = "/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Clear before Flutter reads the intent, or GoRouter treats the
-        // content:// URI as the current route and in-app navigation no-ops.
+        // Stash the file before clearing it. GoRouter otherwise treats the
+        // content:// URI as the route, and the share plugin then never sees it.
+        captureIncoming(intent)
         scrubFileIntent(intent)
         super.onCreate(savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
+        captureIncoming(intent)
         scrubFileIntent(intent)
         super.onNewIntent(intent)
         setIntent(intent)
     }
 
+    private fun captureIncoming(intent: Intent?) {
+        val uri = incomingUri(intent) ?: return
+        rememberReadPermission(intent, uri)
+        val payload = hashMapOf("uri" to uri.toString())
+        usableDisplayName(uri)?.let { payload["displayName"] = it }
+        intent?.type?.let { payload["mimeType"] = it }
+        if (contentChannel == null) {
+            pendingIncoming = payload
+            return
+        }
+        contentChannel?.invokeMethod("onIncomingFile", payload)
+    }
+
+    private fun incomingUri(intent: Intent?): Uri? {
+        if (intent == null) return null
+        val data = intent.data
+        if (data != null && isFileUri(data)) return data
+        val stream = extraStream(intent)
+        if (stream != null && isFileUri(stream)) return stream
+        val clip = intent.clipData
+        if (clip != null && clip.itemCount > 0) {
+            val clipUri = clip.getItemAt(0).uri
+            if (clipUri != null && isFileUri(clipUri)) return clipUri
+        }
+        return null
+    }
+
+    private fun extraStream(intent: Intent): Uri? {
+        return if (android.os.Build.VERSION.SDK_INT >= 33) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+    }
+
+    private fun isFileUri(uri: Uri): Boolean {
+        return uri.scheme == "content" || uri.scheme == "file"
+    }
+
+    private fun usableDisplayName(uri: Uri): String? {
+        val queried = getDisplayNameFromUri(uri)?.trim()
+        if (!queried.isNullOrEmpty()) return queried
+        if (uri.scheme != "file") return null
+        val segment = uri.lastPathSegment?.trim()
+        if (segment.isNullOrEmpty()) return null
+        return segment
+    }
+
+    private fun rememberReadPermission(intent: Intent?, uri: Uri) {
+        if (uri.scheme != "content" || intent == null) return
+        val flags = intent.flags and (
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        if (flags == 0) return
+        try {
+            contentResolver.takePersistableUriPermission(uri, flags)
+        } catch (_: Exception) {
+            // View grants are often temporary. The read still works this session.
+        }
+    }
+
     private fun scrubFileIntent(intent: Intent?) {
-        val uri = intent?.data ?: return
-        if (uri.scheme == "content" || uri.scheme == "file") {
+        if (intent == null) return
+        val uri = intent.data
+        if (uri != null && isFileUri(uri)) {
             intent.data = null
+        }
+        intent.removeExtra(Intent.EXTRA_STREAM)
+        if (intent.clipData != null) {
+            intent.clipData = null
         }
     }
 }

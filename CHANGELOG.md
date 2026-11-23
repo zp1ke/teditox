@@ -22,7 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet. Next Play upload must be newer than `0.2.1+9`.
+### Fixed
+- Opening a file from a file manager when Teditox was not already running opens that
+  file instead of a new empty document. The next Play upload must be newer than `0.2.1+9`.
 
 ---
 

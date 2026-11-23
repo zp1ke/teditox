@@ -120,6 +120,14 @@ class EditorController extends ChangeNotifier {
   /// Whether the current content has unsaved changes.
   bool dirty = false;
 
+  var _externalOpen = false;
+
+  /// Marks that an external app is opening a file, so session restore does
+  /// not replace it.
+  void claimExternalOpen() {
+    _externalOpen = true;
+  }
+
   /// Find matches to paint in the editor. Empty when find is closed.
   List<TextMatch> searchMatches = const [];
 
@@ -637,10 +645,11 @@ class EditorController extends ChangeNotifier {
 
   /// Restores a crash snapshot, or the last file when that setting is on.
   Future<void> restoreSession() async {
+    if (_externalOpen) return;
     if (await attemptRecovery()) return;
-    if (!settings.restoreLastFile) return;
+    if (_externalOpen || !settings.restoreLastFile) return;
     final recent = recentFiles.getAll();
-    if (recent.isEmpty) return;
+    if (recent.isEmpty || _externalOpen) return;
     final entry = recent.first;
     try {
       final res = await fileService.openByPath(
@@ -648,7 +657,7 @@ class EditorController extends ChangeNotifier {
         forcedEncoding: entry.encoding,
         maxBytes: settings.maxFileSize,
       );
-      if (res == null) return;
+      if (res == null || _externalOpen) return;
       await _acceptOpened(res, displayNameHint: entry.displayName);
     } on FileOpenException catch (e) {
       if (e.failure == FileOpenFailure.notFound) {
@@ -662,8 +671,9 @@ class EditorController extends ChangeNotifier {
   ///
   /// Returns true when a snapshot was applied.
   Future<bool> attemptRecovery() async {
+    if (_externalOpen) return false;
     final snap = await recoveryService.loadSnapshot(fileService);
-    if (snap == null) return false;
+    if (snap == null || _externalOpen) return false;
     // Simple heuristic: if snapshot is newer than nothing.
     _markSeen(snap.content);
     _controller.text = snap.content;

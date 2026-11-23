@@ -81,14 +81,15 @@ class _AppContentState extends State<_AppContent> {
     super.dispose();
   }
 
-  void _handleIncomingFile(String filePath) {
-    _logger.i('Received file intent: $filePath');
+  void _handleIncomingFile(IncomingFile file) {
+    _logger.i('Received file intent: ${file.path}');
+    sl<EditorController>().claimExternalOpen();
 
     // Schedule the file opening after the first frame is rendered
     // This ensures the widget tree is fully built and router is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _logger.d('PostFrameCallback triggered, opening file');
-      _openFileWhenReady(filePath);
+      _openFileWhenReady(file);
     });
   }
 
@@ -99,26 +100,27 @@ class _AppContentState extends State<_AppContent> {
   }
 
   /// Opens the file once the router and context are ready.
-  void _openFileWhenReady(String filePath) {
+  void _openFileWhenReady(IncomingFile file) {
     final navContext = _navigatorContext;
 
     if (navContext != null && navContext.mounted) {
-      _logger.d('Opening file: $filePath');
+      _logger.d('Opening file: ${file.path}');
       final editorController = sl<EditorController>();
 
       // Skip confirmation when opening from external intent at startup
       unawaited(
         editorController.openFileByPath(
           navContext,
-          filePath,
+          file.path,
           skipConfirmation: true,
+          displayNameHint: file.displayName,
         ),
       );
     } else {
       _logger.w('Context not ready yet, retrying...');
       // If context is not ready, wait for next frame and try again
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _openFileWhenReady(filePath);
+        _openFileWhenReady(file);
       });
     }
   }

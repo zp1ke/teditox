@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/di/service_locator.dart';
 import 'package:teditox/src/core/localization/app_localizations.dart';
+import 'package:teditox/src/core/services/intent_service.dart';
 import 'package:teditox/src/core/services/share_service.dart';
 import 'package:teditox/src/core/widgets/unsaved_changes_dialog.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
@@ -36,7 +37,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void initState() {
     super.initState();
     controller = sl<EditorController>();
-    unawaited(controller.restoreSession());
+    unawaited(_restoreAfterIntent());
     HardwareKeyboard.instance.addHandler(_onKey);
   }
 
@@ -44,6 +45,12 @@ class _EditorScreenState extends State<EditorScreen> {
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_onKey);
     super.dispose();
+  }
+
+  Future<void> _restoreAfterIntent() async {
+    await sl<IntentService>().whenReady;
+    if (!mounted) return;
+    await controller.restoreSession();
   }
 
   bool _onKey(KeyEvent event) {
