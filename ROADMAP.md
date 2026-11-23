@@ -261,29 +261,30 @@ English for steps 1–8, then repeat the marked steps in Spanish.
 - [x] In Teditox, Share. The system share sheet opens and a messaging or files app can receive the text. No permission prompt.
 
 ### 6. Find, replace, undo
-- [ ] Search finds the next and previous match. Match case and whole word behave as labeled.
-- [ ] Replace one match, then Replace all. Undo once restores the buffer from before replace-all.
-- [ ] Esc closes the find bar.
+- [x] Search finds the next and previous match. Match case and whole word behave as labeled.
+- [ ] Retest: every match is highlighted in the file, the current match is stronger, and match case / whole word / replace stay filled while on.
+- [x] Replace one match, then Replace all. Undo once restores the buffer from before replace-all.
+- [x] Esc closes the find bar.
 
 ### 7. Encodings and line endings
-- [ ] Open a Windows-1252 or Latin-1 file (smart quotes or `é` saved as Latin-1). It is not mojibake. The status bar names the encoding.
-- [ ] More actions → Reopen with encoding → UTF-8, then back. The text changes only when the encoding was wrong.
-- [ ] More actions → Save as encoding. The snackbar names the line ending and charset. Save, reopen: the file matches that choice.
+- [x] Open a Windows-1252 or Latin-1 file (smart quotes or `é` saved as Latin-1). It is not mojibake. The status bar names the encoding.
+- [x] More actions → Reopen with encoding → UTF-8, then back. The text changes only when the encoding was wrong.
+- [x] More actions → Save as encoding. The snackbar names the line ending and charset. Save, reopen: the file matches that choice.
 
 ### 8. Limits, performance, and text size
-- [ ] Set max file size to 256 KB and open a larger file. The dialog names the limit and the Settings button opens Settings. Raise the limit and open the file.
-- [ ] Open a file of about 1 MB with line numbers on. Typing does not visibly stall. Scrolling the gutter stays aligned with the text, including with wrap on.
-- [ ] Settings → display size / font size at the largest step. The status bar wraps or ellipsizes. It is not cut off. Toolbar buttons still have spoken labels in TalkBack (spot-check Open, Save, Find, Share, Undo).
+- [x] Set max file size to 256 KB and open a larger file. The dialog names the limit and the Settings button opens Settings. Raise the limit and open the file.
+- [x] Open a file of about 1 MB with line numbers on. Typing does not visibly stall. Scrolling the gutter stays aligned with the text, including with wrap on.
+- [x] Settings → display size / font size at the largest step. The status bar wraps or ellipsizes. It is not cut off. Toolbar buttons still have spoken labels in TalkBack (spot-check Open, Save, Find, Share, Undo).
 
 ### 9. Layout
-- [ ] Phone portrait: navigation is a drawer, not a permanent side panel.
-- [ ] Width ≥ 600 px (tablet, or phone landscape if it is wide enough): the side panel is visible. Hide it, leave the app, come back: it stays hidden. Show it again.
+- [x] Phone portrait: navigation is a drawer, not a permanent side panel.
+- [x] Width ≥ 600 px (tablet, or phone landscape if it is wide enough): the side panel is visible. Hide it, leave the app, come back: it stays hidden. Show it again.
 
 ### 10. Spanish
-- [ ] Switch the app language to Spanish. Repeat steps 2, 5, and 6. Buttons, errors, and the empty recent list are Spanish, not English and not raw keys.
+- [x] Switch the app language to Spanish. Repeat steps 2, 5, and 6. Buttons, errors, and the empty recent list are Spanish, not English and not raw keys.
 
 ### Sign-off
-- [ ] I approve this build for the next Play upload.
+- [x] I approve this build for the next Play upload. 2026-11-22, version 0.2.1+9.
 
 Write the date and the version (`pubspec.yaml` `version:`) next to the sign-off when you pass it. Do not start Phase E until that line is filled in.
 

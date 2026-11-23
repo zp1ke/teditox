@@ -1,8 +1,10 @@
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:teditox/src/core/theme/app_theme.dart';
 import 'package:teditox/src/features/editor/presentation/editor_controller.dart';
 import 'package:teditox/src/features/editor/presentation/line_number_layout.dart';
+import 'package:teditox/src/features/editor/presentation/search_highlight.dart';
 import 'package:teditox/src/features/editor/presentation/widgets/line_number_gutter.dart';
 import 'package:teditox/src/features/settings/presentation/settings_controller.dart';
 
@@ -41,12 +43,47 @@ class EditorTextArea extends StatefulWidget {
 class _EditorTextAreaState extends State<EditorTextArea> {
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
+  final GlobalKey _fieldKey = GlobalKey();
+  final SearchHighlightPainter _highlights = SearchHighlightPainter();
+  RenderEditable? _editable;
 
   @override
   void dispose() {
+    _editable?.painter = null;
+    _highlights.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();
+  }
+
+  void _attachHighlights() {
+    final editable = _findEditable(
+      _fieldKey.currentContext?.findRenderObject(),
+    );
+    if (!identical(editable, _editable)) {
+      _editable?.painter = null;
+      _editable = editable;
+      editable?.painter = _highlights;
+    }
+    if (!mounted || editable == null) return;
+    final controller = context.read<EditorController>();
+    final scheme = Theme.of(context).colorScheme;
+    _highlights.update(
+      matches: controller.searchMatches,
+      activeIndex: controller.searchActiveIndex,
+      color: scheme.tertiaryContainer.withValues(alpha: 0.85),
+      activeColor: scheme.primary.withValues(alpha: 0.45),
+    );
+  }
+
+  RenderEditable? _findEditable(RenderObject? node) {
+    if (node == null) return null;
+    if (node is RenderEditable) return node;
+    RenderEditable? found;
+    node.visitChildren((child) {
+      found ??= _findEditable(child);
+    });
+    return found;
   }
 
   @override
@@ -64,7 +101,12 @@ class _EditorTextAreaState extends State<EditorTextArea> {
     // TextField's content padding
     const textFieldPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _attachHighlights();
+    });
+
     Widget textField = TextField(
+      key: _fieldKey,
       autofocus: true,
       showCursor: true,
       controller: textController,

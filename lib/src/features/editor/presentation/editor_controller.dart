@@ -15,6 +15,15 @@ import 'package:teditox/src/features/settings/presentation/settings_controller.d
 
 final _whitespace = RegExp(r'\s+');
 
+bool _sameMatches(List<TextMatch> a, List<TextMatch> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].start != b[i].start || a[i].end != b[i].end) return false;
+  }
+  return true;
+}
+
 /// Non-blank trimmed name, or null.
 String? _usableName(String? value) {
   final trimmed = value?.trim();
@@ -110,6 +119,23 @@ class EditorController extends ChangeNotifier {
 
   /// Whether the current content has unsaved changes.
   bool dirty = false;
+
+  /// Find matches to paint in the editor. Empty when find is closed.
+  List<TextMatch> searchMatches = const [];
+
+  /// Index into [searchMatches] of the current match, or -1.
+  int searchActiveIndex = -1;
+
+  /// Updates the painted find matches. No-ops when nothing changed.
+  void setSearchHighlight(List<TextMatch> matches, int activeIndex) {
+    if (activeIndex == searchActiveIndex &&
+        _sameMatches(searchMatches, matches)) {
+      return;
+    }
+    searchMatches = matches;
+    searchActiveIndex = activeIndex;
+    notifyListeners();
+  }
 
   // Undo/Redo
   final List<UndoEntry> _undoStack = [];

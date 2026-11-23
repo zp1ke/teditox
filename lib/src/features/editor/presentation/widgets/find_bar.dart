@@ -32,6 +32,7 @@ class FindBarState extends State<FindBar> {
   void initState() {
     super.initState();
     _queryController.addListener(_onQueryChanged);
+    widget.controller.controller.addListener(_onBufferChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _queryFocus.requestFocus();
     });
@@ -39,6 +40,8 @@ class FindBarState extends State<FindBar> {
 
   @override
   void dispose() {
+    widget.controller.controller.removeListener(_onBufferChanged);
+    widget.controller.setSearchHighlight(const [], -1);
     _queryController.dispose();
     _replaceController.dispose();
     _queryFocus.dispose();
@@ -59,6 +62,20 @@ class FindBarState extends State<FindBar> {
 
   void _onQueryChanged() {
     setState(() => _selected = -1);
+    _publish();
+  }
+
+  void _onBufferChanged() {
+    _publish();
+    if (mounted) setState(() {});
+  }
+
+  void _publish() {
+    final matches = _matches;
+    final selected = _selected >= 0 && _selected < matches.length
+        ? _selected
+        : -1;
+    widget.controller.setSearchHighlight(matches, selected);
   }
 
   void _go(int index) {
@@ -71,6 +88,7 @@ class FindBarState extends State<FindBar> {
     final match = matches[wrapped];
     widget.controller.selectRange(match.start, match.end);
     setState(() => _selected = wrapped);
+    _publish();
   }
 
   void _next() {
@@ -132,83 +150,134 @@ class FindBarState extends State<FindBar> {
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _queryController,
-                    focusNode: _queryFocus,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: loc.find_hint,
-                      suffixText: count,
-                    ),
-                    onSubmitted: (_) => _next(),
-                  ),
-                ),
-                IconButton(
-                  tooltip: loc.find_previous,
-                  onPressed: matches.isEmpty ? null : _previous,
-                  icon: const Icon(Icons.keyboard_arrow_up),
-                ),
-                IconButton(
-                  tooltip: loc.find_next,
-                  onPressed: matches.isEmpty ? null : _next,
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                ),
-                IconButton(
-                  tooltip: loc.find_match_case,
-                  isSelected: _caseSensitive,
-                  onPressed: () =>
-                      setState(() => _caseSensitive = !_caseSensitive),
-                  icon: const Icon(Icons.text_fields),
-                ),
-                IconButton(
-                  tooltip: loc.find_whole_word,
-                  isSelected: _wholeWord,
-                  onPressed: () => setState(() => _wholeWord = !_wholeWord),
-                  icon: const Icon(Icons.spellcheck),
-                ),
-                IconButton(
-                  tooltip: loc.replace,
-                  onPressed: () => setState(() => _showReplace = !_showReplace),
-                  icon: const Icon(Icons.find_replace),
-                ),
-                IconButton(
-                  tooltip: loc.close,
-                  onPressed: widget.onClose,
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            if (_showReplace)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _replaceController,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        hintText: loc.replace_hint,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: matches.isEmpty ? null : _replaceOne,
-                    child: Text(loc.replace),
-                  ),
-                  TextButton(
-                    onPressed: matches.isEmpty ? null : _replaceAll,
-                    child: Text(loc.replace_all),
-                  ),
-                ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final narrow = constraints.maxWidth < 600;
+            final query = TextField(
+              controller: _queryController,
+              focusNode: _queryFocus,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: loc.find_hint,
+                suffixText: count,
               ),
-          ],
+              onSubmitted: (_) => _next(),
+            );
+            final actions = _actionButtons(loc, matches.isEmpty);
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (narrow) ...[
+                  query,
+                  actions,
+                ] else
+                  Row(
+                    children: [
+                      Expanded(child: query),
+                      actions,
+                    ],
+                  ),
+                if (_showReplace) _replaceRow(loc, matches.isEmpty, narrow),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
+
+  Widget _actionButtons(AppLocalizations loc, bool noMatches) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          tooltip: loc.find_previous,
+          onPressed: noMatches ? null : _previous,
+          icon: const Icon(Icons.keyboard_arrow_up),
+        ),
+        IconButton(
+          tooltip: loc.find_next,
+          onPressed: noMatches ? null : _next,
+          icon: const Icon(Icons.keyboard_arrow_down),
+        ),
+        _filterButton(
+          tooltip: loc.find_match_case,
+          selected: _caseSensitive,
+          onPressed: () {
+            setState(() => _caseSensitive = !_caseSensitive);
+            _publish();
+          },
+          icon: Icons.text_fields,
+        ),
+        _filterButton(
+          tooltip: loc.find_whole_word,
+          selected: _wholeWord,
+          onPressed: () {
+            setState(() => _wholeWord = !_wholeWord);
+            _publish();
+          },
+          icon: Icons.spellcheck,
+        ),
+        _filterButton(
+          tooltip: loc.replace,
+          selected: _showReplace,
+          onPressed: () => setState(() => _showReplace = !_showReplace),
+          icon: Icons.find_replace,
+        ),
+        IconButton(
+          tooltip: loc.close,
+          onPressed: widget.onClose,
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    );
+  }
+
+  Widget _filterButton({
+    required String tooltip,
+    required bool selected,
+    required VoidCallback onPressed,
+    required IconData icon,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: tooltip,
+      isSelected: selected,
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: selected ? scheme.secondaryContainer : null,
+        foregroundColor: selected ? scheme.onSecondaryContainer : null,
+      ),
+      icon: Icon(icon),
+    );
+  }
+
+  Widget _replaceRow(AppLocalizations loc, bool noMatches, bool narrow) {
+    final field = TextField(
+      controller: _replaceController,
+      decoration: InputDecoration(isDense: true, hintText: loc.replace_hint),
+    );
+    final buttons = Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton(
+          onPressed: noMatches ? null : _replaceOne,
+          child: Text(loc.replace),
+        ),
+        TextButton(
+          onPressed: noMatches ? null : _replaceAll,
+          child: Text(loc.replace_all),
+        ),
+      ],
+    );
+    if (narrow) {
+      return Column(mainAxisSize: MainAxisSize.min, children: [field, buttons]);
+    }
+    return Row(
+      children: [
+        Expanded(child: field),
+        buttons,
+      ],
     );
   }
 }
