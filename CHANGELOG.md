@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **Unreleased** - 0.2.2+10, nothing shipped yet
-- **v0.2.1+9** Current, Play open testing - Find and replace, session restore, recent-file title
+- **Unreleased** - 0.2.3+11, nothing shipped yet
+- **v0.2.2+10** Current, Play open testing - Open-with from a file manager when the app was closed
+- **v0.2.1+9** - Find and replace, session restore, recent-file title
 - **v0.2.0+8** - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
 - **v0.1.6+7** - Dependency and SDK maintenance
 - **v0.1.5+6** - Storage Access Framework (SAF) integration, recent files redesign
@@ -22,16 +23,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet. Next Play upload must be newer than `0.2.2+10`.
+
+---
+
+## [0.2.2+10] - 2026-11-23
+
+Open testing on Google Play. Supersedes 0.2.1+9 on that track.
+
 ### Fixed
 - Opening a file from a file manager when Teditox was not already running opens that
-  file instead of a new empty document. The next Play upload must be newer than `0.2.1+9`.
+  file instead of a new empty document.
 
 ---
 
 ## [0.2.1+9] - 2026-11-23
 
-Open testing on Google Play. Includes the editor work from Phases A–D, not only the
-recent-file title fix.
+Uploaded to Play open testing, then replaced the same day by 0.2.2+10. Includes the
+editor work from Phases A–D, not only the recent-file title fix.
 
 ### Added
 - Find and replace in the current file. Matches are highlighted, replace-all is one undo

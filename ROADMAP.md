@@ -1,10 +1,10 @@
 # Teditox Roadmap — Product & Quality
 
-**0.2.1+9** is in **open testing** on Google Play (uploaded 2026-11-23). It includes
-Phases A–D: find and replace, session restore, share, and the recent-file title fix.
-The toolchain upgrade is archived in
+**0.2.2+10** is in **open testing** on Google Play (uploaded 2026-11-23). It is
+0.2.1+9 plus the cold-start open-with fix. 0.2.1+9 has find and replace, session
+restore, share, and the recent-file title fix. The toolchain upgrade is archived in
 [`docs/archive/ROADMAP-upgrade-0.2.0.md`](docs/archive/ROADMAP-upgrade-0.2.0.md).
-Working tree version is **0.2.2+10** so the next upload is not the same versionCode.
+Working tree version is **0.2.3+11** so the next upload is not the same versionCode.
 
 This roadmap is about making the editor better to *use*: faster on real files, fewer
 sharp edges, and the features people expect from a plain-text editor. Product/marketing
@@ -295,12 +295,13 @@ Write the date and the version (`pubspec.yaml` `version:`) next to the sign-off 
 
 ## Phase E — Release & growth (see docs/GROWTH.md)
 
-0.2.1+9 is already in open testing. Do not cut another feature release just to announce
-find and replace.
+0.2.2+10 is the open-testing build to promote. Do not cut another feature release
+just to announce find and replace.
 
-1. Promote **0.2.1+9** from open testing → production when crash-free ≥ 99.5% for 7 days.
-2. Announce 0.2.1+9 (find/replace, session restore, share, encodings) on Show HN,
-   r/FOSSAndroid, and r/privacy. That is the release worth announcing, not a later bump.
+1. Promote **0.2.2+10** from open testing → production when crash-free ≥ 99.5% for 7 days.
+2. Announce 0.2.2+10 (find/replace, session restore, share, encodings, open-with) on
+   Show HN, r/FOSSAndroid, and r/privacy. That is the release worth announcing, not a
+   later bump.
 3. F-Droid submission (needs only a tagged release + build recipe) and store-listing
    refresh in en/es.
 4. Add an in-app "rate Teditox" prompt after N successful saves.
@@ -326,5 +327,5 @@ find and replace.
 2. ~~B1–B5~~ done.
 3. ~~C1–C3, C5~~ done. **C4** (optional markdown) is still open.
 4. ~~D1, D3, D4~~ done. **D2** stays en/es only.
-5. ~~Phase D-human~~ signed off and uploaded as **0.2.1+9** (2026-11-23).
+5. ~~Phase D-human~~ signed off. Uploaded as **0.2.1+9**, then **0.2.2+10** (2026-11-23).
 6. Phase E. **C4** only if feedback asks.

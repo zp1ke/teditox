@@ -13,8 +13,9 @@ Written 2025-11. Package: `org.zp1ke.teditox`.
   markdown-first, desktop-first). The "clean, no-ads, no-permission notepad" niche is
   real and under-served *on phones*, especially among privacy-conscious users.
 - **Weaknesses:** discoverability (no F-Droid, no web presence beyond the repo), thin
-  store listing, only en/es. Search/replace and session restore shipped in **0.2.1+9**
-  (Play open testing, 2026-11-23).
+  store listing, only en/es. Search/replace and session restore shipped in 0.2.1+9.
+  Current Play open testing is **0.2.2+10** (2026-11-23), which also fixes cold-start
+  open-with.
 
 Assumption: "customers" = installs + ratings + community, not revenue (app is and
 should stay free).
@@ -65,7 +66,7 @@ Skip (against positioning): cloud sync, accounts, themes marketplace, in-app pur
 - **Launch posts:** r/privacy, r/FOSSAndroid, r/androiddev, HN ("Show HN: no-permission
   text editor"), lobste.rs, NanoTechTextPad-style comparison blogs/YouTube (a handful of
   "best open-source Android apps" channels drive outsized installs). Cadence: announce
-  **0.2.1+9** (find/replace, session restore, share), not the 0.2.0 toolchain bump.
+  **0.2.2+10** (find/replace, session restore, share, open-with), not the 0.2.0 toolchain bump.
 - **Inclusive repo hygiene:** CONTRIBUTING.md (done), good-first-issues, issue template
   with reproduction steps, reply to every Play review in the first month — Play ranking
   responds to review velocity + dev replies.
@@ -81,8 +82,8 @@ monetization would gut the differentiator; do not.
 
 ## Suggested sequencing
 
-1. ~~Phases A–D~~ shipped to Play open testing as **0.2.1+9** (2026-11-23).
-2. → announce that build: GitHub release, refreshed listing (en+es), F-Droid MR.
+1. ~~Phases A–D~~ shipped, then **0.2.2+10** to Play open testing (2026-11-23).
+2. → announce 0.2.2+10: GitHub release, refreshed listing (en+es), F-Droid MR.
 3. → launch posts + rate prompt, measure Play console installs/crash-free 4 weeks.
    Promote to production at crash-free ≥ 99.5% for 7 days.
 4. → locales only if asked. Decide on markdown from user feedback.

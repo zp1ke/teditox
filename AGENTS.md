@@ -137,19 +137,20 @@ Patterns to follow:
 
 ## Known state / debt (as of 2026-11)
 
-- ✅ **0.2.1+9 is in Play open testing** (uploaded 2026-11-23). It includes the 0.2.0
-  toolchain plus Phases A–D: find/replace, session restore, share, encodings, and the
-  recent-file title fix. Flutter 3.50.1 / Dart 3.14, material_ui, Gradle 9.5.0 /
+- ✅ **0.2.2+10 is in Play open testing** (uploaded 2026-11-23). It is 0.2.1+9 plus the
+  fix for opening a file from a file manager when the app was closed. 0.2.1+9 has the
+  0.2.0 toolchain plus Phases A–D: find/replace, session restore, share, encodings, and
+  the recent-file title fix. Flutter 3.50.1 / Dart 3.14, material_ui, Gradle 9.5.0 /
   AGP 9.3.1 / Kotlin 2.4.20 / Java 17 bytecode (JDK 21 build pin), compileSdk 37.
   Details: `docs/archive/ROADMAP-upgrade-0.2.0.md`.
-- Working tree is **0.2.2+10**. Do not upload `0.2.1+9` again; Play rejects a reused
+- Working tree is **0.2.3+11**. Do not upload `0.2.2+10` again; Play rejects a reused
   versionCode.
 - ✅ CI enforces format + a coverage floor (gate 18%) and builds a debug APK on every
   PR; emulator integration tests run weekly/on demand; release publishes to the Play
   internal track when a service-account key exists; dependabot configured.
 - ✅ `IntentService` no-ops off Android (it used to throw `MissingPluginException` on
   Linux); opening a recent file now sets the editor title correctly.
-- 🎯 Next work is Phase E in `ROADMAP.md`: promote 0.2.1+9 when crash-free is stable,
+- 🎯 Next work is Phase E in `ROADMAP.md`: promote 0.2.2+10 when crash-free is stable,
   announce that build, F-Droid, listing refresh. Optional markdown preview (C4) stays
   off until feedback asks.
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
