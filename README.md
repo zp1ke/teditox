@@ -17,6 +17,8 @@ A simple, modular Flutter text editor.
 - **Manual Save Model**: Explicit save actions with dirty state indicator
 
 ### Editor Features
+- **Find and replace**: Highlights matches in the open file. Replace-all is one undo step.
+- **Share**: Send the current text to another app on Android.
 - **Undo/Redo**: Configurable depth (5, 10, or 20 levels) with visual indicators in toolbar
 - **Recent Files**: List of up to 10 recent files with metadata
 - **Crash Recovery**: Automatic snapshot for unsaved buffer recovery
@@ -42,8 +44,7 @@ A simple, modular Flutter text editor.
 - **State Management**: Provider pattern with GetIt service locator
 - **Navigation**: go_router with declarative routing and enum-based routes
 - **Logging**: Structured logging with logger package
-- **Immutable Models**: Freezed for type-safe data classes
-- **Code Generation**: Build runner for Freezed models and localizations
+- **Models**: Plain Dart classes. Localizations are the only generated sources.
 - **Testing**: Unit tests and integration tests with coverage reporting
 - **CI/CD**: Automated analysis, testing, and Android app bundle builds
 

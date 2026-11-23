@@ -135,24 +135,24 @@ Patterns to follow:
 - Coverage accounting: `tool/check_coverage.py` ignores generated
   `app_localizations*` and `*.g.dart`/`*.freezed.dart`; current floor is 18%.
 
-## Known state / debt (as of 2025-11)
+## Known state / debt (as of 2026-11)
 
-- ✅ **0.2.x shipped to Play open testing.** Flutter 3.50.1 / Dart 3.14, material_ui
-  (Material/Cupertino unbundled), all direct deps on latest, Gradle 9.5.0 / AGP 9.3.1 /
-  Kotlin 2.4.20 / Java 17 bytecode (JDK 21 build pin), compileSdk 37, dead
-  freezed/build_runner toolchain removed. Details: `docs/archive/ROADMAP-upgrade-0.2.0.md`.
+- ✅ **0.2.1+9 is in Play open testing** (uploaded 2026-11-23). It includes the 0.2.0
+  toolchain plus Phases A–D: find/replace, session restore, share, encodings, and the
+  recent-file title fix. Flutter 3.50.1 / Dart 3.14, material_ui, Gradle 9.5.0 /
+  AGP 9.3.1 / Kotlin 2.4.20 / Java 17 bytecode (JDK 21 build pin), compileSdk 37.
+  Details: `docs/archive/ROADMAP-upgrade-0.2.0.md`.
+- Working tree is **0.2.2+10**. Do not upload `0.2.1+9` again; Play rejects a reused
+  versionCode.
 - ✅ CI enforces format + a coverage floor (gate 18%) and builds a debug APK on every
   PR; emulator integration tests run weekly/on demand; release publishes to the Play
   internal track when a service-account key exists; dependabot configured.
 - ✅ `IntentService` no-ops off Android (it used to throw `MissingPluginException` on
   Linux); opening a recent file now sets the editor title correctly.
-- 🎯 Current work is planned in `ROADMAP.md` (product & quality): performance
-  (line-number gutter, undo snapshots, counts, recovery writes), correctness (encoding
-  detection, recent-file pruning, atomic saves, session restore) and features (search &
-  replace, keyboard shortcuts, share-out).
+- 🎯 Next work is Phase E in `ROADMAP.md`: promote 0.2.1+9 when crash-free is stable,
+  announce that build, F-Droid, listing refresh. Optional markdown preview (C4) stays
+  off until feedback asks.
 - Coverage ~28% across services/utils; no widget tests yet. `charset_converter` real
   conversion can only be verified on a device.
-- ROADMAP Phases A–D are done except optional markdown preview (C4) and extra locales.
-  English and Spanish stay the only languages until that is explicitly revisited.
-  Next work is Phase E (release/growth) or C4 if feedback asks for markdown.
-- Only en + es locales. Product/marketing notes: `docs/GROWTH.md`.
+- English and Spanish stay the only languages until that is explicitly revisited.
+  Product/marketing notes: `docs/GROWTH.md`.

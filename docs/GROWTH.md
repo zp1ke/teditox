@@ -12,9 +12,9 @@ Written 2025-11. Package: `org.zp1ke.teditox`.
   (Quikr, Notally-family) and a few open-source standouts (Gnam, Acode, Markor —
   markdown-first, desktop-first). The "clean, no-ads, no-permission notepad" niche is
   real and under-served *on phones*, especially among privacy-conscious users.
-- **Weaknesses:** bare 0.1.x feature set vs competitors (no search/replace!), zero
-  discoverability (no release cadence, no F-Droid, no web presence beyond the repo),
-  thin store listing, only en/es.
+- **Weaknesses:** discoverability (no F-Droid, no web presence beyond the repo), thin
+  store listing, only en/es. Search/replace and session restore shipped in **0.2.1+9**
+  (Play open testing, 2026-11-23).
 
 Assumption: "customers" = installs + ratings + community, not revenue (app is and
 should stay free).
@@ -45,23 +45,18 @@ should stay free).
 
 Ordered by (users gained) ÷ (effort), given the "simple editor" positioning:
 
-1. **Search & replace** in the buffer. The #1 complaint genre for any text editor
-   without it. High-impact, self-contained (a controller + a find bar).
-2. **Session restore**: reopen the last file on launch (recent-files + recovery
-   services basically exist for this; today a relaunch drops the buffer unless it
-   crashes). Cheap, feels premium.
-3. **Share/export improvements**: "Open in other app" (send current buffer via
-   `content://` or cache file + ACTION_SEND). Completes the intent story that already
-   handles incoming shares.
+1. ~~Search & replace~~ shipped in 0.2.1+9.
+2. ~~Session restore~~ shipped in 0.2.1+9.
+3. ~~Share out~~ shipped in 0.2.1+9.
 4. **Markdown niceties** (optional tier): syntax-only highlighting + preview toggle.
    Careful — this is where "simple" dies; ship behind a setting. Markor's popularity
    shows markdown users overlap heavily with privacy users.
 5. **More locales** via existing ARB pipeline: de, pt-BR, fr, it, ja. The l10n infra
    and untranslated-messages tooling already exist; translation itself can come from
    the community (Weblate is free for FOSS).
-6. **Tablet/desktop story**: side panel exists at ≥600px; keyboard shortcuts
-   (Ctrl+S/O/F, undo/redo) would make it genuinely usable on Chromebook (Android
-   channel) — a real, underserved "simple notepad" market.
+6. **Tablet/desktop story**: side panel and keyboard shortcuts shipped in 0.2.1+9.
+   Chromebook use is still an underserved "simple notepad" market; no extra work until
+   someone asks.
 
 Skip (against positioning): cloud sync, accounts, themes marketplace, in-app purchases.
 
@@ -70,7 +65,7 @@ Skip (against positioning): cloud sync, accounts, themes marketplace, in-app pur
 - **Launch posts:** r/privacy, r/FOSSAndroid, r/androiddev, HN ("Show HN: no-permission
   text editor"), lobste.rs, NanoTechTextPad-style comparison blogs/YouTube (a handful of
   "best open-source Android apps" channels drive outsized installs). Cadence: announce
-  0.2.0, not a quiet build.
+  **0.2.1+9** (find/replace, session restore, share), not the 0.2.0 toolchain bump.
 - **Inclusive repo hygiene:** CONTRIBUTING.md (done), good-first-issues, issue template
   with reproduction steps, reply to every Play review in the first month — Play ranking
   responds to review velocity + dev replies.
@@ -86,12 +81,11 @@ monetization would gut the differentiator; do not.
 
 ## Suggested sequencing
 
-1. `ROADMAP.md` phases A–B — performance and correctness work that makes the app
-   keep its promises (the 0.2.0 toolchain upgrade is done and archived)
-2. → ship **0.2.0** with: GitHub APK release, refreshed listing (en+es), F-Droid MR,
-   search/replace + session restore
-3. → launch posts + rate prompt, measure Play console installs/crash-free 4 weeks
-4. → locales round 2, shortcuts, decide on markdown tier from user feedback
+1. ~~Phases A–D~~ shipped to Play open testing as **0.2.1+9** (2026-11-23).
+2. → announce that build: GitHub release, refreshed listing (en+es), F-Droid MR.
+3. → launch posts + rate prompt, measure Play console installs/crash-free 4 weeks.
+   Promote to production at crash-free ≥ 99.5% for 7 days.
+4. → locales only if asked. Decide on markdown from user feedback.
 
 North-star metric: 30-day organic installs & rating count (currently the two numbers
 that gate store search visibility). Guardrail metric: crash-free sessions ≥ 99.5%.

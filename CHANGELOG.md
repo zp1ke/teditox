@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
-- **Unreleased** - Performance (Phase A) and correctness (Phase B)
-- **v0.2.1+9** Current - Fix: recently opened files showed the title "New File"
+- **Unreleased** - 0.2.2+10, nothing shipped yet
+- **v0.2.1+9** Current, Play open testing - Find and replace, session restore, recent-file title
 - **v0.2.0+8** - Flutter 3.50/Dart 3.14, material_ui, modern Android toolchain
 - **v0.1.6+7** - Dependency and SDK maintenance
 - **v0.1.5+6** - Storage Access Framework (SAF) integration, recent files redesign
@@ -22,6 +22,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet. Next Play upload must be newer than `0.2.1+9`.
+
+---
+
+## [0.2.1+9] - 2026-11-23
+
+Open testing on Google Play. Includes the editor work from Phases A–D, not only the
+recent-file title fix.
+
+### Added
+- Find and replace in the current file. Matches are highlighted, replace-all is one undo
+  step, and match case, whole word, and replace stay visibly on while selected.
+- Keyboard shortcuts for save, open, new, find, and undo/redo. Listed on the About screen.
+- Share sends the current text to another app on Android. Elsewhere it is copied.
+- Startup reopens the last file unless a crash snapshot exists or the setting is off.
+- The current file can be reopened with a chosen encoding. The next save can use a chosen
+  line ending and encoding.
+
 ### Changed
 - The line-number gutter paints only the visible lines instead of rebuilding a widget per
   line on every keystroke.
@@ -31,24 +49,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counter is enabled.
 - Crash-recovery writes happen only while the buffer is dirty and the text has changed,
   and they replace the previous snapshot atomically.
-- Encoding detection now recognises Windows-1252, ISO-8859-1, and UTF-16 without a BOM,
-  instead of treating every file without a BOM as UTF-8. The current file can be reopened
-  with a chosen encoding.
+- Encoding detection recognises Windows-1252, ISO-8859-1, and UTF-16 without a BOM,
+  instead of treating every file without a BOM as UTF-8.
 - Recent files that no longer exist are removed. Opening a file that is too large explains
   the limit and links to Settings.
-- Saves of normal files are atomic. Startup reopens the last file unless a crash snapshot
-  exists or the new setting is turned off.
-- Find and replace in the current file, including replace-all as one undo step.
-- Keyboard shortcuts for save, open, new, find, and undo/redo. Listed on the About screen.
-- Share sends the current text to another app on Android. Elsewhere it is copied.
-- The next save can use a chosen line ending and encoding.
+- Saves of normal files are atomic.
 - Wide screens remember whether the navigation panel is open. Phones use a drawer.
 - Recent files and open errors show a file name and folder, not a raw path.
-- The status bar wraps instead of clipping at large text sizes. Locales remain English and Spanish.
-
----
-
-## [0.2.1+9] - 2025-11-20
+- The status bar wraps instead of clipping at large text sizes. Locales remain English
+  and Spanish.
+- Unsaved changes are marked on the file-name row, which stays visible above the keyboard.
 
 ### Fixed
 - Opening a file from the recent-files list now shows its real name in the editor title.
@@ -56,6 +66,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   labelled "New File". The name stored with the recent entry is preferred over a later
   content-resolver query, which can return a document id or a blank string. Content URIs
   are no longer given a title invented from the URI itself.
+- A deleted shared document is reported as missing and dropped from Recent, including when
+  Android returns ENOENT rather than a not-found error.
+- Opening a file from another app no longer leaves Settings and other in-app navigation
+  stuck on the content URI.
 
 ---
 
