@@ -241,24 +241,24 @@ English for steps 1–8, then repeat the marked steps in Spanish.
 
 ### 2. Open, edit, save (SAF)
 - [x] Open a `.txt` from the system picker. The title is the real file name, not "New file" and not a number like `14`.
-- [ ] Type. The file-name row (above the keyboard) turns to "name • Modified". Save. Reopen the same file from a file manager: the text is there.
-- [ ] Save As creates a new document with the name you chose. The title updates to that name.
-- [ ] A missing file (delete it outside the app, then tap it in Recent) shows a not-found message and disappears from Recent. The message does not show a raw `content://` URI.
+- [x] Type. The file-name row (above the keyboard) turns to "name • Modified". Save. Reopen the same file from a file manager: the text is there.
+- [x] Save As creates a new document with the name you chose. The title updates to that name.
+- [x] A missing file (delete it outside the app, then tap it in Recent) shows a not-found message and disappears from Recent. The message does not show a raw `content://` URI.
 
 ### 3. Recent files and restart
-- [ ] After saving, the file is in Recent with its name and a folder or "Shared document", not the full URI.
-- [ ] Force-stop the app and relaunch. The last file reopens and is **not** marked dirty.
-- [ ] Turn off Settings → "Reopen last file on startup", force-stop, relaunch: empty editor. Turn it back on.
+- [x] After saving, the file is in Recent with its name and a folder or "Shared document", not the full URI.
+- [x] Force-stop the app and relaunch. The last file reopens and is **not** marked dirty.
+- [x] Turn off Settings → "Reopen last file on startup", force-stop, relaunch: empty editor. Turn it back on.
 
 ### 4. Crash recovery
-- [ ] Type without saving, then kill the app from the recents screen (swipe away).
-- [ ] Relaunch: the unsaved text is back and marked dirty. Save, kill again: it does not restore over the saved file.
+- [x] Type without saving, then kill the app from the recents screen (swipe away).
+- [x] Relaunch: the unsaved text is back and marked dirty. Save, kill again: it does not restore over the saved file.
 
 ### 5. Share in and share out
-- [ ] From a file manager, "Open with" Teditox (app was closed). The file opens with the right name.
-- [ ] Repeat with Teditox already open.
-- [ ] Share a text file into Teditox from another app. Same result.
-- [ ] In Teditox, Share. The system share sheet opens and a messaging or files app can receive the text. No permission prompt.
+- [x] From a file manager, "Open with" Teditox (app was closed). The file opens with the right name.
+- [x] Repeat with Teditox already open.
+- [x] Share a text file into Teditox from another app. Same result.
+- [x] In Teditox, Share. The system share sheet opens and a messaging or files app can receive the text. No permission prompt.
 
 ### 6. Find, replace, undo
 - [ ] Search finds the next and previous match. Match case and whole word behave as labeled.
