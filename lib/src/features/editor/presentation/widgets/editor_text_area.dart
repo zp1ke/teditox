@@ -49,7 +49,9 @@ class _EditorTextAreaState extends State<EditorTextArea> {
 
   @override
   void dispose() {
-    _editable?.painter = null;
+    // The text field disposes its RenderEditable before this State. Clearing
+    // the painter then adopts a child on that disposed object.
+    _editable = null;
     _highlights.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -61,9 +63,14 @@ class _EditorTextAreaState extends State<EditorTextArea> {
       _fieldKey.currentContext?.findRenderObject(),
     );
     if (!identical(editable, _editable)) {
-      _editable?.painter = null;
+      final previous = _editable;
+      if (previous != null && previous.attached) {
+        previous.painter = null;
+      }
       _editable = editable;
-      editable?.painter = _highlights;
+      if (editable != null && editable.attached) {
+        editable.painter = _highlights;
+      }
     }
     if (!mounted || editable == null) return;
     final controller = context.read<EditorController>();
