@@ -1,6 +1,29 @@
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 
+/// A failed read of a content URI.
+class ContentUriReadException implements Exception {
+  /// Creates a read failure.
+  const ContentUriReadException(this.message, {required this.missing});
+
+  /// Platform message.
+  final String message;
+
+  /// True when the document no longer exists (ENOENT / not found).
+  final bool missing;
+
+  @override
+  String toString() => 'ContentUriReadException($message, missing: $missing)';
+}
+
+/// Whether a platform read error means the document is gone.
+bool contentUriIsMissing(String? message) {
+  final text = message?.toLowerCase() ?? '';
+  return text.contains('enoent') ||
+      text.contains('no such file') ||
+      text.contains('not found');
+}
+
 /// Service for handling Android content URIs via platform channel.
 ///
 /// This service allows reading from and writing to content URIs directly,
@@ -63,17 +86,24 @@ class ContentUriService {
 
   /// Reads bytes from a content URI.
   ///
-  /// Returns null if the URI cannot be read.
+  /// Throws [ContentUriReadException] when the platform cannot read [uri].
+  /// [ContentUriReadException.missing] is true when the document is gone.
   Future<Uint8List?> readFromUri(String uri) async {
     try {
       final result = await _channel.invokeMethod<Uint8List>('readFromUri', {
         'uri': uri,
       });
       logger.d('Read ${result?.length ?? 0} bytes from URI: $uri');
+      if (result == null) {
+        throw const ContentUriReadException('empty read', missing: false);
+      }
       return result;
     } on PlatformException catch (e) {
       logger.e('Failed to read from URI $uri: ${e.message}');
-      return null;
+      throw ContentUriReadException(
+        e.message ?? 'read failed',
+        missing: contentUriIsMissing(e.message),
+      );
     }
   }
 

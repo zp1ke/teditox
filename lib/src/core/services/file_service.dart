@@ -162,10 +162,18 @@ class FileService {
     final uri = result['uri']!;
     final displayName = result['displayName']!;
 
-    // Read the file content using content URI service
-    final uriBytes = await contentUriService.readFromUri(uri);
-    if (uriBytes == null) {
-      throw const FileSystemException('Failed to read from content URI');
+    final Uint8List uriBytes;
+    try {
+      final read = await contentUriService.readFromUri(uri);
+      if (read == null) {
+        throw const ContentUriReadException('empty read', missing: false);
+      }
+      uriBytes = read;
+    } on ContentUriReadException catch (e) {
+      throw FileOpenException(
+        e.missing ? FileOpenFailure.notFound : FileOpenFailure.unreadable,
+        path: uri,
+      );
     }
 
     if (maxBytes != null && uriBytes.length > maxBytes) {
@@ -210,9 +218,18 @@ class FileService {
       if (isContentUri) {
         // Use content URI service to read directly
         contentUri = path;
-        final uriBytes = await contentUriService.readFromUri(path);
-        if (uriBytes == null) {
-          throw FileOpenException(FileOpenFailure.unreadable, path: path);
+        final Uint8List uriBytes;
+        try {
+          final read = await contentUriService.readFromUri(path);
+          if (read == null) {
+            throw const ContentUriReadException('empty read', missing: false);
+          }
+          uriBytes = read;
+        } on ContentUriReadException catch (e) {
+          throw FileOpenException(
+            e.missing ? FileOpenFailure.notFound : FileOpenFailure.unreadable,
+            path: path,
+          );
         }
         bytes = uriBytes;
 

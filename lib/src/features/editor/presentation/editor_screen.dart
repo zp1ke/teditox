@@ -231,13 +231,15 @@ class _EditorScreenState extends State<EditorScreen> {
                             child: Semantics(
                               header: true,
                               child: Text(
-                                ctl.currentFileName ?? loc.new_file,
+                                _fileTitle(ctl, loc),
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.w500,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
+                                      color: ctl.dirty
+                                          ? Theme.of(context).colorScheme.error
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
                                     ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -268,6 +270,12 @@ class _EditorScreenState extends State<EditorScreen> {
       ),
     );
   }
+}
+
+String _fileTitle(EditorController controller, AppLocalizations loc) {
+  final name = controller.currentFileName ?? loc.new_file;
+  if (!controller.dirty) return name;
+  return '$name • ${loc.modified}';
 }
 
 class _StatusBar extends StatelessWidget {

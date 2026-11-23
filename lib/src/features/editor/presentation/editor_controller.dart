@@ -415,7 +415,8 @@ class EditorController extends ChangeNotifier {
       notifyListeners();
       return true;
     } on FileOpenException catch (e) {
-      if (e.failure == FileOpenFailure.notFound) {
+      if (e.failure == FileOpenFailure.notFound ||
+          e.failure == FileOpenFailure.unreadable) {
         await recentFiles.remove(path);
       }
       if (context.mounted) await _reportOpenFailure(context, e);

@@ -115,7 +115,6 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
             ),
 
-            // Privacy Policy link (placeholder)
             Card(
               child: ListTile(
                 leading: const Icon(Icons.privacy_tip),

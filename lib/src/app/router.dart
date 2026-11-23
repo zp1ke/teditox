@@ -49,7 +49,9 @@ enum AppRoute {
 GoRouter buildRouter() {
   return GoRouter(
     initialLocation: AppRoute.editor.route,
-    // Disable deep linking to prevent content:// URIs from being processed as routes
+    // A file-manager "open with" sets the platform route to a content:// URI.
+    // Ignore that so Settings and other pushes are not relative to it.
+    overridePlatformDefaultLocation: true,
     routes: [
       GoRoute(
         path: AppRoute.editor.route,

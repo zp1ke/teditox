@@ -209,29 +209,25 @@ class MainActivity : FlutterActivity() {
         return null
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun getInitialRoute(): String = "/"
 
-        // Handle incoming file intents by clearing the data URI
-        // This prevents GoRouter from trying to process content:// URIs as routes
-        intent?.data?.let { uri ->
-            if (uri.scheme == "content" || uri.scheme == "file") {
-                // Clear the data URI to prevent it from being processed by the router
-                // The actual file handling is done by IntentService via receive_sharing_intent
-                intent.data = null
-            }
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Clear before Flutter reads the intent, or GoRouter treats the
+        // content:// URI as the current route and in-app navigation no-ops.
+        scrubFileIntent(intent)
+        super.onCreate(savedInstanceState)
     }
 
     override fun onNewIntent(intent: Intent) {
+        scrubFileIntent(intent)
         super.onNewIntent(intent)
-
-        // Handle incoming file intents when app is already running
-        intent.data?.let { uri ->
-            if (uri.scheme == "content" || uri.scheme == "file") {
-                intent.data = null
-            }
-        }
         setIntent(intent)
+    }
+
+    private fun scrubFileIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (uri.scheme == "content" || uri.scheme == "file") {
+            intent.data = null
+        }
     }
 }

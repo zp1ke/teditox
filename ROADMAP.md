@@ -235,13 +235,13 @@ one, a tablet or a phone in landscape wider than 600 px. Switch the device langu
 English for steps 1–8, then repeat the marked steps in Spanish.
 
 ### 1. Install and first launch
-- [ ] App installs and opens to an empty editor titled with the localized "New file".
-- [ ] No permission dialog appears at any point in this whole list.
-- [ ] Light, dark, and system theme all look readable. Dynamic color on Android 12+ follows the wallpaper.
+- [x] App installs and opens to an empty editor titled with the localized "New file".
+- [x] No permission dialog appears at any point in this whole list.
+- [x] Light, dark, and system theme all look readable. Dynamic color on Android 12+ follows the wallpaper.
 
 ### 2. Open, edit, save (SAF)
-- [ ] Open a `.txt` from the system picker. The title is the real file name, not "New file" and not a number like `14`.
-- [ ] Type, see the dirty marker, Save. Reopen the same file from a file manager: the text is there.
+- [x] Open a `.txt` from the system picker. The title is the real file name, not "New file" and not a number like `14`.
+- [ ] Type. The file-name row (above the keyboard) turns to "name • Modified". Save. Reopen the same file from a file manager: the text is there.
 - [ ] Save As creates a new document with the name you chose. The title updates to that name.
 - [ ] A missing file (delete it outside the app, then tap it in Recent) shows a not-found message and disappears from Recent. The message does not show a raw `content://` URI.
 
